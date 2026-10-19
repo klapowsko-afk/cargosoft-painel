@@ -1,6 +1,7 @@
 import os
 import io
 import json
+import unicodedata
 import requests
 import pandas as pd
 from datetime import datetime
@@ -9,99 +10,131 @@ URL_DISTRIBUICAO = "https://www.gov.br/anp/pt-br/assuntos/precos-e-defesa-da-con
 URL_REVENDA = "https://www.gov.br/anp/pt-br/assuntos/precos-e-defesa-da-concorrencia/precos/precos-revenda-e-de-distribuicao-combustiveis/shlp/semanal/semanal-estados-desde-2013.xlsx"
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+DATA_CORTE = pd.to_datetime("2026-01-01")
 
-def extrair_revenda_oficial():
-    print("[1/3] Baixando planilha oficial de REVENDA (.xlsx)...")
-    resp = requests.get(URL_REVENDA, headers=HEADERS, timeout=180)
-    resp.raise_for_status()
+# Mapeamento oficial dos estados brasileiros (sem acentos para cruzamento)
+MAPA_ESTADOS_UF = {
+    "ACRE": "AC", "ALAGOAS": "AL", "AMAPA": "AP", "AMAZONAS": "AM",
+    "BAHIA": "BA", "CEARA": "CE", "DISTRITO FEDERAL": "DF", "ESPIRITO SANTO": "ES",
+    "GOIAS": "GO", "MARANHAO": "MA", "MATO GROSSO": "MT", "MATO GROSSO DO SUL": "MS",
+    "MINAS GERAIS": "MG", "PARA": "PA", "PARAIBA": "PB", "PARANA": "PR",
+    "PERNAMBUCO": "PE", "PIAUI": "PI", "RIO DE JANEIRO": "RJ", "RIO GRANDE DO NORTE": "RN",
+    "RIO GRANDE DO SUL": "RS", "RONDONIA": "RO", "RORAIMA": "RR", "SANTA CATARINA": "SC",
+    "SAO PAULO": "SP", "SERGIPE": "SE", "TOCANTINS": "TO"
+}
 
-    # Leitura do Excel da ANP
-    excel_bytes = io.BytesIO(resp.content)
-    df = pd.read_excel(excel_bytes, skiprows=14)
-    df.columns = [str(c).strip().upper() for c in df.columns]
+def normalizar_texto(texto):
+    if not isinstance(texto, str):
+        return ""
+    texto = unicodedata.normalize('NFKD', texto).encode('ASCII', 'ignore').decode('ASCII')
+    return texto.strip().upper()
 
-    col_prod = next(c for c in df.columns if 'PRODUTO' in c)
-    col_uf = next(c for c in df.columns if 'ESTADO' in c or 'UF' in c)
-    col_valor = next(c for c in df.columns if 'MÉDIO' in c or 'MEDIO' in c or 'VALOR' in c)
-    col_data_final = next((c for c in df.columns if 'FINAL' in c or 'DATA' in c), None)
+def converter_para_uf(nome_estado):
+    normalizado = normalizar_texto(nome_estado)
+    return MAPA_ESTADOS_UF.get(normalizado, None)
 
-    # Filtra estritamente DIESEL S10
-    df_s10 = df[df[col_prod].astype(str).str.contains('DIESEL S10', case=False, na=False)].copy()
-    
-    # Converte coluna de data se presente
-    if col_data_final:
-        df_s10['DATA_F'] = pd.to_datetime(df_s10[col_data_final], errors='coerce')
-        # Pega a semana mais recente disponível para cada UF
-        df_s10 = df_s10.sort_values(by='DATA_F', ascending=False)
-        df_s10 = df_s10.drop_duplicates(subset=[col_uf])
-
-    df_s10[col_valor] = pd.to_numeric(df_s10[col_valor], errors='coerce')
-    df_s10 = df_s10.dropna(subset=[col_valor])
-
-    resultado = []
-    for _, row in df_s10.iterrows():
-        uf = str(row[col_uf]).strip().upper()
-        if len(uf) == 2:
-            resultado.append({
-                "uf": uf,
-                "preco_medio": round(float(row[col_valor]), 3),
-                "data_referencia": str(row.get('DATA_F', ''))[:10]
-            })
-
-    print(f"-> Revenda lida: {len(resultado)} UFs obtidas da planilha oficial.")
-    return resultado
-
-def extrair_distribuicao_oficial():
-    print("[2/3] Baixando planilha oficial de DISTRIBUIÇÃO (.xlsx)...")
+def extrair_distribuicao():
+    print("[1/3] Baixando base de DISTRIBUIÇÃO oficial da ANP...")
     resp = requests.get(URL_DISTRIBUICAO, headers=HEADERS, timeout=180)
     resp.raise_for_status()
 
-    excel_bytes = io.BytesIO(resp.content)
-    # Planilha de distribuição costuma ter cabeçalho nas primeiras linhas
-    df = pd.read_excel(excel_bytes)
-    
-    # Encontra a linha de cabeçalho real
-    for idx, row in df.iloc[:20].iterrows():
-        linha_txt = " ".join([str(v).upper() for v in row.values])
-        if "PRODUTO" in linha_txt and ("ESTADO" in linha_txt or "UF" in linha_txt):
-            df = pd.read_excel(excel_bytes, skiprows=idx + 1)
-            break
+    # Baseada no print: cabeçalho na linha 9 (skiprows=8)
+    df = pd.read_excel(io.BytesIO(resp.content), skiprows=8)
+    df.columns = [normalizar_texto(str(c)) for c in df.columns]
 
-    df.columns = [str(c).strip().upper() for c in df.columns]
+    col_data_final = next(c for c in df.columns if "DATA FINAL" in c)
+    col_estado = next(c for c in df.columns if "ESTADO" in c)
+    col_produto = next(c for c in df.columns if "PRODUTO" in c)
+    col_preco = next(c for c in df.columns if "PRECO MEDIO" in c and "DISTRIBUICAO" in c)
 
-    col_prod = next((c for c in df.columns if 'PRODUTO' in c), None)
-    col_uf = next((c for c in df.columns if 'ESTADO' in c or 'UF' in c), None)
-    col_valor = next((c for c in df.columns if 'PREÇO' in c or 'PRECO' in c or 'MÉDIO' in c or 'MEDIO' in c), None)
-    col_data = next((c for c in df.columns if 'DATA' in c or 'SEMANA' in c), None)
+    # 1. Filtro estrito Diesel S10
+    df = df[df[col_produto].astype(str).apply(normalizar_texto).str.contains("DIESEL S10", na=False)].copy()
 
-    if not col_prod or not col_uf or not col_valor:
-        raise ValueError(f"Estrutura inesperada na planilha de Distribuição: {df.columns.tolist()}")
+    # 2. Filtro estrito de data a partir de 01/01/2026
+    df["DATA_FINAL_DT"] = pd.to_datetime(df[col_data_final], errors="coerce")
+    df = df[df["DATA_FINAL_DT"] >= DATA_CORTE].copy()
 
-    df_s10 = df[df[col_prod].astype(str).str.contains('DIESEL S10', case=False, na=False)].copy()
-    df_s10[col_valor] = pd.to_numeric(df_s10[col_valor], errors='coerce')
-    df_s10 = df_s10.dropna(subset=[col_valor])
+    if df.empty:
+        raise ValueError("Nenhum registro de DISTRIBUIÇÃO de Diesel S10 encontrado para 2026.")
 
-    resultado = []
-    for _, row in df_s10.iterrows():
-        uf = str(row[col_uf]).strip().upper()
-        if len(uf) == 2:
-            resultado.append({
-                "uf": uf,
-                "preco_medio_dist": round(float(row[col_valor]), 3),
-                "data_referencia": str(row.get(col_data, ''))[:10]
-            })
+    # 3. Conversão de UF e preço numérico
+    df["UF"] = df[col_estado].apply(converter_para_uf)
+    df = df.dropna(subset=["UF"]).copy()
+    df[col_preco] = pd.to_numeric(df[col_preco], errors="coerce")
+    df = df.dropna(subset=[col_preco]).copy()
 
-    print(f"-> Distribuição lida: {len(resultado)} UFs obtidas da planilha oficial.")
-    return resultado
+    # 4. Seleciona a data mais recente por UF
+    df = df.sort_values(by="DATA_FINAL_DT", ascending=False)
+    df_recente = df.drop_duplicates(subset=["UF"]).copy()
 
-def salvar_firestore(revenda, distribuicao):
-    print("[3/3] Gravando no Firebase Firestore...")
+    resultados = []
+    for _, row in df_recente.iterrows():
+        resultados.append({
+            "uf": row["UF"],
+            "preco_medio_dist": round(float(row[col_preco]), 3),
+            "data_referencia": row["DATA_FINAL_DT"].strftime("%Y-%m-%d")
+        })
+
+    print(f"-> Distribuição carregada com sucesso: {len(resultados)} UFs encontradas em 2026.")
+    return resultados
+
+def extrair_revenda():
+    print("[2/3] Baixando base de REVENDA oficial da ANP...")
+    resp = requests.get(URL_REVENDA, headers=HEADERS, timeout=180)
+    resp.raise_for_status()
+
+    # Baseada no print: aba 'ESTADOS - DESDE 30.12.2012', cabeçalho na linha 18 (skiprows=17)
+    df = pd.read_excel(
+        io.BytesIO(resp.content),
+        sheet_name="ESTADOS - DESDE 30.12.2012",
+        skiprows=17
+    )
+    df.columns = [normalizar_texto(str(c)) for c in df.columns]
+
+    col_data_final = next(c for c in df.columns if "DATA FINAL" in c)
+    col_estado = next(c for c in df.columns if "ESTADO" in c)
+    col_produto = next(c for c in df.columns if "PRODUTO" in c)
+    col_preco = next(c for c in df.columns if "PRECO MEDIO" in c and "REVENDA" in c)
+
+    # 1. Filtro estrito Diesel S10
+    df = df[df[col_produto].astype(str).apply(normalizar_texto).str.contains("DIESEL S10", na=False)].copy()
+
+    # 2. Filtro estrito de data a partir de 01/01/2026
+    df["DATA_FINAL_DT"] = pd.to_datetime(df[col_data_final], errors="coerce")
+    df = df[df["DATA_FINAL_DT"] >= DATA_CORTE].copy()
+
+    if df.empty:
+        raise ValueError("Nenhum registro de REVENDA de Diesel S10 encontrado para 2026.")
+
+    # 3. Conversão de UF e preço numérico
+    df["UF"] = df[col_estado].apply(converter_para_uf)
+    df = df.dropna(subset=["UF"]).copy()
+    df[col_preco] = pd.to_numeric(df[col_preco], errors="coerce")
+    df = df.dropna(subset=[col_preco]).copy()
+
+    # 4. Seleciona a data mais recente da semana por UF
+    df = df.sort_values(by="DATA_FINAL_DT", ascending=False)
+    df_recente = df.drop_duplicates(subset=["UF"]).copy()
+
+    resultados = []
+    for _, row in df_recente.iterrows():
+        resultados.append({
+            "uf": row["UF"],
+            "preco_medio": round(float(row[col_preco]), 3),
+            "data_referencia": row["DATA_FINAL_DT"].strftime("%Y-%m-%d")
+        })
+
+    print(f"-> Revenda carregada com sucesso: {len(resultados)} UFs encontradas em 2026.")
+    return resultados
+
+def salvar_firestore(distribuicao, revenda):
+    print("[3/3] Sincronizando dados oficiais no Firestore...")
     import firebase_admin
     from firebase_admin import credentials, firestore
 
     cred_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
     if not cred_json:
-        raise ValueError("Chave FIREBASE_SERVICE_ACCOUNT não encontrada.")
+        raise ValueError("A variável de ambiente FIREBASE_SERVICE_ACCOUNT não foi encontrada.")
 
     cred_dict = json.loads(cred_json)
     if not firebase_admin._apps:
@@ -111,17 +144,29 @@ def salvar_firestore(revenda, distribuicao):
     db = firestore.client()
     agora = datetime.utcnow().isoformat()
 
-    for r in revenda:
-        r['atualizado_em'] = agora
-        db.collection("anp_revenda_uf").document(r['uf']).set(r)
-
+    # 1. Salva Distribuição por UF
     for d in distribuicao:
-        d['atualizado_em'] = agora
-        db.collection("anp_distribuicao_uf").document(d['uf']).set(d)
+        doc_data = {
+            "uf": d["uf"],
+            "preco_medio_dist": d["preco_medio_dist"],
+            "data_referencia": d["data_referencia"],
+            "atualizado_em": agora
+        }
+        db.collection("anp_distribuicao_uf").document(d["uf"]).set(doc_data)
 
-    print("Carga oficial da ANP concluída com sucesso absoluto!")
+    # 2. Salva Revenda por UF
+    for r in revenda:
+        doc_data = {
+            "uf": r["uf"],
+            "preco_medio": r["preco_medio"],
+            "data_referencia": r["data_referencia"],
+            "atualizado_em": agora
+        }
+        db.collection("anp_revenda_uf").document(r["uf"]).set(doc_data)
+
+    print("-> Sincronização 100% concluída no Firestore!")
 
 if __name__ == "__main__":
-    rev = extrair_revenda_oficial()
-    dist = extrair_distribuicao_oficial()
-    salvar_firestore(rev, dist)
+    dados_dist = extrair_distribuicao()
+    dados_rev = extrair_revenda()
+    salvar_firestore(dados_dist, dados_rev)
