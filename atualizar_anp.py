@@ -33,11 +33,10 @@ def converter_para_uf(nome_estado):
     return MAPA_ESTADOS_UF.get(normalizado, None)
 
 def extrair_distribuicao():
-    print("[1/3] Baixando base de DISTRIBUIÇÃO oficial da ANP...")
+    print("[1/3] A descarregar base de DISTRIBUIÇÃO oficial da ANP...")
     resp = requests.get(URL_DISTRIBUICAO, headers=HEADERS, timeout=180)
     resp.raise_for_status()
 
-    # Linha 9 é cabeçalho (skiprows=8)
     df = pd.read_excel(io.BytesIO(resp.content), skiprows=8)
     df.columns = [normalizar_texto(str(c)) for c in df.columns]
 
@@ -46,24 +45,24 @@ def extrair_distribuicao():
     col_produto = next(c for c in df.columns if "PRODUTO" in c)
     col_preco = next(c for c in df.columns if "PRECO MEDIO" in c and "DISTRIBUICAO" in c)
 
-    # Filtro flexível para Diesel S10
+    # Filtro abrangente: DIESEL + S10 (contempla ÓLEO DIESEL B S10)
     prod_upper = df[col_produto].astype(str).apply(normalizar_texto)
     eh_diesel_s10 = prod_upper.str.contains("DIESEL") & (prod_upper.str.contains("S10") | prod_upper.str.contains("S-10"))
     df = df[eh_diesel_s10].copy()
 
-    # Padrão PT-BR: dayfirst=True
+    # Padrão de data PT-BR (dayfirst=True)
     df["DATA_FINAL_DT"] = pd.to_datetime(df[col_data_final], dayfirst=True, errors="coerce")
     df = df[df["DATA_FINAL_DT"] >= DATA_CORTE].copy()
 
     if df.empty:
-        raise ValueError("Nenhum registro de DISTRIBUIÇÃO de Diesel S10 encontrado para 2026.")
+        raise ValueError("Nenhum registo de DISTRIBUIÇÃO de Diesel S10 encontrado para 2026.")
 
     df["UF"] = df[col_estado].apply(converter_para_uf)
     df = df.dropna(subset=["UF"]).copy()
     df[col_preco] = pd.to_numeric(df[col_preco], errors="coerce")
     df = df.dropna(subset=[col_preco]).copy()
 
-    # Pega o registro mais recente por UF
+    # Ordena rigorosamente pela data mais recente e extrai a última linha de cada UF
     df = df.sort_values(by="DATA_FINAL_DT", ascending=False)
     df_recente = df.drop_duplicates(subset=["UF"]).copy()
 
@@ -72,18 +71,17 @@ def extrair_distribuicao():
         resultados.append({
             "uf": row["UF"],
             "preco_medio_dist": round(float(row[col_preco]), 3),
-            "data_referencia": row["DATA_FINAL_DT"].strftime("%Y-%m-%d")
+            "data_referencia": row["DATA_FINAL_DT"].strftime("%d/%m/%Y")
         })
 
-    print(f"-> Distribuição carregada com sucesso: {len(resultados)} UFs encontradas em 2026.")
+    print(f"-> Distribuição concluída: {len(resultados)} UFs processadas para 2026.")
     return resultados
 
 def extrair_revenda():
-    print("[2/3] Baixando base de REVENDA oficial da ANP...")
+    print("[2/3] A descarregar base de REVENDA oficial da ANP...")
     resp = requests.get(URL_REVENDA, headers=HEADERS, timeout=180)
     resp.raise_for_status()
 
-    # Aba 'ESTADOS - DESDE 30.12.2012', Linha 18 é cabeçalho (skiprows=17)
     df = pd.read_excel(
         io.BytesIO(resp.content),
         sheet_name="ESTADOS - DESDE 30.12.2012",
@@ -96,24 +94,21 @@ def extrair_revenda():
     col_produto = next(c for c in df.columns if "PRODUTO" in c)
     col_preco = next(c for c in df.columns if "PRECO MEDIO" in c and "REVENDA" in c)
 
-    # Filtro flexível para Diesel S10
     prod_upper = df[col_produto].astype(str).apply(normalizar_texto)
     eh_diesel_s10 = prod_upper.str.contains("DIESEL") & (prod_upper.str.contains("S10") | prod_upper.str.contains("S-10"))
     df = df[eh_diesel_s10].copy()
 
-    # Padrão PT-BR: dayfirst=True
     df["DATA_FINAL_DT"] = pd.to_datetime(df[col_data_final], dayfirst=True, errors="coerce")
     df = df[df["DATA_FINAL_DT"] >= DATA_CORTE].copy()
 
     if df.empty:
-        raise ValueError("Nenhum registro de REVENDA de Diesel S10 encontrado para 2026.")
+        raise ValueError("Nenhum registo de REVENDA de Diesel S10 encontrado para 2026.")
 
     df["UF"] = df[col_estado].apply(converter_para_uf)
     df = df.dropna(subset=["UF"]).copy()
     df[col_preco] = pd.to_numeric(df[col_preco], errors="coerce")
     df = df.dropna(subset=[col_preco]).copy()
 
-    # Pega o registro mais recente por UF
     df = df.sort_values(by="DATA_FINAL_DT", ascending=False)
     df_recente = df.drop_duplicates(subset=["UF"]).copy()
 
@@ -122,20 +117,20 @@ def extrair_revenda():
         resultados.append({
             "uf": row["UF"],
             "preco_medio": round(float(row[col_preco]), 3),
-            "data_referencia": row["DATA_FINAL_DT"].strftime("%Y-%m-%d")
+            "data_referencia": row["DATA_FINAL_DT"].strftime("%d/%m/%Y")
         })
 
-    print(f"-> Revenda carregada com sucesso: {len(resultados)} UFs encontradas em 2026.")
+    print(f"-> Revenda concluída: {len(resultados)} UFs processadas para 2026.")
     return resultados
 
 def salvar_firestore(distribuicao, revenda):
-    print("[3/3] Sincronizando dados oficiais no Firestore...")
+    print("[3/3] A gravar bases no Firestore...")
     import firebase_admin
     from firebase_admin import credentials, firestore
 
     cred_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
     if not cred_json:
-        raise ValueError("A variável de ambiente FIREBASE_SERVICE_ACCOUNT não foi encontrada.")
+        raise ValueError("Chave FIREBASE_SERVICE_ACCOUNT em falta.")
 
     cred_dict = json.loads(cred_json)
     if not firebase_admin._apps:
@@ -163,9 +158,9 @@ def salvar_firestore(distribuicao, revenda):
         }
         db.collection("anp_revenda_uf").document(r["uf"]).set(doc_data)
 
-    print("-> Sincronização 100% concluída no Firestore!")
+    print("Carga da ANP concluída com sucesso no Firestore.")
 
 if __name__ == "__main__":
-    dados_dist = extrair_distribuicao()
-    dados_rev = extrair_revenda()
-    salvar_firestore(dados_dist, dados_rev)
+    dist = extrair_distribuicao()
+    rev = extrair_revenda()
+    salvar_firestore(dist, rev)
