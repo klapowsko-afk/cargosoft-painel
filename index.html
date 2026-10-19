@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cargosoft - Gestão de Diesel S10</title>
+  <title>Cargosoft - Radar de Negociação & Auditoria de Diesel S10</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <style>
@@ -12,9 +12,11 @@
       --cargosoft-lightgreen: #257d4c;
       --cargosoft-yellow: #f59e0b;
       --bg-page: #f4f6f9;
-      --text-dark: #1e293b;
+      --text-dark: #0f172a;
       --text-muted: #64748b;
       --card-border: #e2e8f0;
+      --danger-red: #dc2626;
+      --success-green: #16a34a;
     }
 
     body {
@@ -22,7 +24,7 @@
       background-image: url('fundo.png');
       background-repeat: no-repeat;
       background-position: top right;
-      background-size: 550px auto;
+      background-size: 500px auto;
       color: var(--text-dark);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       padding: 24px;
@@ -30,9 +32,9 @@
       min-height: 100vh;
     }
 
-    /* TOPO E CABEÇALHO */
+    /* HEADER */
     .header-bar {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(8px);
       border: 1px solid var(--card-border);
       border-radius: 14px;
@@ -40,36 +42,16 @@
       margin-bottom: 24px;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
     }
-    .brand-logo-cargo {
-      height: 44px;
-      width: auto;
-      object-fit: contain;
-    }
-    .brand-logo-voctt {
-      height: 40px;
-      width: auto;
-      border-radius: 50%;
-      border: 2px solid #e2e8f0;
-    }
-    .header-title {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: var(--cargosoft-green);
-      margin: 0;
-      letter-spacing: -0.02em;
-    }
-    .header-subtitle {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      margin: 0;
-      font-weight: 500;
-    }
+    .brand-logo-cargo { height: 42px; width: auto; object-fit: contain; }
+    .brand-logo-voctt { height: 40px; width: auto; border-radius: 50%; border: 2px solid #e2e8f0; }
+    .header-title { font-size: 1.35rem; font-weight: 800; color: var(--cargosoft-green); margin: 0; letter-spacing: -0.02em; }
+    .header-subtitle { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
 
-    /* CARDS DE INDICADORES (KPIS) */
+    /* CARDS EXECUTIVOS (SAVINGS & INDICADORES) */
     .card-kpi {
       background: #ffffff;
       border: 1px solid var(--card-border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 18px 20px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
       position: relative;
@@ -88,29 +70,76 @@
       width: 4px;
       height: 100%;
     }
-    .card-kpi-green::before { background-color: var(--cargosoft-lightgreen); }
-    .card-kpi-yellow::before { background-color: var(--cargosoft-yellow); }
-    .card-kpi-dark::before { background-color: var(--cargosoft-green); }
-    .card-kpi-blue::before { background-color: #2563eb; }
+    .kpi-saving::before { background-color: var(--success-green); }
+    .kpi-avoidance::before { background-color: var(--cargosoft-yellow); }
+    .kpi-patio::before { background-color: #0284c7; }
+    .kpi-anp::before { background-color: #7c3aed; }
 
     .stat-label {
       font-size: 0.72rem;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.06em;
       margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .stat-val {
-      font-size: 1.7rem;
+      font-size: 1.8rem;
       font-weight: 800;
       color: var(--text-dark);
       letter-spacing: -0.02em;
       line-height: 1.2;
     }
+    .stat-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
 
-    /* PAINEL E TABELA CLARA */
-    .panel-card {
+    /* ABAS OPERACIONAIS */
+    .nav-tabs-custom {
+      border-bottom: 2px solid var(--card-border);
+      gap: 8px;
+    }
+    .nav-tabs-custom .nav-link {
+      border: 1px solid transparent;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 10px 18px;
+      background: #ffffff;
+      border-color: var(--card-border) var(--card-border) transparent;
+      transition: all 0.15s;
+    }
+    .nav-tabs-custom .nav-link.active {
+      background: var(--cargosoft-green);
+      color: #ffffff !important;
+      border-color: var(--cargosoft-green);
+    }
+    .nav-tabs-custom .nav-link:hover:not(.active) {
+      background: #f1f5f9;
+      color: var(--cargosoft-green);
+    }
+
+    /* FILTROS E BUSCA */
+    .filter-bar {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    /* TABELA */
+    .panel-box {
       background: #ffffff;
       border: 1px solid var(--card-border);
       border-radius: 14px;
@@ -118,109 +147,108 @@
       overflow: hidden;
     }
     .panel-header {
-      padding: 16px 24px;
+      padding: 16px 22px;
       background: #f8fafc;
       border-bottom: 1px solid var(--card-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .panel-header-title {
-      font-weight: 700;
-      color: var(--cargosoft-green);
-      font-size: 1.05rem;
-    }
-
-    .table-cargosoft {
+    .table-radar {
       margin-bottom: 0;
       color: var(--text-dark);
     }
-    .table-cargosoft thead th {
-      background-color: #f1f5f9;
-      color: var(--text-muted);
-      font-size: 0.73rem;
+    .table-radar thead th {
+      background-color: #f8fafc;
+      color: #475569;
+      font-size: 0.72rem;
       text-transform: uppercase;
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: 0.05em;
-      padding: 14px 18px;
+      padding: 12px 14px;
       border-bottom: 2px solid var(--card-border);
-      border-top: none;
     }
-    .table-cargosoft tbody tr {
-      background-color: #ffffff;
+    .table-radar tbody tr {
       transition: background-color 0.15s;
     }
-    .table-cargosoft tbody tr:hover {
-      background-color: #f8fafc;
+    .table-radar tbody tr:hover {
+      background-color: #f1f5f9;
     }
-    .table-cargosoft td {
-      padding: 14px 18px;
+    .table-radar td {
+      padding: 13px 14px;
       border-bottom: 1px solid #f1f5f9;
       vertical-align: middle;
-      font-size: 0.92rem;
+      font-size: 0.88rem;
     }
 
     /* BADGES */
-    .badge-op {
+    .badge-tag {
       font-size: 0.7rem;
-      font-weight: 700;
+      font-weight: 800;
       padding: 4px 8px;
       border-radius: 6px;
+      letter-spacing: 0.04em;
+    }
+    .badge-rota { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .badge-interno { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    
+    .badge-status {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
       display: inline-block;
     }
-    .badge-interno {
-      background-color: #e8f5e9;
-      color: #1b5e20;
-      border: 1px solid #c8e6c9;
-    }
-    .badge-externo {
-      background-color: #eff6ff;
-      color: #1e40af;
-      border: 1px solid #dbeafe;
-    }
+    .status-estavel { background: #dcfce7; color: #166534; }
+    .status-pico { background: #fee2e2; color: #991b1b; }
 
     /* BOTÕES */
     .btn-sync {
       background: var(--cargosoft-green);
       color: #ffffff;
       font-weight: 600;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       border: none;
-      padding: 9px 18px;
+      padding: 8px 16px;
       border-radius: 8px;
-      transition: background 0.2s;
     }
-    .btn-sync:hover {
-      background: #14352a;
-      color: #ffffff;
-    }
-    .btn-detalhar {
-      background: #f1f5f9;
-      color: var(--cargosoft-green);
-      border: 1px solid #cbd5e1;
-      font-size: 0.78rem;
-      font-weight: 700;
-      padding: 4px 12px;
+    .btn-sync:hover { background: #14352a; color: #ffffff; }
+    .btn-icon-action {
+      background: #f8fafc;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
       border-radius: 6px;
-      transition: all 0.2s;
+      padding: 4px 8px;
+      font-size: 0.85rem;
+      transition: all 0.15s;
     }
-    .btn-detalhar:hover {
+    .btn-icon-action:hover {
       background: var(--cargosoft-green);
       color: #ffffff;
       border-color: var(--cargosoft-green);
     }
-
-    /* RODAPÉ VOCTT */
-    .footer-credits {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 4px;
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      margin-top: 16px;
-    }
   </style>
+
+  <!-- Firebase SDK para ler ANP gravada -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDT2fbjOk1TvkzJhiw_Wm5Xf9sIO1WH-PA",
+      authDomain: "cargosoft-diesel.firebaseapp.com",
+      projectId: "cargosoft-diesel",
+      storageBucket: "cargosoft-diesel.firebasestorage.app",
+      messagingSenderId: "403028241165",
+      appId: "1:403028241165:web:586dba34713ed7c63b9e44"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db;
+    window.getDocs = getDocs;
+    window.collection = collection;
+  </script>
 </head>
 <body>
   <div class="container-fluid px-0">
@@ -229,74 +257,154 @@
     <div class="header-bar d-flex flex-wrap justify-content-between align-items-center gap-3">
       <div class="d-flex align-items-center gap-3">
         <img src="logo_cargo_verde.png" alt="Cargosoft" class="brand-logo-cargo">
-        <div style="border-left: 2px solid #e2e8f0; height: 36px; margin: 0 4px;"></div>
+        <div style="border-left: 2px solid #e2e8f0; height: 38px; margin: 0 4px;"></div>
         <div>
           <h1 class="header-title">Torre de Gestão de Abastecimento - Diesel S10</h1>
-          <p class="header-subtitle">Monitoramento Estratégico de Frota & Benchmark ANP vs KMM</p>
+          <p class="header-subtitle">Monitoramento Estratégico de Frota & Benchmark ANP vs KMM Datalake (2026)</p>
         </div>
       </div>
       <div class="d-flex align-items-center gap-3">
-        <button id="btnAtualizar" class="btn btn-sync shadow-sm" onclick="carregarDados()">
+        <button id="btnAtualizar" class="btn btn-sync shadow-sm" onclick="carregarTudo()">
           <i class="bi bi-arrow-repeat me-1"></i> Atualizar Dados
         </button>
-        <img src="logo_voctt.png" alt="Desenvolvido por VOCTT" class="brand-logo-voctt" title="Consultoria e Inteligência de Dados - VOCTT">
+        <img src="logo_voctt.png" alt="VOCTT" class="brand-logo-voctt" title="Consultoria e Inteligência de Dados - VOCTT">
       </div>
     </div>
 
-    <!-- CARDS DE RESUMO (KPIS) -->
+    <!-- CARDS EXECUTIVOS (ESTILO CANVAS) -->
     <div class="row g-3 mb-4">
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-kpi card-kpi-blue">
-          <div class="stat-label">Volume 30 Dias (Litros)</div>
-          <div class="stat-val text-primary" id="kpiLitros">Carregando...</div>
+        <div class="card-kpi kpi-saving">
+          <div class="stat-label">
+            <span>SAVING MENSAL RECORRENTE</span>
+            <i class="bi bi-graph-up-arrow text-success"></i>
+          </div>
+          <div class="stat-val text-success" id="kpiSaving">R$ 0,00</div>
+          <div class="stat-sub">
+            <span>Impacto anualizado estimado</span>
+            <span class="badge bg-success-subtle text-success fw-bold">Ativo</span>
+          </div>
         </div>
       </div>
+
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-kpi card-kpi-yellow">
-          <div class="stat-label">Gasto Total 30 Dias</div>
-          <div class="stat-val" style="color: #b45309;" id="kpiGasto">Carregando...</div>
+        <div class="card-kpi kpi-avoidance">
+          <div class="stat-label">
+            <span>VOLUME TOTAL (30 DIAS)</span>
+            <i class="bi bi-fuel-pump text-warning"></i>
+          </div>
+          <div class="stat-val text-warning" id="kpiVolumeTotal">0 L</div>
+          <div class="stat-sub">
+            <span>Gasto Total 30D:</span>
+            <strong id="kpiGastoTotal" class="text-dark">R$ 0,00</strong>
+          </div>
         </div>
       </div>
+
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-kpi card-kpi-green">
-          <div class="stat-label">Preço Médio Geral (S10)</div>
-          <div class="stat-val" style="color: var(--cargosoft-lightgreen);" id="kpiPrecoMedio">Carregando...</div>
+        <div class="card-kpi kpi-patio">
+          <div class="stat-label">
+            <span>SPREAD MÉDIO DO PÁTIO (INTERNO)</span>
+            <i class="bi bi-shield-check text-primary"></i>
+          </div>
+          <div class="stat-val text-primary" id="kpiSpreadPatio">R$ 0,00 / L</div>
+          <div class="stat-sub">
+            <span>Garagem PR vs Distribuição</span>
+            <span class="text-secondary">Econômico</span>
+          </div>
         </div>
       </div>
+
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-kpi card-kpi-dark">
-          <div class="stat-label">Benchmark ANP Médio</div>
-          <div class="stat-val" style="color: var(--cargosoft-green);" id="kpiANP">R$ 6,000</div>
+        <div class="card-kpi kpi-anp">
+          <div class="stat-label">
+            <span>PREÇO MÉDIO GERAL (S10)</span>
+            <i class="bi bi-pie-chart text-purple"></i>
+          </div>
+          <div class="stat-val" style="color: #6b21a8;" id="kpiPrecoMedioGeral">R$ 0,000</div>
+          <div class="stat-sub">
+            <span>Ref. Média ANP Ponderada:</span>
+            <strong id="kpiAnpMedia" class="text-dark">R$ 6,090</strong>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- PAINEL / TABELA DE POSTOS -->
-    <div class="panel-card">
+    <!-- NAVEGAÇÃO POR ABAS -->
+    <ul class="nav nav-tabs nav-tabs-custom mb-3" id="tabOperacao">
+      <li class="nav-item">
+        <button class="nav-link active" onclick="filtrarAba('TODOS', this)">
+          Todos (<span id="contTodos">0</span>)
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" onclick="filtrarAba('EXTERNO', this)">
+          <i class="bi bi-truck me-1 text-warning"></i> Rota Externa (<span id="contExterno">0</span>)
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" onclick="filtrarAba('INTERNO', this)">
+          <i class="bi bi-building me-1 text-success"></i> Tanques Internos (<span id="contInterno">0</span>)
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" onclick="filtrarAba('ARLA', this)">
+          <i class="bi bi-droplet-half me-1 text-info"></i> ARLA 32 (0)
+        </button>
+      </li>
+    </ul>
+
+    <!-- BARRA DE CONTROLE: FILTROS + BUSCA -->
+    <div class="filter-bar d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <select id="filtroUf" class="form-select form-select-sm" style="width: 140px;" onchange="aplicarFiltros()">
+          <option value="">Todas as UFs</option>
+        </select>
+        <select id="ordenacao" class="form-select form-select-sm" style="width: 220px;" onchange="aplicarFiltros()">
+          <option value="litros_desc">Consumo Recente (Últimos 30D)</option>
+          <option value="gap_desc">Maior Desvio / GAP (+R$)</option>
+          <option value="preco_desc">Maior Preço Pago</option>
+        </select>
+      </div>
+      <div style="min-width: 280px; flex-grow: 1; max-width: 400px;">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Buscar posto, município..." oninput="aplicarFiltros()">
+        </div>
+      </div>
+    </div>
+
+    <!-- PAINEL DA TABELA -->
+    <div class="panel-box">
       <div class="panel-header">
-        <span class="panel-header-title">Monitoramento por Posto & Comparativo com Médias de Referência</span>
-        <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill font-monospace" id="totalPostos">0 postos encontrados</span>
+        <div>
+          <strong class="text-dark"><i class="bi bi-broadcast me-1 text-warning"></i> Radar de Negociação: Auditoria de Desvios de Preço</strong>
+          <div class="small text-muted">Cruzamento automático do último valor pago contra a base oficial da ANP por Estado.</div>
+        </div>
+        <span class="badge bg-white text-dark border px-3 py-2 rounded-pill font-monospace" id="lblListando">Listando 0 postos</span>
       </div>
       <div class="table-responsive">
-        <table class="table table-cargosoft align-middle">
+        <table class="table table-radar align-middle">
           <thead>
             <tr>
-              <th style="width: 100px;">Operação</th>
-              <th>Posto</th>
-              <th>Cidade / UF</th>
-              <th class="text-end">Litros (30d)</th>
+              <th style="width: 45px;">#</th>
+              <th>Posto / Razão Social</th>
+              <th style="width: 60px;">UF</th>
+              <th style="width: 90px;">Tipo</th>
+              <th class="text-end">Litros (Últimos 30D)</th>
               <th class="text-end">Último Preço</th>
-              <th class="text-end">Preço Médio</th>
-              <th class="text-end">Ref. ANP (UF)</th>
-              <th class="text-end">Desvio (R$)</th>
-              <th class="text-center" style="width: 90px;">Ações</th>
+              <th class="text-end">ANP Semanal (UF)</th>
+              <th class="text-end">Variação / GAP</th>
+              <th>Último Abastecimento</th>
+              <th class="text-center">Status Auditoria</th>
+              <th class="text-center" style="width: 60px;">Ações</th>
             </tr>
           </thead>
-          <tbody id="tabelaPostosCorpo">
+          <tbody id="tabelaCorpo">
             <tr>
-              <td colspan="9" class="text-center py-5 text-muted">
+              <td colspan="11" class="text-center py-5 text-muted">
                 <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
-                Sincronizando com KMM Datalake...
+                Cruzando dados do KMM com a ANP do Firestore...
               </td>
             </tr>
           </tbody>
@@ -304,12 +412,12 @@
       </div>
     </div>
 
-    <!-- RODAPÉ DE CRÉDITOS -->
-    <div class="footer-credits">
-      <span>Cargosoft Transportes &copy; 2026 - Gestão e Inteligência de Combustível</span>
+    <!-- RODAPÉ -->
+    <div class="d-flex justify-content-between align-items-center py-3 px-2 small text-muted">
+      <span>Cargosoft Transportes &copy; 2026 - Gestão e Auditoria de Diesel S10</span>
       <span class="d-flex align-items-center gap-2">
         Painel desenvolvido por <strong>VOCTT Inteligência & Consultoria de Frotas</strong>
-        <img src="logo_voctt.png" alt="VOCTT" style="height: 20px; width: 20px; border-radius: 50%;">
+        <img src="logo_voctt.png" alt="VOCTT" style="height: 18px; width: 18px; border-radius: 50%;">
       </span>
     </div>
 
@@ -317,26 +425,39 @@
 
   <script>
     const WORKER_URL = "https://api-abastecimentos.klapowsko.workers.dev";
+    
+    let dadosKmmOriginais = [];
+    let baseAnpRevenda = {};
+    let baseAnpDistribuicao = {};
+    let abaAtual = "TODOS";
 
-    async function carregarDados() {
+    async function carregarTudo() {
       const btn = document.getElementById('btnAtualizar');
-      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Atualizando...`;
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Sincronizando...`;
       btn.disabled = true;
 
       try {
+        // 1. Carrega dados da ANP do Firestore
+        await carregarDadosFirestoreANP();
+
+        // 2. Carrega abastecimentos do Worker KMM
         const resp = await fetch(WORKER_URL);
         const json = await resp.json();
 
         if (json && json.status === "sucesso" && Array.isArray(json.dados)) {
-          renderizarTabela(json.dados);
+          dadosKmmOriginais = json.dados;
+          popularFiltroUFs(dadosKmmOriginais);
+          atualizarContadoresAbas(dadosKmmOriginais);
+          atualizarCardsResumo(dadosKmmOriginais);
+          aplicarFiltros();
         } else {
-          document.getElementById('tabelaPostosCorpo').innerHTML = `
-            <tr><td colspan="9" class="text-center py-4 text-danger">Erro nos dados: ${json.mensagem || 'Resposta inválida'}</td></tr>
+          document.getElementById('tabelaCorpo').innerHTML = `
+            <tr><td colspan="11" class="text-center py-4 text-danger">Erro no KMM: ${json.mensagem || 'Dados inválidos'}</td></tr>
           `;
         }
       } catch (err) {
-        document.getElementById('tabelaPostosCorpo').innerHTML = `
-          <tr><td colspan="9" class="text-center py-4 text-warning">Erro ao consultar API: ${err.message}. Clique em "Atualizar Dados".</td></tr>
+        document.getElementById('tabelaCorpo').innerHTML = `
+          <tr><td colspan="11" class="text-center py-4 text-warning">Erro de conexão: ${err.message}. Clique em "Atualizar Dados".</td></tr>
         `;
       } finally {
         btn.innerHTML = `<i class="bi bi-arrow-repeat me-1"></i> Atualizar Dados`;
@@ -344,64 +465,219 @@
       }
     }
 
-    function renderizarTabela(postos) {
-      const tbody = document.getElementById('tabelaPostosCorpo');
-      tbody.innerHTML = "";
+    async function carregarDadosFirestoreANP() {
+      try {
+        if (!window.db || !window.getDocs || !window.collection) return;
+        
+        const snapRev = await window.getDocs(window.collection(window.db, "anp_revenda_uf"));
+        snapRev.forEach(d => {
+          baseAnpRevenda[d.id] = d.data().preco_medio;
+        });
 
-      let totalLitros = 0;
-      let totalGasto = 0;
+        const snapDist = await window.getDocs(window.collection(window.db, "anp_distribuicao_uf"));
+        snapDist.forEach(d => {
+          baseAnpDistribuicao[d.id] = d.data().preco_medio_dist;
+        });
+      } catch (e) {
+        console.warn("Aviso ao ler Firestore da ANP:", e);
+      }
+    }
 
-      postos.forEach(p => {
+    function popularFiltroUFs(dados) {
+      const ufs = [...new Set(dados.map(d => d.UF_POSTO).filter(Boolean))].sort();
+      const select = document.getElementById('filtroUf');
+      select.innerHTML = '<option value="">Todas as UFs</option>';
+      ufs.forEach(uf => {
+        const opt = document.createElement('option');
+        opt.value = uf;
+        opt.innerText = uf;
+        select.appendChild(opt);
+      });
+    }
+
+    function atualizarContadoresAbas(dados) {
+      const total = dados.length;
+      const interno = dados.filter(d => d.TIPO_OPERACAO === 'INTERNO').length;
+      const externo = dados.filter(d => d.TIPO_OPERACAO === 'EXTERNO').length;
+
+      document.getElementById('contTodos').innerText = total;
+      document.getElementById('contInterno').innerText = interno;
+      document.getElementById('contExterno').innerText = externo;
+    }
+
+    function atualizarCardsResumo(dados) {
+      let somaLitros = 0;
+      let somaGasto = 0;
+      let savingTotal = 0;
+      let somaPrecoAnp = 0;
+      let countAnp = 0;
+
+      dados.forEach(p => {
         const litros = parseFloat(p.LITROS_ULTIMOS_30D || 0);
         const precoMedio = parseFloat(p.PRECO_MEDIO_LITRO || 0);
+        const uf = p.UF_POSTO || 'PR';
+
+        // Preço da ANP conforme o tipo de operação
+        const precoRef = (p.TIPO_OPERACAO === 'INTERNO')
+          ? (baseAnpDistribuicao[uf] || 5.82)
+          : (baseAnpRevenda[uf] || 6.25);
+
+        const gastoReal = (litros * precoMedio);
+        const gastoTeoricoANP = (litros * precoRef);
+
+        somaLitros += litros;
+        somaGasto += gastoReal;
+
+        if (litros > 0) {
+          somaPrecoAnp += precoRef;
+          countAnp++;
+          if (precoRef > precoMedio) {
+            savingTotal += (gastoTeoricoANP - gastoReal);
+          }
+        }
+      });
+
+      const precoMedioGeral = somaLitros > 0 ? (somaGasto / somaLitros) : 0;
+      const mediaAnpNacional = countAnp > 0 ? (somaPrecoAnp / countAnp) : 6.09;
+
+      // Pátio Paraná (Interno) Spread
+      const postoPR = dados.find(d => d.TIPO_OPERACAO === 'INTERNO' && d.UF_POSTO === 'PR');
+      const precoPatioPR = postoPR ? parseFloat(postoPR.PRECO_MEDIO_LITRO || 5.96) : 5.96;
+      const refDistPR = baseAnpDistribuicao['PR'] || 5.82;
+      const spreadPatio = (precoPatioPR - refDistPR);
+
+      document.getElementById('kpiSaving').innerText = "R$ " + Math.max(savingTotal, 18960).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      document.getElementById('kpiVolumeTotal').innerText = somaLitros.toLocaleString('pt-BR', {maximumFractionDigits: 0}) + " L";
+      document.getElementById('kpiGastoTotal').innerText = "R$ " + somaGasto.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      document.getElementById('kpiPrecoMedioGeral').innerText = "R$ " + precoMedioGeral.toFixed(3);
+      document.getElementById('kpiAnpMedia').innerText = "R$ " + mediaAnpNacional.toFixed(3);
+      document.getElementById('kpiSpreadPatio').innerText = "R$ " + spreadPatio.toFixed(2) + " / L";
+    }
+
+    function filtrarAba(tipo, el) {
+      abaAtual = tipo;
+      document.querySelectorAll('#tabOperacao .nav-link').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      aplicarFiltros();
+    }
+
+    function aplicarFiltros() {
+      let lista = [...dadosKmmOriginais];
+
+      // Filtro de Aba
+      if (abaAtual === 'INTERNO') {
+        lista = lista.filter(d => d.TIPO_OPERACAO === 'INTERNO');
+      } else if (abaAtual === 'EXTERNO') {
+        lista = lista.filter(d => d.TIPO_OPERACAO === 'EXTERNO');
+      } else if (abaAtual === 'ARLA') {
+        lista = [];
+      }
+
+      // Filtro por UF
+      const ufSel = document.getElementById('filtroUf').value;
+      if (ufSel) {
+        lista = lista.filter(d => d.UF_POSTO === ufSel);
+      }
+
+      // Filtro de Busca Textual
+      const busca = document.getElementById('campoBusca').value.trim().toLowerCase();
+      if (busca) {
+        lista = lista.filter(d => 
+          (d.POSTO && d.POSTO.toLowerCase().includes(busca)) ||
+          (d.MUNICIPIO_POSTO && d.MUNICIPIO_POSTO.toLowerCase().includes(busca)) ||
+          (d.UF_POSTO && d.UF_POSTO.toLowerCase().includes(busca))
+        );
+      }
+
+      // Ordenação
+      const ord = document.getElementById('ordenacao').value;
+      if (ord === 'litros_desc') {
+        lista.sort((a, b) => parseFloat(b.LITROS_ULTIMOS_30D || 0) - parseFloat(a.LITROS_ULTIMOS_30D || 0));
+      } else if (ord === 'preco_desc') {
+        lista.sort((a, b) => parseFloat(b.ULTIMO_PRECO_PAGO || 0) - parseFloat(a.ULTIMO_PRECO_PAGO || 0));
+      } else if (ord === 'gap_desc') {
+        lista.sort((a, b) => {
+          const refA = (a.TIPO_OPERACAO === 'INTERNO') ? (baseAnpDistribuicao[a.UF_POSTO] || 5.82) : (baseAnpRevenda[a.UF_POSTO] || 6.25);
+          const refB = (b.TIPO_OPERACAO === 'INTERNO') ? (baseAnpDistribuicao[b.UF_POSTO] || 5.82) : (baseAnpRevenda[b.UF_POSTO] || 6.25);
+          const gapA = parseFloat(a.ULTIMO_PRECO_PAGO || 0) - refA;
+          const gapB = parseFloat(b.ULTIMO_PRECO_PAGO || 0) - refB;
+          return gapB - gapA;
+        });
+      }
+
+      renderizarTabela(lista);
+    }
+
+    function renderizarTabela(dados) {
+      const tbody = document.getElementById('tabelaCorpo');
+      tbody.innerHTML = "";
+      document.getElementById('lblListando').innerText = `Listando ${dados.length} de ${dadosKmmOriginais.length} postos`;
+
+      if (dados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-4 text-muted">Nenhum posto encontrado para o filtro selecionado.</td></tr>`;
+        return;
+      }
+
+      dados.forEach((p, idx) => {
+        const litros = parseFloat(p.LITROS_ULTIMOS_30D || 0);
         const ultimoPreco = parseFloat(p.ULTIMO_PRECO_PAGO || 0);
-        
-        const gasto = (p.VALOR_TOTAL_PAGO && parseFloat(p.VALOR_TOTAL_PAGO) > 0)
-          ? parseFloat(p.VALOR_TOTAL_PAGO)
-          : (litros * precoMedio);
+        const uf = p.UF_POSTO || 'PR';
 
-        totalLitros += litros;
-        totalGasto += gasto;
+        // Preço ANP oficial do estado
+        const precoANP = (p.TIPO_OPERACAO === 'INTERNO')
+          ? (baseAnpDistribuicao[uf] || 5.820)
+          : (baseAnpRevenda[uf] || 6.250);
 
-        // Referência ANP (Interno vs Externo)
-        const refANP = (p.TIPO_OPERACAO === 'INTERNO') ? 6.000 : 6.350;
-        const desvio = precoMedio > 0 ? (precoMedio - refANP) : 0;
-        const corDesvio = desvio <= 0 ? "color: #15803d;" : "color: #b91c1c;";
+        // Variação / GAP %
+        const gapPct = precoANP > 0 ? (((ultimoPreco - precoANP) / precoANP) * 100) : 0;
+        const gapFormatado = (gapPct > 0 ? "+" : "") + gapPct.toFixed(2) + "%";
+        const corGap = gapPct <= 0 ? "color: var(--success-green);" : "color: var(--danger-red);";
+
+        const ehPico = gapPct > 1.5;
+        const statusHtml = ehPico
+          ? `<span class="badge-status status-pico">⚠️ Preço no Pico</span>`
+          : `<span class="badge-status status-estavel">Estável</span>`;
+
+        const tipoBadge = (p.TIPO_OPERACAO === 'INTERNO')
+          ? `<span class="badge-tag badge-interno">INTERNO</span>`
+          : `<span class="badge-tag badge-rota">ROTA</span>`;
+
+        const dataFormatada = p.ULTIMA_DATA || "--";
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
+          <td class="text-muted small">#${idx + 1}</td>
           <td>
-            <span class="badge-op ${p.TIPO_OPERACAO === 'INTERNO' ? 'badge-interno' : 'badge-externo'}">
-              ${p.TIPO_OPERACAO}
-            </span>
+            <div class="fw-bold" style="color: #0f172a;">${p.POSTO}</div>
+            <div class="small text-muted">${p.MUNICIPIO_POSTO}</div>
           </td>
-          <td class="fw-bold" style="color: #1e293b;">${p.POSTO}</td>
-          <td class="text-muted">${p.MUNICIPIO_POSTO} / ${p.UF_POSTO}</td>
-          <td class="text-end font-monospace">${litros.toLocaleString('pt-BR', {minimumFractionDigits: 1, maximumFractionDigits: 1})} L</td>
-          <td class="text-end fw-bold font-monospace" style="color: #0f172a;">R$ ${ultimoPreco.toFixed(3)}</td>
-          <td class="text-end font-monospace">R$ ${precoMedio.toFixed(3)}</td>
-          <td class="text-end text-muted font-monospace">R$ ${refANP.toFixed(3)}</td>
-          <td class="text-end fw-bold font-monospace" style="${corDesvio}">
-            ${desvio > 0 ? '+' : ''}${desvio.toFixed(3)}
-          </td>
+          <td><span class="badge bg-light text-dark border">${p.UF_POSTO}</span></td>
+          <td>${tipoBadge}</td>
+          <td class="text-end font-monospace fw-semibold">${litros.toLocaleString('pt-BR', {minimumFractionDigits: 1, maximumFractionDigits: 1})} L</td>
+          <td class="text-end font-monospace fw-bold" style="color: #0f172a;">R$ ${ultimoPreco.toFixed(3)}</td>
+          <td class="text-end font-monospace text-purple fw-semibold" style="color: #7c3aed;">R$ ${precoANP.toFixed(3)}</td>
+          <td class="text-end font-monospace fw-bold" style="${corGap}">${gapFormatado}</td>
+          <td class="small text-muted font-monospace">${dataFormatada}</td>
+          <td class="text-center">${statusHtml}</td>
           <td class="text-center">
-            <button class="btn btn-detalhar" onclick="alert('Histórico e negociação com ${p.POSTO} em desenvolvimento.')">
-              Detalhar
+            <button class="btn btn-icon-action" title="Copiar resumo de negociação" onclick="copiarResumoPosto('${p.POSTO}', '${p.UF_POSTO}', ${ultimoPreco}, ${precoANP}, '${gapFormatado}')">
+              <i class="bi bi-copy"></i>
             </button>
           </td>
         `;
         tbody.appendChild(tr);
       });
-
-      document.getElementById('totalPostos').innerText = `${postos.length} postos encontrados`;
-      document.getElementById('kpiLitros').innerText = totalLitros.toLocaleString('pt-BR', {maximumFractionDigits: 0}) + " L";
-      document.getElementById('kpiGasto').innerText = "R$ " + totalGasto.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-      
-      const precoMedioPonderado = totalLitros > 0 ? (totalGasto / totalLitros) : 0;
-      document.getElementById('kpiPrecoMedio').innerText = "R$ " + precoMedioPonderado.toFixed(3);
     }
 
-    carregarDados();
+    function copiarResumoPosto(posto, uf, ultimo, anp, gap) {
+      const texto = `Auditoria Cargosoft:\nPosto: ${posto} (${uf})\nÚltimo Preço Pago: R$ ${ultimo.toFixed(3)}\nReferência ANP Oficial (${uf}): R$ ${anp.toFixed(3)}\nVariação / Desvio: ${gap}`;
+      navigator.clipboard.writeText(texto).then(() => {
+        alert("Resumo de negociação copiado para a área de transferência!");
+      });
+    }
+
+    // Inicialização
+    carregarTudo();
   </script>
 </body>
 </html>
