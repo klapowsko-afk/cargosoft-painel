@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cargosoft - Gestão de Diesel S10</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; }
+    .card { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; margin-bottom: 20px; color: #f8fafc; }
+    .card-header { background-color: #1e293b; border-bottom: 1px solid #334155; font-weight: 600; font-size: 1.1rem; }
+    .badge-interno { background-color: #059669; color: #fff; }
+    .badge-externo { background-color: #3b82f6; color: #fff; }
+    .table { color: #f8fafc; margin-bottom: 0; }
+    .table thead th { border-bottom: 2px solid #334155; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .table td { border-bottom: 1px solid #334155; vertical-align: middle; font-size: 0.95rem; }
+    .table-hover tbody tr:hover { background-color: #273549; }
+    .btn-action { padding: 4px 10px; font-size: 0.85rem; border-radius: 6px; }
+    .stat-val { font-size: 1.6rem; font-weight: bold; }
+    .stat-label { font-size: 0.85rem; color: #94a3b8; }
+  </style>
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDT2fbjOk1TvkzJhiw_Wm5Xf9sIO1WH-PA",
+      authDomain: "cargosoft-diesel.firebaseapp.com",
+      projectId: "cargosoft-diesel",
+      storageBucket: "cargosoft-diesel.firebasestorage.app",
+      messagingSenderId: "403028241165",
+      appId: "1:403028241165:web:586dba34713ed7c63b9e44"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db;
+    window.firestoreTools = { collection, getDocs, doc, setDoc };
+  </script>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h3 class="mb-1 text-white">Torre de Gestão de Abastecimento - Diesel S10</h3>
+        <p class="text-secondary mb-0">Cargosoft Transportes | Benchmark ANP vs KMM Datalake (2026)</p>
+      </div>
+      <div>
+        <button id="btnAtualizar" class="btn btn-primary" onclick="carregarDados()">Atualizar Dados</button>
+      </div>
+    </div>
+
+    <!-- CARDS DE RESUMO -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card p-3">
+          <div class="stat-label">VOLUME 30 DIAS (LITROS)</div>
+          <div class="stat-val text-info" id="kpiLitros">Carregando...</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card p-3">
+          <div class="stat-label">GASTO TOTAL 30 DIAS</div>
+          <div class="stat-val text-warning" id="kpiGasto">Carregando...</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card p-3">
+          <div class="stat-label">PREÇO MÉDIO GERAL (S10)</div>
+          <div class="stat-val text-success" id="kpiPrecoMedio">Carregando...</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card p-3">
+          <div class="stat-label">BENCHMARK ANP MÉDIO</div>
+          <div class="stat-val text-light" id="kpiANP">R$ 6,000</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABELA DE ABASTECIMENTOS POR POSTO -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Monitoramento por Posto & Comparativo ANP</span>
+        <span class="badge bg-secondary" id="totalPostos">0 postos ativos</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Operação</th>
+              <th>Posto</th>
+              <th>Cidade / UF</th>
+              <th class="text-end">Litros (30d)</th>
+              <th class="text-end">Último Preço</th>
+              <th class="text-end">Preço Médio</th>
+              <th class="text-end">Ref. ANP (UF)</th>
+              <th class="text-end">Desvio (R$)</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaPostosCorpo">
+            <tr>
+              <td colspan="9" class="text-center py-4 text-secondary">Clique em "Atualizar Dados" para sincronizar com o KMM.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const WORKER_URL = "https://api-abastecimentos.klapowsko.workers.dev";
+
+    async function carregarDados() {
+      const btn = document.getElementById('btnAtualizar');
+      btn.innerText = "Sincronizando...";
+      btn.disabled = true;
+
+      try {
+        const resp = await fetch(WORKER_URL);
+        const json = await resp.json();
+
+        if (json.status === "sucesso") {
+          renderizarTabela(json.dados);
+        } else {
+          alert("Erro ao puxar dados do KMM: " + (json.mensagem || "Verifique o Worker"));
+        }
+      } catch (err) {
+        alert("Erro de conexão com o Cloudflare Worker: " + err.message);
+      } finally {
+        btn.innerText = "Atualizar Dados";
+        btn.disabled = false;
+      }
+    }
+
+    function renderizarTabela(postos) {
+      const tbody = document.getElementById('tabelaPostosCorpo');
+      tbody.innerHTML = "";
+
+      let totalLitros = 0;
+      let totalGasto = 0;
+
+      postos.forEach(p => {
+        const litros = parseFloat(p.LITROS_ULTIMOS_30D || 0);
+        const gasto = parseFloat(p.VALOR_TOTAL_PAGO || 0);
+        const precoMedio = parseFloat(p.PRECO_MEDIO_LITRO || 0);
+        const ultimoPreco = parseFloat(p.ULTIMO_PRECO_PAGO || 0);
+        const uf = p.UF_POSTO || 'PR';
+
+        totalLitros += litros;
+        totalGasto += gasto;
+
+        // Referência ANP Paraná e outras UFs
+        const refANP = (p.TIPO_OPERACAO === 'INTERNO') ? 6.000 : 6.350;
+        const desvio = precoMedio > 0 ? (precoMedio - refANP) : 0;
+        const corDesvio = desvio <= 0 ? "text-success" : "text-danger";
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span class="badge ${p.TIPO_OPERACAO === 'INTERNO' ? 'badge-interno' : 'badge-externo'}">${p.TIPO_OPERACAO}</span></td>
+          <td class="fw-bold">${p.POSTO}</td>
+          <td>${p.MUNICIPIO_POSTO} / ${p.UF_POSTO}</td>
+          <td class="text-end">${litros.toLocaleString('pt-BR', {minimumFractionDigits: 1})} L</td>
+          <td class="text-end fw-semibold">R$ ${ultimoPreco.toFixed(3)}</td>
+          <td class="text-end">R$ ${precoMedio.toFixed(3)}</td>
+          <td class="text-end text-secondary">R$ ${refANP.toFixed(3)}</td>
+          <td class="text-end fw-bold ${corDesvio}">${desvio > 0 ? '+' : ''}${desvio.toFixed(3)}</td>
+          <td class="text-center">
+            <button class="btn btn-outline-light btn-action" onclick="alert('Histórico e negociação com ${p.POSTO} em desenvolvimento.')">Detalhar</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('totalPostos').innerText = `${postos.length} postos encontrados`;
+      document.getElementById('kpiLitros').innerText = totalLitros.toLocaleString('pt-BR', {maximumFractionDigits: 0}) + " L";
+      document.getElementById('kpiGasto').innerText = "R$ " + totalGasto.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      const medioGeral = totalLitros > 0 ? (totalGasto / totalLitros) : 0;
+      document.getElementById('kpiPrecoMedio').innerText = "R$ " + medioGeral.toFixed(3);
+    }
+
+    // Auto-carregar ao abrir
+    window.onload = carregarDados;
+  </script>
+</body>
+</html>
