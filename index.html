@@ -5,232 +5,314 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cargosoft - Gestão de Diesel S10</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <style>
     :root {
-      --bg-dark: #0b0f19;
-      --card-bg: #111827;
-      --border-color: #1f293d;
-      --neon-cyan: #06b6d4;
-      --neon-amber: #f59e0b;
-      --neon-green: #10b981;
-      --neon-purple: #8b5cf6;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --cargosoft-green: #1c483a;
+      --cargosoft-lightgreen: #257d4c;
+      --cargosoft-yellow: #f59e0b;
+      --bg-page: #f4f6f9;
+      --text-dark: #1e293b;
+      --text-muted: #64748b;
+      --card-border: #e2e8f0;
     }
+
     body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-page);
+      background-image: url('fundo.png');
+      background-repeat: no-repeat;
+      background-position: top right;
+      background-size: 550px auto;
+      color: var(--text-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       padding: 24px;
       margin: 0;
+      min-height: 100vh;
+    }
+
+    /* TOPO E CABEÇALHO */
+    .header-bar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    }
+    .brand-logo-cargo {
+      height: 44px;
+      width: auto;
+      object-fit: contain;
+    }
+    .brand-logo-voctt {
+      height: 40px;
+      width: auto;
+      border-radius: 50%;
+      border: 2px solid #e2e8f0;
     }
     .header-title {
+      font-size: 1.4rem;
       font-weight: 800;
+      color: var(--cargosoft-green);
+      margin: 0;
       letter-spacing: -0.02em;
-      background: linear-gradient(90deg, #38bdf8, #818cf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
     }
-    /* CARDS NEON COM BRILHO */
-    .card-neon {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
-      padding: 20px;
+    .header-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin: 0;
+      font-weight: 500;
+    }
+
+    /* CARDS DE INDICADORES (KPIS) */
+    .card-kpi {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
       position: relative;
       overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-      transition: all 0.25s ease;
+      transition: all 0.2s ease;
     }
-    .card-neon:hover {
-      transform: translateY(-3px);
+    .card-kpi:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
     }
-    .card-neon-cyan { border-top: 3px solid var(--neon-cyan); box-shadow: 0 0 15px rgba(6, 182, 212, 0.15); }
-    .card-neon-amber { border-top: 3px solid var(--neon-amber); box-shadow: 0 0 15px rgba(245, 158, 11, 0.15); }
-    .card-neon-green { border-top: 3px solid var(--neon-green); box-shadow: 0 0 15px rgba(16, 185, 129, 0.15); }
-    .card-neon-purple { border-top: 3px solid var(--neon-purple); box-shadow: 0 0 15px rgba(139, 92, 246, 0.15); }
+    .card-kpi::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+    }
+    .card-kpi-green::before { background-color: var(--cargosoft-lightgreen); }
+    .card-kpi-yellow::before { background-color: var(--cargosoft-yellow); }
+    .card-kpi-dark::before { background-color: var(--cargosoft-green); }
+    .card-kpi-blue::before { background-color: #2563eb; }
 
     .stat-label {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
     }
     .stat-val {
-      font-size: 1.85rem;
+      font-size: 1.7rem;
       font-weight: 800;
+      color: var(--text-dark);
       letter-spacing: -0.02em;
+      line-height: 1.2;
     }
 
-    /* PAINEL E TABELA */
-    .panel-box {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
+    /* PAINEL E TABELA CLARA */
+    .panel-card {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
       border-radius: 14px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
       overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
     .panel-header {
-      padding: 18px 24px;
-      background: #141d30;
-      border-bottom: 1px solid var(--border-color);
+      padding: 16px 24px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--card-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .table-custom {
-      margin-bottom: 0;
-      color: var(--text-main);
-      border-collapse: separate;
-      border-spacing: 0;
+    .panel-header-title {
+      font-weight: 700;
+      color: var(--cargosoft-green);
+      font-size: 1.05rem;
     }
-    .table-custom thead th {
-      background-color: #0d1424;
-      color: #64748b;
-      font-size: 0.75rem;
+
+    .table-cargosoft {
+      margin-bottom: 0;
+      color: var(--text-dark);
+    }
+    .table-cargosoft thead th {
+      background-color: #f1f5f9;
+      color: var(--text-muted);
+      font-size: 0.73rem;
       text-transform: uppercase;
       font-weight: 700;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.05em;
       padding: 14px 18px;
-      border-bottom: 1px solid var(--border-color);
+      border-bottom: 2px solid var(--card-border);
       border-top: none;
     }
-    .table-custom tbody tr {
-      background-color: transparent;
+    .table-cargosoft tbody tr {
+      background-color: #ffffff;
       transition: background-color 0.15s;
     }
-    .table-custom tbody tr:hover {
-      background-color: #1a253c;
+    .table-cargosoft tbody tr:hover {
+      background-color: #f8fafc;
     }
-    .table-custom td {
+    .table-cargosoft td {
       padding: 14px 18px;
-      border-bottom: 1px solid var(--border-color);
+      border-bottom: 1px solid #f1f5f9;
       vertical-align: middle;
       font-size: 0.92rem;
     }
+
+    /* BADGES */
     .badge-op {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 700;
-      letter-spacing: 0.05em;
-      padding: 5px 10px;
+      padding: 4px 8px;
       border-radius: 6px;
       display: inline-block;
     }
     .badge-interno {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.4);
+      background-color: #e8f5e9;
+      color: #1b5e20;
+      border: 1px solid #c8e6c9;
     }
     .badge-externo {
-      background: rgba(59, 130, 246, 0.15);
-      color: #60a5fa;
-      border: 1px solid rgba(59, 130, 246, 0.4);
+      background-color: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #dbeafe;
+    }
+
+    /* BOTÕES */
+    .btn-sync {
+      background: var(--cargosoft-green);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.88rem;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .btn-sync:hover {
+      background: #14352a;
+      color: #ffffff;
     }
     .btn-detalhar {
-      background: #1e293b;
-      color: #cbd5e1;
-      border: 1px solid #334155;
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: 5px 14px;
-      border-radius: 8px;
+      background: #f1f5f9;
+      color: var(--cargosoft-green);
+      border: 1px solid #cbd5e1;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 6px;
       transition: all 0.2s;
     }
     .btn-detalhar:hover {
-      background: #334155;
-      color: #fff;
+      background: var(--cargosoft-green);
+      color: #ffffff;
+      border-color: var(--cargosoft-green);
     }
-    .btn-sync {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-      color: #fff;
-      font-weight: 600;
-      font-size: 0.9rem;
-      border: none;
-      padding: 9px 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 15px rgba(37, 99, 235, 0.3);
-    }
-    .btn-sync:hover {
-      background: linear-gradient(135deg, #1d4ed8, #1e40af);
-      color: #fff;
+
+    /* RODAPÉ VOCTT */
+    .footer-credits {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 4px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 16px;
     }
   </style>
 </head>
 <body>
   <div class="container-fluid px-0">
-    <!-- TOPO -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-      <div>
-        <h3 class="header-title mb-1">Torre de Gestão de Abastecimento - Diesel S10</h3>
-        <p class="text-secondary mb-0 small">Cargosoft Transportes | Monitoramento Estratégico & Benchmark ANP</p>
+    
+    <!-- CABEÇALHO CARGOSOFT + VOCTT -->
+    <div class="header-bar d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <img src="logo_cargo_verde.png" alt="Cargosoft" class="brand-logo-cargo">
+        <div style="border-left: 2px solid #e2e8f0; height: 36px; margin: 0 4px;"></div>
+        <div>
+          <h1 class="header-title">Torre de Gestão de Abastecimento - Diesel S10</h1>
+          <p class="header-subtitle">Monitoramento Estratégico de Frota & Benchmark ANP vs KMM</p>
+        </div>
       </div>
-      <div>
-        <button id="btnAtualizar" class="btn btn-sync" onclick="carregarDados()">Atualizar Dados</button>
+      <div class="d-flex align-items-center gap-3">
+        <button id="btnAtualizar" class="btn btn-sync shadow-sm" onclick="carregarDados()">
+          <i class="bi bi-arrow-repeat me-1"></i> Atualizar Dados
+        </button>
+        <img src="logo_voctt.png" alt="Desenvolvido por VOCTT" class="brand-logo-voctt" title="Consultoria e Inteligência de Dados - VOCTT">
       </div>
     </div>
 
-    <!-- CARDS DE RESUMO NEON -->
+    <!-- CARDS DE RESUMO (KPIS) -->
     <div class="row g-3 mb-4">
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-neon card-neon-cyan">
-          <div class="stat-label">VOLUME 30 DIAS (LITROS)</div>
-          <div class="stat-val" style="color: var(--neon-cyan);" id="kpiLitros">--</div>
+        <div class="card-kpi card-kpi-blue">
+          <div class="stat-label">Volume 30 Dias (Litros)</div>
+          <div class="stat-val text-primary" id="kpiLitros">Carregando...</div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-neon card-neon-amber">
-          <div class="stat-label">GASTO TOTAL 30 DIAS</div>
-          <div class="stat-val" style="color: var(--neon-amber);" id="kpiGasto">--</div>
+        <div class="card-kpi card-kpi-yellow">
+          <div class="stat-label">Gasto Total 30 Dias</div>
+          <div class="stat-val" style="color: #b45309;" id="kpiGasto">Carregando...</div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-neon card-neon-green">
-          <div class="stat-label">PREÇO MÉDIO GERAL (S10)</div>
-          <div class="stat-val" style="color: var(--neon-green);" id="kpiPrecoMedio">--</div>
+        <div class="card-kpi card-kpi-green">
+          <div class="stat-label">Preço Médio Geral (S10)</div>
+          <div class="stat-val" style="color: var(--cargosoft-lightgreen);" id="kpiPrecoMedio">Carregando...</div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-neon card-neon-purple">
-          <div class="stat-label">BENCHMARK ANP MÉDIO</div>
-          <div class="stat-val" style="color: #c084fc;" id="kpiANP">R$ 6,000</div>
+        <div class="card-kpi card-kpi-dark">
+          <div class="stat-label">Benchmark ANP Médio</div>
+          <div class="stat-val" style="color: var(--cargosoft-green);" id="kpiANP">R$ 6,000</div>
         </div>
       </div>
     </div>
 
-    <!-- TABELA PRINCIPAL -->
-    <div class="panel-box">
+    <!-- PAINEL / TABELA DE POSTOS -->
+    <div class="panel-card">
       <div class="panel-header">
-        <span class="fw-bold text-white">Monitoramento por Posto & Comparativo ANP</span>
-        <span class="badge bg-dark border border-secondary text-light px-3 py-2 rounded-pill" id="totalPostos">Buscando dados...</span>
+        <span class="panel-header-title">Monitoramento por Posto & Comparativo com Médias de Referência</span>
+        <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill font-monospace" id="totalPostos">0 postos encontrados</span>
       </div>
       <div class="table-responsive">
-        <table class="table table-custom align-middle">
+        <table class="table table-cargosoft align-middle">
           <thead>
             <tr>
-              <th style="width: 110px;">Operação</th>
+              <th style="width: 100px;">Operação</th>
               <th>Posto</th>
               <th>Cidade / UF</th>
               <th class="text-end">Litros (30d)</th>
               <th class="text-end">Último Preço</th>
               <th class="text-end">Preço Médio</th>
-              <th class="text-end">Ref. ANP</th>
+              <th class="text-end">Ref. ANP (UF)</th>
               <th class="text-end">Desvio (R$)</th>
-              <th class="text-center" style="width: 100px;">Ações</th>
+              <th class="text-center" style="width: 90px;">Ações</th>
             </tr>
           </thead>
           <tbody id="tabelaPostosCorpo">
             <tr>
-              <td colspan="9" class="text-center py-5 text-secondary">
-                <div class="spinner-border spinner-border-sm text-info me-2" role="status"></div>
-                Carregando dados operacionais do KMM...
+              <td colspan="9" class="text-center py-5 text-muted">
+                <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
+                Sincronizando com KMM Datalake...
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+    <!-- RODAPÉ DE CRÉDITOS -->
+    <div class="footer-credits">
+      <span>Cargosoft Transportes &copy; 2026 - Gestão e Inteligência de Combustível</span>
+      <span class="d-flex align-items-center gap-2">
+        Painel desenvolvido por <strong>VOCTT Inteligência & Consultoria de Frotas</strong>
+        <img src="logo_voctt.png" alt="VOCTT" style="height: 20px; width: 20px; border-radius: 50%;">
+      </span>
+    </div>
+
   </div>
 
   <script>
@@ -238,7 +320,7 @@
 
     async function carregarDados() {
       const btn = document.getElementById('btnAtualizar');
-      btn.innerText = "Carregando...";
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Atualizando...`;
       btn.disabled = true;
 
       try {
@@ -249,7 +331,7 @@
           renderizarTabela(json.dados);
         } else {
           document.getElementById('tabelaPostosCorpo').innerHTML = `
-            <tr><td colspan="9" class="text-center py-4 text-danger">Erro nos dados: ${json.mensagem || 'Resposta inválida do servidor'}</td></tr>
+            <tr><td colspan="9" class="text-center py-4 text-danger">Erro nos dados: ${json.mensagem || 'Resposta inválida'}</td></tr>
           `;
         }
       } catch (err) {
@@ -257,7 +339,7 @@
           <tr><td colspan="9" class="text-center py-4 text-warning">Erro ao consultar API: ${err.message}. Clique em "Atualizar Dados".</td></tr>
         `;
       } finally {
-        btn.innerText = "Atualizar Dados";
+        btn.innerHTML = `<i class="bi bi-arrow-repeat me-1"></i> Atualizar Dados`;
         btn.disabled = false;
       }
     }
@@ -281,9 +363,10 @@
         totalLitros += litros;
         totalGasto += gasto;
 
+        // Referência ANP (Interno vs Externo)
         const refANP = (p.TIPO_OPERACAO === 'INTERNO') ? 6.000 : 6.350;
         const desvio = precoMedio > 0 ? (precoMedio - refANP) : 0;
-        const corDesvio = desvio <= 0 ? "color: #10b981;" : "color: #ef4444;";
+        const corDesvio = desvio <= 0 ? "color: #15803d;" : "color: #b91c1c;";
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -292,12 +375,12 @@
               ${p.TIPO_OPERACAO}
             </span>
           </td>
-          <td class="fw-bold text-white">${p.POSTO}</td>
-          <td class="text-secondary">${p.MUNICIPIO_POSTO} / ${p.UF_POSTO}</td>
-          <td class="text-end font-monospace text-light">${litros.toLocaleString('pt-BR', {minimumFractionDigits: 1, maximumFractionDigits: 1})} L</td>
-          <td class="text-end fw-bold font-monospace text-white">R$ ${ultimoPreco.toFixed(3)}</td>
-          <td class="text-end font-monospace text-light">R$ ${precoMedio.toFixed(3)}</td>
-          <td class="text-end text-secondary font-monospace">R$ ${refANP.toFixed(3)}</td>
+          <td class="fw-bold" style="color: #1e293b;">${p.POSTO}</td>
+          <td class="text-muted">${p.MUNICIPIO_POSTO} / ${p.UF_POSTO}</td>
+          <td class="text-end font-monospace">${litros.toLocaleString('pt-BR', {minimumFractionDigits: 1, maximumFractionDigits: 1})} L</td>
+          <td class="text-end fw-bold font-monospace" style="color: #0f172a;">R$ ${ultimoPreco.toFixed(3)}</td>
+          <td class="text-end font-monospace">R$ ${precoMedio.toFixed(3)}</td>
+          <td class="text-end text-muted font-monospace">R$ ${refANP.toFixed(3)}</td>
           <td class="text-end fw-bold font-monospace" style="${corDesvio}">
             ${desvio > 0 ? '+' : ''}${desvio.toFixed(3)}
           </td>
@@ -318,7 +401,6 @@
       document.getElementById('kpiPrecoMedio').innerText = "R$ " + precoMedioPonderado.toFixed(3);
     }
 
-    // Dispara carregamento
     carregarDados();
   </script>
 </body>
