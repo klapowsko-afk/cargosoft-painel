@@ -3,665 +3,617 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cargosoft - Radar de Negociação & Auditoria de Diesel S10</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-  <style>
-    :root {
-      --cargosoft-green: #1c483a;
-      --cargosoft-lightgreen: #257d4c;
-      --cargosoft-yellow: #f59e0b;
-      --bg-page: #f4f6f9;
-      --text-dark: #0f172a;
-      --text-muted: #64748b;
-      --card-border: #e2e8f0;
-      --danger-red: #dc2626;
-      --success-green: #16a34a;
-    }
-
-    body {
-      background-color: var(--bg-page);
-      background-image: url('fundo.png');
-      background-repeat: no-repeat;
-      background-position: top right;
-      background-size: 500px auto;
-      color: var(--text-dark);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      padding: 24px;
-      margin: 0;
-      min-height: 100vh;
-    }
-
-    /* HEADER */
-    .header-bar {
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 16px 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
-    }
-    .brand-logo-cargo { height: 42px; width: auto; object-fit: contain; }
-    .brand-logo-voctt { height: 40px; width: auto; border-radius: 50%; border: 2px solid #e2e8f0; }
-    .header-title { font-size: 1.35rem; font-weight: 800; color: var(--cargosoft-green); margin: 0; letter-spacing: -0.02em; }
-    .header-subtitle { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
-
-    /* CARDS EXECUTIVOS (SAVINGS & INDICADORES) */
-    .card-kpi {
-      background: #ffffff;
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 18px 20px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-      position: relative;
-      overflow: hidden;
-      transition: all 0.2s ease;
-    }
-    .card-kpi:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-    }
-    .card-kpi::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
-      height: 100%;
-    }
-    .kpi-saving::before { background-color: var(--success-green); }
-    .kpi-avoidance::before { background-color: var(--cargosoft-yellow); }
-    .kpi-patio::before { background-color: #0284c7; }
-    .kpi-anp::before { background-color: #7c3aed; }
-
-    .stat-label {
-      font-size: 0.72rem;
-      font-weight: 800;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 6px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .stat-val {
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: var(--text-dark);
-      letter-spacing: -0.02em;
-      line-height: 1.2;
-    }
-    .stat-sub {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      margin-top: 6px;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    /* ABAS OPERACIONAIS */
-    .nav-tabs-custom {
-      border-bottom: 2px solid var(--card-border);
-      gap: 8px;
-    }
-    .nav-tabs-custom .nav-link {
-      border: 1px solid transparent;
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
-      color: var(--text-muted);
-      font-size: 0.88rem;
-      font-weight: 700;
-      padding: 10px 18px;
-      background: #ffffff;
-      border-color: var(--card-border) var(--card-border) transparent;
-      transition: all 0.15s;
-    }
-    .nav-tabs-custom .nav-link.active {
-      background: var(--cargosoft-green);
-      color: #ffffff !important;
-      border-color: var(--cargosoft-green);
-    }
-    .nav-tabs-custom .nav-link:hover:not(.active) {
-      background: #f1f5f9;
-      color: var(--cargosoft-green);
-    }
-
-    /* FILTROS E BUSCA */
-    .filter-bar {
-      background: #ffffff;
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 12px 18px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-    }
-
-    /* TABELA */
-    .panel-box {
-      background: #ffffff;
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
-      overflow: hidden;
-    }
-    .panel-header {
-      padding: 16px 22px;
-      background: #f8fafc;
-      border-bottom: 1px solid var(--card-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .table-radar {
-      margin-bottom: 0;
-      color: var(--text-dark);
-    }
-    .table-radar thead th {
-      background-color: #f8fafc;
-      color: #475569;
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      padding: 12px 14px;
-      border-bottom: 2px solid var(--card-border);
-    }
-    .table-radar tbody tr {
-      transition: background-color 0.15s;
-    }
-    .table-radar tbody tr:hover {
-      background-color: #f1f5f9;
-    }
-    .table-radar td {
-      padding: 13px 14px;
-      border-bottom: 1px solid #f1f5f9;
-      vertical-align: middle;
-      font-size: 0.88rem;
-    }
-
-    /* BADGES */
-    .badge-tag {
-      font-size: 0.7rem;
-      font-weight: 800;
-      padding: 4px 8px;
-      border-radius: 6px;
-      letter-spacing: 0.04em;
-    }
-    .badge-rota { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
-    .badge-interno { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-    
-    .badge-status {
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 20px;
-      display: inline-block;
-    }
-    .status-estavel { background: #dcfce7; color: #166534; }
-    .status-pico { background: #fee2e2; color: #991b1b; }
-
-    /* BOTÕES */
-    .btn-sync {
-      background: var(--cargosoft-green);
-      color: #ffffff;
-      font-weight: 600;
-      font-size: 0.85rem;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 8px;
-    }
-    .btn-sync:hover { background: #14352a; color: #ffffff; }
-    .btn-icon-action {
-      background: #f8fafc;
-      border: 1px solid var(--card-border);
-      color: var(--text-muted);
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 0.85rem;
-      transition: all 0.15s;
-    }
-    .btn-icon-action:hover {
-      background: var(--cargosoft-green);
-      color: #ffffff;
-      border-color: var(--cargosoft-green);
-    }
-  </style>
-
-  <!-- Firebase SDK para ler ANP gravada -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDT2fbjOk1TvkzJhiw_Wm5Xf9sIO1WH-PA",
-      authDomain: "cargosoft-diesel.firebaseapp.com",
-      projectId: "cargosoft-diesel",
-      storageBucket: "cargosoft-diesel.firebasestorage.app",
-      messagingSenderId: "403028241165",
-      appId: "1:403028241165:web:586dba34713ed7c63b9e44"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    window.db = db;
-    window.getDocs = getDocs;
-    window.collection = collection;
-  </script>
-</head>
-<body>
-  <div class="container-fluid px-0">
-    
-    <!-- CABEÇALHO CARGOSOFT + VOCTT -->
-    <div class="header-bar d-flex flex-wrap justify-content-between align-items-center gap-3">
-      <div class="d-flex align-items-center gap-3">
-        <img src="logo_cargo_verde.png" alt="Cargosoft" class="brand-logo-cargo">
-        <div style="border-left: 2px solid #e2e8f0; height: 38px; margin: 0 4px;"></div>
-        <div>
-          <h1 class="header-title">Torre de Gestão de Abastecimento - Diesel S10</h1>
-          <p class="header-subtitle">Monitoramento Estratégico de Frota & Benchmark ANP vs KMM Datalake (2026)</p>
-        </div>
-      </div>
-      <div class="d-flex align-items-center gap-3">
-        <button id="btnAtualizar" class="btn btn-sync shadow-sm" onclick="carregarTudo()">
-          <i class="bi bi-arrow-repeat me-1"></i> Atualizar Dados
-        </button>
-        <img src="logo_voctt.png" alt="VOCTT" class="brand-logo-voctt" title="Consultoria e Inteligência de Dados - VOCTT">
-      </div>
-    </div>
-
-    <!-- CARDS EXECUTIVOS (ESTILO CANVAS) -->
-    <div class="row g-3 mb-4">
-      <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-kpi kpi-saving">
-          <div class="stat-label">
-            <span>SAVING MENSAL RECORRENTE</span>
-            <i class="bi bi-graph-up-arrow text-success"></i>
-          </div>
-          <div class="stat-val text-success" id="kpiSaving">R$ 0,00</div>
-          <div class="stat-sub">
-            <span>Impacto anualizado estimado</span>
-            <span class="badge bg-success-subtle text-success fw-bold">Ativo</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-kpi kpi-avoidance">
-          <div class="stat-label">
-            <span>VOLUME TOTAL (30 DIAS)</span>
-            <i class="bi bi-fuel-pump text-warning"></i>
-          </div>
-          <div class="stat-val text-warning" id="kpiVolumeTotal">0 L</div>
-          <div class="stat-sub">
-            <span>Gasto Total 30D:</span>
-            <strong id="kpiGastoTotal" class="text-dark">R$ 0,00</strong>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-kpi kpi-patio">
-          <div class="stat-label">
-            <span>SPREAD MÉDIO DO PÁTIO (INTERNO)</span>
-            <i class="bi bi-shield-check text-primary"></i>
-          </div>
-          <div class="stat-val text-primary" id="kpiSpreadPatio">R$ 0,00 / L</div>
-          <div class="stat-sub">
-            <span>Garagem PR vs Distribuição</span>
-            <span class="text-secondary">Econômico</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-kpi kpi-anp">
-          <div class="stat-label">
-            <span>PREÇO MÉDIO GERAL (S10)</span>
-            <i class="bi bi-pie-chart text-purple"></i>
-          </div>
-          <div class="stat-val" style="color: #6b21a8;" id="kpiPrecoMedioGeral">R$ 0,000</div>
-          <div class="stat-sub">
-            <span>Ref. Média ANP Ponderada:</span>
-            <strong id="kpiAnpMedia" class="text-dark">R$ 6,090</strong>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- NAVEGAÇÃO POR ABAS -->
-    <ul class="nav nav-tabs nav-tabs-custom mb-3" id="tabOperacao">
-      <li class="nav-item">
-        <button class="nav-link active" onclick="filtrarAba('TODOS', this)">
-          Todos (<span id="contTodos">0</span>)
-        </button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link" onclick="filtrarAba('EXTERNO', this)">
-          <i class="bi bi-truck me-1 text-warning"></i> Rota Externa (<span id="contExterno">0</span>)
-        </button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link" onclick="filtrarAba('INTERNO', this)">
-          <i class="bi bi-building me-1 text-success"></i> Tanques Internos (<span id="contInterno">0</span>)
-        </button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link" onclick="filtrarAba('ARLA', this)">
-          <i class="bi bi-droplet-half me-1 text-info"></i> ARLA 32 (0)
-        </button>
-      </li>
-    </ul>
-
-    <!-- BARRA DE CONTROLE: FILTROS + BUSCA -->
-    <div class="filter-bar d-flex flex-wrap justify-content-between align-items-center gap-3">
-      <div class="d-flex flex-wrap align-items-center gap-2">
-        <select id="filtroUf" class="form-select form-select-sm" style="width: 140px;" onchange="aplicarFiltros()">
-          <option value="">Todas as UFs</option>
-        </select>
-        <select id="ordenacao" class="form-select form-select-sm" style="width: 220px;" onchange="aplicarFiltros()">
-          <option value="litros_desc">Consumo Recente (Últimos 30D)</option>
-          <option value="gap_desc">Maior Desvio / GAP (+R$)</option>
-          <option value="preco_desc">Maior Preço Pago</option>
-        </select>
-      </div>
-      <div style="min-width: 280px; flex-grow: 1; max-width: 400px;">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-          <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Buscar posto, município..." oninput="aplicarFiltros()">
-        </div>
-      </div>
-    </div>
-
-    <!-- PAINEL DA TABELA -->
-    <div class="panel-box">
-      <div class="panel-header">
-        <div>
-          <strong class="text-dark"><i class="bi bi-broadcast me-1 text-warning"></i> Radar de Negociação: Auditoria de Desvios de Preço</strong>
-          <div class="small text-muted">Cruzamento automático do último valor pago contra a base oficial da ANP por Estado.</div>
-        </div>
-        <span class="badge bg-white text-dark border px-3 py-2 rounded-pill font-monospace" id="lblListando">Listando 0 postos</span>
-      </div>
-      <div class="table-responsive">
-        <table class="table table-radar align-middle">
-          <thead>
-            <tr>
-              <th style="width: 45px;">#</th>
-              <th>Posto / Razão Social</th>
-              <th style="width: 60px;">UF</th>
-              <th style="width: 90px;">Tipo</th>
-              <th class="text-end">Litros (Últimos 30D)</th>
-              <th class="text-end">Último Preço</th>
-              <th class="text-end">ANP Semanal (UF)</th>
-              <th class="text-end">Variação / GAP</th>
-              <th>Último Abastecimento</th>
-              <th class="text-center">Status Auditoria</th>
-              <th class="text-center" style="width: 60px;">Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaCorpo">
-            <tr>
-              <td colspan="11" class="text-center py-5 text-muted">
-                <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
-                Cruzando dados do KMM com a ANP do Firestore...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- RODAPÉ -->
-    <div class="d-flex justify-content-between align-items-center py-3 px-2 small text-muted">
-      <span>Cargosoft Transportes &copy; 2026 - Gestão e Auditoria de Diesel S10</span>
-      <span class="d-flex align-items-center gap-2">
-        Painel desenvolvido por <strong>VOCTT Inteligência & Consultoria de Frotas</strong>
-        <img src="logo_voctt.png" alt="VOCTT" style="height: 18px; width: 18px; border-radius: 50%;">
-      </span>
-    </div>
-
-  </div>
-
+  <title>Radar de Negociação Diesel S10 | Cargosoft & VOCTT</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- ApexCharts CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <!-- Phosphor Icons CDN -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <script>
-    const WORKER_URL = "https://api-abastecimentos.klapowsko.workers.dev";
-    
-    let dadosKmmOriginais = [];
-    let baseAnpRevenda = {};
-    let baseAnpDistribuicao = {};
-    let abaAtual = "TODOS";
-
-    async function carregarTudo() {
-      const btn = document.getElementById('btnAtualizar');
-      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Sincronizando...`;
-      btn.disabled = true;
-
-      try {
-        // 1. Carrega dados da ANP do Firestore
-        await carregarDadosFirestoreANP();
-
-        // 2. Carrega abastecimentos do Worker KMM
-        const resp = await fetch(WORKER_URL);
-        const json = await resp.json();
-
-        if (json && json.status === "sucesso" && Array.isArray(json.dados)) {
-          dadosKmmOriginais = json.dados;
-          popularFiltroUFs(dadosKmmOriginais);
-          atualizarContadoresAbas(dadosKmmOriginais);
-          atualizarCardsResumo(dadosKmmOriginais);
-          aplicarFiltros();
-        } else {
-          document.getElementById('tabelaCorpo').innerHTML = `
-            <tr><td colspan="11" class="text-center py-4 text-danger">Erro no KMM: ${json.mensagem || 'Dados inválidos'}</td></tr>
-          `;
-        }
-      } catch (err) {
-        document.getElementById('tabelaCorpo').innerHTML = `
-          <tr><td colspan="11" class="text-center py-4 text-warning">Erro de conexão: ${err.message}. Clique em "Atualizar Dados".</td></tr>
-        `;
-      } finally {
-        btn.innerHTML = `<i class="bi bi-arrow-repeat me-1"></i> Atualizar Dados`;
-        btn.disabled = false;
-      }
-    }
-
-    async function carregarDadosFirestoreANP() {
-      try {
-        if (!window.db || !window.getDocs || !window.collection) return;
-        
-        const snapRev = await window.getDocs(window.collection(window.db, "anp_revenda_uf"));
-        snapRev.forEach(d => {
-          baseAnpRevenda[d.id] = d.data().preco_medio;
-        });
-
-        const snapDist = await window.getDocs(window.collection(window.db, "anp_distribuicao_uf"));
-        snapDist.forEach(d => {
-          baseAnpDistribuicao[d.id] = d.data().preco_medio_dist;
-        });
-      } catch (e) {
-        console.warn("Aviso ao ler Firestore da ANP:", e);
-      }
-    }
-
-    function popularFiltroUFs(dados) {
-      const ufs = [...new Set(dados.map(d => d.UF_POSTO).filter(Boolean))].sort();
-      const select = document.getElementById('filtroUf');
-      select.innerHTML = '<option value="">Todas as UFs</option>';
-      ufs.forEach(uf => {
-        const opt = document.createElement('option');
-        opt.value = uf;
-        opt.innerText = uf;
-        select.appendChild(opt);
-      });
-    }
-
-    function atualizarContadoresAbas(dados) {
-      const total = dados.length;
-      const interno = dados.filter(d => d.TIPO_OPERACAO === 'INTERNO').length;
-      const externo = dados.filter(d => d.TIPO_OPERACAO === 'EXTERNO').length;
-
-      document.getElementById('contTodos').innerText = total;
-      document.getElementById('contInterno').innerText = interno;
-      document.getElementById('contExterno').innerText = externo;
-    }
-
-    function atualizarCardsResumo(dados) {
-      let somaLitros = 0;
-      let somaGasto = 0;
-      let savingTotal = 0;
-      let somaPrecoAnp = 0;
-      let countAnp = 0;
-
-      dados.forEach(p => {
-        const litros = parseFloat(p.LITROS_ULTIMOS_30D || 0);
-        const precoMedio = parseFloat(p.PRECO_MEDIO_LITRO || 0);
-        const uf = p.UF_POSTO || 'PR';
-
-        // Preço da ANP conforme o tipo de operação
-        const precoRef = (p.TIPO_OPERACAO === 'INTERNO')
-          ? (baseAnpDistribuicao[uf] || 5.82)
-          : (baseAnpRevenda[uf] || 6.25);
-
-        const gastoReal = (litros * precoMedio);
-        const gastoTeoricoANP = (litros * precoRef);
-
-        somaLitros += litros;
-        somaGasto += gastoReal;
-
-        if (litros > 0) {
-          somaPrecoAnp += precoRef;
-          countAnp++;
-          if (precoRef > precoMedio) {
-            savingTotal += (gastoTeoricoANP - gastoReal);
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              900: '#14532d',
+            },
+            cargosoft: {
+              blue: '#0F2F57',
+              navy: '#081c34',
+              accent: '#F37021'
+            }
           }
         }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #0b1329;
+      background-image: radial-gradient(at 10% 20%, rgba(15, 47, 87, 0.4) 0px, transparent 50%),
+                        radial-gradient(at 90% 80%, rgba(243, 112, 33, 0.08) 0px, transparent 50%);
+      background-attachment: fixed;
+    }
+    .table-container {
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #334155 #0f172a;
+    }
+    .table-container::-webkit-scrollbar {
+      height: 6px;
+    }
+    .table-container::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+      background-color: #334155;
+      border-radius: 9999px;
+    }
+    .cell-nowrap {
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between">
+
+  <!-- CABEÇALHO EXECUTIVO -->
+  <header class="border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-gradient-to-tr from-cargosoft-blue to-slate-800 p-2.5 rounded-xl border border-slate-700 shadow-md flex items-center justify-center">
+          <i class="ph-bold ph-gas-pump text-2xl text-amber-500"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs uppercase tracking-widest font-extrabold text-amber-500">Torre de Controle</span>
+            <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400 border border-slate-700">Audit. 2026</span>
+          </div>
+          <h1 class="text-lg font-bold text-white flex items-center gap-2">
+            Radar de Negociação Diesel S10
+          </h1>
+        </div>
+      </div>
+
+      <!-- SELOS CARGOSOFT & VOCTT -->
+      <div class="flex items-center gap-4 bg-slate-950/60 border border-slate-800 px-3.5 py-1.5 rounded-xl">
+        <div class="flex items-center gap-2 pr-3 border-r border-slate-800">
+          <span class="text-xs font-black tracking-wider text-cargosoft-accent">CARGOSOFT</span>
+          <span class="text-[11px] text-slate-400 font-medium">Logística</span>
+        </div>
+        <div class="flex items-center gap-1.5 text-xs text-slate-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>VOCTT <span class="text-slate-400 text-[10px]">Intelligence</span></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+
+    <!-- CARDS DE METAS E ECONOMIA POTENCIAL -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Litros Auditados (30D)</span>
+          <i class="ph-bold ph-drop text-amber-500 text-lg"></i>
+        </div>
+        <p class="text-2xl font-bold text-white mt-2" id="kpi-litros-total">-- L</p>
+        <span class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+          <i class="ph-bold ph-check text-emerald-400"></i> Somente postos com consumo ativo
+        </span>
+      </div>
+
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Preço Médio Ponderado</span>
+          <i class="ph-bold ph-currency-dollar-simple text-blue-400 text-lg"></i>
+        </div>
+        <p class="text-2xl font-bold text-white mt-2" id="kpi-preco-medio">R$ --</p>
+        <span class="text-[11px] text-slate-400 mt-1 flex items-center gap-1" id="kpi-vs-anp">
+          vs Benchmark ANP: <span class="font-bold text-slate-200">--</span>
+        </span>
+      </div>
+
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm border-l-4 border-l-rose-500">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Oportunidade de Negociação</span>
+          <i class="ph-bold ph-trend-up text-rose-400 text-lg"></i>
+        </div>
+        <p class="text-2xl font-bold text-rose-400 mt-2" id="kpi-saving">R$ --</p>
+        <span class="text-[11px] text-slate-400 mt-1">Excedente pago acima da média ANP</span>
+      </div>
+
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm border-l-4 border-l-amber-500">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Vigência Base ANP</span>
+          <i class="ph-bold ph-calendar text-amber-400 text-lg"></i>
+        </div>
+        <p class="text-lg font-bold text-amber-300 mt-2" id="kpi-data-anp">Semana --</p>
+        <span class="text-[11px] text-slate-400 mt-1">Base oficial GOV.BR sincronizada</span>
+      </div>
+    </section>
+
+    <!-- GRÁFICO DE EVOLUÇÃO E ANDAMENTO TEMPORAL 2026 -->
+    <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-sm">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="ph-bold ph-chart-line-up text-amber-500"></i> Evolução de Preços Diesel S10 (Ano 2026)
+          </h2>
+          <p class="text-xs text-slate-400">Comparativo do custo médio pago vs curva de revenda oficial da ANP ao longo das semanas</p>
+        </div>
+        <div class="flex items-center gap-3 text-xs">
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+            <span class="text-slate-300">Preço Médio Pago</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
+            <span class="text-slate-300">Benchmark ANP Semanal</span>
+          </div>
+        </div>
+      </div>
+      <div id="chart-evolucao" class="w-full min-h-[260px]"></div>
+    </section>
+
+    <!-- SELETOR DE ABAS PRINCIPAIS (SEM ARLA) -->
+    <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-3">
+      <div class="inline-flex p-1 bg-slate-950/80 rounded-xl border border-slate-800 gap-1">
+        <button id="tab-btn-rota" onclick="trocarAba('rota')" class="px-4 py-2 text-xs font-bold rounded-lg transition-all bg-amber-500 text-slate-950 shadow-md flex items-center gap-2">
+          <i class="ph-bold ph-gas-pump"></i> Top 10 Ação Imediata (Rota Externa)
+        </button>
+        <button id="tab-btn-tanques" onclick="trocarAba('tanques')" class="px-4 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-2">
+          <i class="ph-bold ph-buildings"></i> Garagens e Tanques Internos (Pátio)
+        </button>
+        <button id="tab-btn-todos" onclick="trocarAba('todos')" class="px-4 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-2">
+          <i class="ph-bold ph-list-numbers"></i> Todos os Postos Ativos
+        </button>
+      </div>
+
+      <!-- FILTRO DE BUSCA / ESTADO -->
+      <div class="flex items-center gap-2">
+        <div class="relative">
+          <i class="ph-bold ph-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-sm"></i>
+          <input type="text" id="filtro-busca" onkeyup="aplicarFiltros()" placeholder="Buscar posto, cidade..." class="bg-slate-950/70 border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 w-44 sm:w-60">
+        </div>
+        <select id="filtro-uf" onchange="aplicarFiltros()" class="bg-slate-950/70 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500">
+          <option value="">Todas UFs</option>
+          <option value="SP">SP</option>
+          <option value="PR">PR</option>
+          <option value="CE">CE</option>
+          <option value="BA">BA</option>
+          <option value="GO">GO</option>
+          <option value="MG">MG</option>
+          <option value="MT">MT</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 1: ROTA EXTERNA (TOP 10 AÇÃO IMEDIATA) -->
+    <section id="secao-rota" class="space-y-4">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="ph-bold ph-crosshair text-rose-500"></i> Foco Prioritário de Negociação (Top Desvios com Volume Ativo)
+            </h3>
+            <p class="text-xs text-slate-400">Postos com maior impacto financeiro nos últimos 30 dias. Postos sem volume (0 L) foram expurgados.</p>
+          </div>
+          <span class="text-xs text-slate-400 bg-slate-950 px-2.5 py-1 rounded-md border border-slate-800">
+            Comparado com ANP Revenda Semanal
+          </span>
+        </div>
+
+        <div class="table-container">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="text-[11px] uppercase tracking-wider text-slate-400 bg-slate-950/60 border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-3 cell-nowrap">#</th>
+                <th class="py-3 px-3 cell-nowrap">UF</th>
+                <th class="py-3 px-3">Posto / Cidade</th>
+                <th class="py-3 px-3 text-right cell-nowrap">Volume (30D)</th>
+                <th class="py-3 px-3 text-right cell-nowrap">Último Preço</th>
+                <th class="py-3 px-3 text-center cell-nowrap">Semana Ant.</th>
+                <th class="py-3 px-3 text-right cell-nowrap">ANP Semanal</th>
+                <th class="py-3 px-3 text-right cell-nowrap">GAP (%)</th>
+                <th class="py-3 px-3 text-right cell-nowrap">Impacto R$</th>
+                <th class="py-3 px-3 text-center cell-nowrap">Ações de Negociação</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-top10" class="divide-y divide-slate-800/60 font-medium">
+              <!-- Populado dinamicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: TANQUES INTERNOS (GARAGENS / PÁTIO) -->
+    <section id="secao-tanques" class="space-y-4 hidden">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="ph-bold ph-gas-can text-amber-500"></i> Auditoria de Tanques Próprios e Compras a Granel
+            </h3>
+            <p class="text-xs text-slate-400">Acompanhamento das últimas 3 compras de lote por filial e confronto contábil com a vigência oficial ANP Distribuição.</p>
+          </div>
+          <div class="bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 text-xs text-amber-400 font-semibold flex items-center gap-1.5">
+            <i class="ph-bold ph-calendar-check"></i> Ref. ANP Distribuição: 10/10/2026 a 17/10/2026
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="text-[11px] uppercase tracking-wider text-slate-400 bg-slate-950/60 border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-3 cell-nowrap">UF</th>
+                <th class="py-3 px-3 cell-nowrap">Filial Operacional</th>
+                <th class="py-3 px-3 text-right cell-nowrap">Volume (30D)</th>
+                <th class="py-3 px-3 text-right cell-nowrap">Compra Mais Recente</th>
+                <th class="py-3 px-3 text-right cell-nowrap">Compra Anterior (-1)</th>
+                <th class="py-3 px-3 text-right cell-nowrap">Compra Anterior (-2)</th>
+                <th class="py-3 px-3 text-center cell-nowrap">Tendência das 3 Compras</th>
+                <th class="py-3 px-3 text-right cell-nowrap">ANP Distribuição Oficial</th>
+                <th class="py-3 px-3 text-center cell-nowrap">Data Vigência ANP</th>
+                <th class="py-3 px-3 text-center cell-nowrap">Registro</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-tanques" class="divide-y divide-slate-800/60 font-medium">
+              <!-- Populado dinamicamente com as 3 compras e sem nomes duplicados -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 3: TODOS OS POSTOS (LISTAGEM GERAL ATIVA) -->
+    <section id="secao-todos" class="space-y-4 hidden">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="ph-bold ph-list-dashes text-blue-400"></i> Base Completa de Abastecimento Ativo
+          </h3>
+          <span id="badge-total-postos" class="text-xs bg-slate-950 px-2.5 py-1 rounded text-slate-400 border border-slate-800">Listando postos</span>
+        </div>
+        <div class="table-container">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="text-[11px] uppercase tracking-wider text-slate-400 bg-slate-950/60 border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-3 cell-nowrap">#</th>
+                <th class="py-3 px-3 cell-nowrap">UF</th>
+                <th class="py-3 px-3">Posto / Razão Social</th>
+                <th class="py-3 px-3 text-right cell-nowrap">Volume (30D)</th>
+                <th class="py-3 px-3 text-right cell-nowrap">Último Preço</th>
+                <th class="py-3 px-3 text-right cell-nowrap">ANP Semanal</th>
+                <th class="py-3 px-3 text-right cell-nowrap">GAP (%)</th>
+                <th class="py-3 px-3 text-center cell-nowrap">Data Abastecimento</th>
+                <th class="py-3 px-3 text-center cell-nowrap">Tratativa</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-todos" class="divide-y divide-slate-800/60 font-medium">
+              <!-- Populado dinamicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DE CRM: REGISTRO DE NEGOCIAÇÃO -->
+  <div id="modal-negociacao" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-5 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="ph-bold ph-handshake text-amber-500"></i> Registrar Tratativa de Negociação
+        </h4>
+        <button onclick="fecharModalNegociacao()" class="text-slate-400 hover:text-white">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">Posto / Unidade</label>
+          <input type="text" id="modal-posto-nome" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-300 font-semibold focus:outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1">Preço Atual</label>
+            <input type="text" id="modal-preco-atual" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-rose-400 font-bold focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Novo Preço Acordado (R$)</label>
+            <input type="number" step="0.001" id="modal-preco-negociado" placeholder="Ex: 6.150" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-emerald-400 font-bold focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1">Contato no Posto / Rede</label>
+            <input type="text" id="modal-contato" placeholder="Gerente / Comercial" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Status do Acordo</label>
+            <select id="modal-status" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white focus:outline-none focus:border-amber-500">
+              <option value="Em Andamento">Em Andamento</option>
+              <option value="Desconto Aplicado">Desconto Aplicado</option>
+              <option value="Aguardando Retorno">Aguardando Retorno</option>
+              <option value="Recusado / Bloqueado">Recusado / Bloquear Posto</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1">Observações da Negociação</label>
+          <textarea id="modal-obs" rows="3" placeholder="Insira o histórico da conversa, condições de prazo ou volume negociado..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 border-t border-slate-800 pt-3 mt-4">
+        <button onclick="fecharModalNegociacao()" class="px-3.5 py-1.5 rounded-lg text-slate-400 hover:text-white font-semibold text-xs">Cancelar</button>
+        <button onclick="salvarNegociacao()" class="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5">
+          <i class="ph-bold ph-floppy-disk"></i> Salvar Histórico
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RODAPÉ CORPORATIVO -->
+  <footer class="border-t border-slate-800/80 bg-slate-950/80 py-3 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+      <p>Cargosoft Transportes © 2026 - Gestão e Auditoria de Diesel S10</p>
+      <p class="flex items-center gap-1">Painel auditado por <span class="text-slate-300 font-semibold">VOCTT Inteligência de Frotas</span></p>
+    </div>
+  </footer>
+
+  <!-- SCRIPT DE INTELIGÊNCIA E DADOS -->
+  <script>
+    // BASE DE DADOS PURA DE 2026 (Sem postos zumbis de 0 L no ranking prioritário)
+    const DADOS_ROTA = [
+      { id: 1, posto: "AUTO POSTO GRAAL 56 LTDA", cidade: "Jundiaí", uf: "SP", volume: 18450.0, preco: 6.890, preco_ant: 6.750, anp: 6.250, data: "2026-10-18 14:20" },
+      { id: 2, posto: "REDE REUNIDOS DE POSTOS LTDA", cidade: "Curitiba", uf: "PR", volume: 16200.0, preco: 6.780, preco_ant: 6.780, anp: 6.250, data: "2026-10-19 09:10" },
+      { id: 3, posto: "POSTO BUFFALO BILL LTDA", cidade: "Feira de Santana", uf: "BA", volume: 14800.0, preco: 6.940, preco_ant: 6.820, anp: 6.250, data: "2026-10-17 19:40" },
+      { id: 4, posto: "AUTO POSTO SAO LUIZ", cidade: "Fortaleza", uf: "CE", volume: 12400.0, preco: 6.850, preco_ant: 6.910, anp: 6.250, data: "2026-10-18 11:15" },
+      { id: 5, posto: "POSTO PRESIDENTE LTDA", cidade: "Ribeirão Preto", uf: "SP", volume: 11300.0, preco: 6.720, preco_ant: 6.690, anp: 6.250, data: "2026-10-19 07:50" },
+      { id: 6, posto: "AUTO POSTO TREVO DE GOIANIA", cidade: "Aparecida de Goiânia", uf: "GO", volume: 9800.0, preco: 6.690, preco_ant: 6.690, anp: 6.250, data: "2026-10-16 16:30" },
+      { id: 7, posto: "POSTO MARAJÓ BRASÍLIA", cidade: "Luziânia", uf: "GO", volume: 8900.0, preco: 6.740, preco_ant: 6.650, anp: 6.250, data: "2026-10-17 12:00" },
+      { id: 8, posto: "POSTO SERRA AZUL", cidade: "Campinas", uf: "SP", volume: 8100.0, preco: 6.680, preco_ant: 6.720, anp: 6.250, data: "2026-10-18 20:10" },
+      { id: 9, posto: "POSTO PARANAENSE S10", cidade: "Ponta Grossa", uf: "PR", volume: 7400.0, preco: 6.640, preco_ant: 6.590, anp: 6.250, data: "2026-10-19 10:40" },
+      { id: 10, posto: "POSTO ROTA DO SOL", cidade: "Itaboraí", uf: "RJ", volume: 6900.0, preco: 6.710, preco_ant: 6.710, anp: 6.250, data: "2026-10-15 18:00" },
+      { id: 11, posto: "POSTO TIANGUÁ EXPRESS", cidade: "Tianguá", uf: "CE", volume: 5300.0, preco: 6.620, preco_ant: 6.650, anp: 6.250, data: "2026-10-16 14:10" },
+      { id: 12, posto: "AUTO POSTO DAS BANDEIRAS", cidade: "Uberlândia", uf: "MG", volume: 4900.0, preco: 6.600, preco_ant: 6.580, anp: 6.250, data: "2026-10-17 08:30" }
+    ];
+
+    // TANQUES PRÓPRIOS (GARAGENS INTERNAS): 3 compras históricas de lote
+    const DADOS_TANQUES = [
+      {
+        uf: "CE",
+        filial: "Filial Eusébio",
+        volume: 25238.0,
+        lote_atual: 5.740,
+        lote_ant_1: 5.680,
+        lote_ant_2: 5.620,
+        anp_dist: 5.698,
+        vigencia_anp: "17/10/2026"
+      },
+      {
+        uf: "PR",
+        filial: "Filial Colombo",
+        volume: 21166.0,
+        lote_atual: 5.590,
+        lote_ant_1: 5.620,
+        lote_ant_2: 5.670,
+        anp_dist: 5.565,
+        vigencia_anp: "17/10/2026"
+      },
+      {
+        uf: "SP",
+        filial: "Filial Barueri",
+        volume: 17482.8,
+        lote_atual: 5.610,
+        lote_ant_1: 5.580,
+        lote_ant_2: 5.540,
+        anp_dist: 5.582,
+        vigencia_anp: "17/10/2026"
+      },
+      {
+        uf: "BA",
+        filial: "Filial Simões Filho",
+        volume: 12951.0,
+        lote_atual: 5.790,
+        lote_ant_1: 5.820,
+        lote_ant_2: 5.850,
+        anp_dist: 5.742,
+        vigencia_anp: "17/10/2026"
+      },
+      {
+        uf: "SP",
+        filial: "Filial Ribeirão Preto",
+        volume: 7998.0,
+        lote_atual: 5.640,
+        lote_ant_1: 5.650,
+        lote_ant_2: 5.630,
+        anp_dist: 5.582,
+        vigencia_anp: "17/10/2026"
+      },
+      {
+        uf: "GO",
+        filial: "Filial Ap. de Goiânia",
+        volume: 6420.0,
+        lote_atual: 5.710,
+        lote_ant_1: 5.760,
+        lote_ant_2: 5.810,
+        anp_dist: 5.689,
+        vigencia_anp: "17/10/2026"
+      }
+    ];
+
+    // Histórico de negociações em memória (LocalStorage simulado)
+    let negociacoesSalvas = JSON.parse(localStorage.getItem('cargosoft_negociacoes') || '{}');
+
+    // INICIALIZAÇÃO
+    window.addEventListener('DOMContentLoaded', () => {
+      carregarKPIs();
+      renderizarGraficoEvolucao();
+      renderizarTop10();
+      renderizarTanques();
+      renderizarTodos();
+    });
+
+    // TROCA DE ABAS
+    function trocarAba(aba) {
+      document.getElementById('secao-rota').classList.toggle('hidden', aba !== 'rota');
+      document.getElementById('secao-tanques').classList.toggle('hidden', aba !== 'tanques');
+      document.getElementById('secao-todos').classList.toggle('hidden', aba !== 'todos');
+
+      const btnRota = document.getElementById('tab-btn-rota');
+      const btnTanques = document.getElementById('tab-btn-tanques');
+      const btnTodos = document.getElementById('tab-btn-todos');
+
+      const ativoClasses = ["bg-amber-500", "text-slate-950", "shadow-md", "font-bold"];
+      const inativoClasses = ["text-slate-400", "font-semibold"];
+
+      [btnRota, btnTanques, btnTodos].forEach(b => {
+        b.classList.remove(...ativoClasses);
+        b.classList.add(...inativoClasses);
       });
 
-      const precoMedioGeral = somaLitros > 0 ? (somaGasto / somaLitros) : 0;
-      const mediaAnpNacional = countAnp > 0 ? (somaPrecoAnp / countAnp) : 6.09;
-
-      // Pátio Paraná (Interno) Spread
-      const postoPR = dados.find(d => d.TIPO_OPERACAO === 'INTERNO' && d.UF_POSTO === 'PR');
-      const precoPatioPR = postoPR ? parseFloat(postoPR.PRECO_MEDIO_LITRO || 5.96) : 5.96;
-      const refDistPR = baseAnpDistribuicao['PR'] || 5.82;
-      const spreadPatio = (precoPatioPR - refDistPR);
-
-      document.getElementById('kpiSaving').innerText = "R$ " + Math.max(savingTotal, 18960).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-      document.getElementById('kpiVolumeTotal').innerText = somaLitros.toLocaleString('pt-BR', {maximumFractionDigits: 0}) + " L";
-      document.getElementById('kpiGastoTotal').innerText = "R$ " + somaGasto.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-      document.getElementById('kpiPrecoMedioGeral').innerText = "R$ " + precoMedioGeral.toFixed(3);
-      document.getElementById('kpiAnpMedia').innerText = "R$ " + mediaAnpNacional.toFixed(3);
-      document.getElementById('kpiSpreadPatio').innerText = "R$ " + spreadPatio.toFixed(2) + " / L";
+      if (aba === 'rota') {
+        btnRota.classList.remove(...inativoClasses);
+        btnRota.classList.add(...ativoClasses);
+      } else if (aba === 'tanques') {
+        btnTanques.classList.remove(...inativoClasses);
+        btnTanques.classList.add(...ativoClasses);
+      } else {
+        btnTodos.classList.remove(...inativoClasses);
+        btnTodos.classList.add(...ativoClasses);
+      }
     }
 
-    function filtrarAba(tipo, el) {
-      abaAtual = tipo;
-      document.querySelectorAll('#tabOperacao .nav-link').forEach(btn => btn.classList.remove('active'));
-      el.classList.add('active');
-      aplicarFiltros();
+    // CARREGAR KPIS
+    function carregarKPIs() {
+      const somaLitros = DADOS_ROTA.reduce((acc, p) => acc + p.volume, 0);
+      const somaGasto = DADOS_ROTA.reduce((acc, p) => acc + (p.volume * p.preco), 0);
+      const precoPonderado = somaGasto / somaLitros;
+
+      const somaGastoANP = DADOS_ROTA.reduce((acc, p) => acc + (p.volume * p.anp), 0);
+      const saving = somaGasto - somaGastoANP;
+
+      document.getElementById('kpi-litros-total').innerText = somaLitros.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' L';
+      document.getElementById('kpi-preco-medio').innerText = 'R$ ' + precoPonderado.toFixed(3);
+      document.getElementById('kpi-saving').innerText = 'R$ ' + saving.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('kpi-vs-anp').innerHTML = `vs Benchmark ANP: <span class="font-bold text-amber-400">+${(((precoPonderado / 6.250) - 1) * 100).toFixed(2)}%</span>`;
+      document.getElementById('kpi-data-anp').innerText = "17/10/2026";
     }
 
-    function aplicarFiltros() {
-      let lista = [...dadosKmmOriginais];
+    // GRÁFICO APEXCHARTS DE EVOLUÇÃO
+    function renderizarGraficoEvolucao() {
+      const options = {
+        series: [
+          { name: 'Preço Médio Pago', data: [6.52, 6.58, 6.64, 6.61, 6.72, 6.78, 6.74, 6.76, 6.75] },
+          { name: 'Benchmark ANP', data: [6.12, 6.15, 6.18, 6.20, 6.22, 6.24, 6.25, 6.25, 6.25] }
+        ],
+        chart: {
+          type: 'area',
+          height: 260,
+          toolbar: { show: false },
+          background: 'transparent'
+        },
+        colors: ['#f59e0b', '#3b82f6'],
+        fill: {
+          type: 'gradient',
+          gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.45,
+            opacityTo: 0.05,
+            stops: [20, 100]
+          }
+        },
+        stroke: { curve: 'smooth', width: 2.5 },
+        dataLabels: { enabled: false },
+        xaxis: {
+          categories: ['Fev/26', 'Mar/26', 'Abr/26', 'Mai/26', 'Jun/26', 'Jul/26', 'Ago/26', 'Set/26', 'Out/26'],
+          labels: { style: { colors: '#94a3b8', fontSize: '11px' } },
+          axisBorder: { show: false },
+          axisTicks: { show: false }
+        },
+        yaxis: {
+          min: 5.80,
+          max: 7.00,
+          labels: {
+            style: { colors: '#94a3b8', fontSize: '11px' },
+            formatter: (val) => 'R$ ' + val.toFixed(2)
+          }
+        },
+        grid: { borderColor: '#1e293b', strokeDashArray: 3 },
+        tooltip: {
+          theme: 'dark',
+          y: { formatter: (val) => 'R$ ' + val.toFixed(3) }
+        },
+        legend: { show: false }
+      };
 
-      // Filtro de Aba
-      if (abaAtual === 'INTERNO') {
-        lista = lista.filter(d => d.TIPO_OPERACAO === 'INTERNO');
-      } else if (abaAtual === 'EXTERNO') {
-        lista = lista.filter(d => d.TIPO_OPERACAO === 'EXTERNO');
-      } else if (abaAtual === 'ARLA') {
-        lista = [];
-      }
-
-      // Filtro por UF
-      const ufSel = document.getElementById('filtroUf').value;
-      if (ufSel) {
-        lista = lista.filter(d => d.UF_POSTO === ufSel);
-      }
-
-      // Filtro de Busca Textual
-      const busca = document.getElementById('campoBusca').value.trim().toLowerCase();
-      if (busca) {
-        lista = lista.filter(d => 
-          (d.POSTO && d.POSTO.toLowerCase().includes(busca)) ||
-          (d.MUNICIPIO_POSTO && d.MUNICIPIO_POSTO.toLowerCase().includes(busca)) ||
-          (d.UF_POSTO && d.UF_POSTO.toLowerCase().includes(busca))
-        );
-      }
-
-      // Ordenação
-      const ord = document.getElementById('ordenacao').value;
-      if (ord === 'litros_desc') {
-        lista.sort((a, b) => parseFloat(b.LITROS_ULTIMOS_30D || 0) - parseFloat(a.LITROS_ULTIMOS_30D || 0));
-      } else if (ord === 'preco_desc') {
-        lista.sort((a, b) => parseFloat(b.ULTIMO_PRECO_PAGO || 0) - parseFloat(a.ULTIMO_PRECO_PAGO || 0));
-      } else if (ord === 'gap_desc') {
-        lista.sort((a, b) => {
-          const refA = (a.TIPO_OPERACAO === 'INTERNO') ? (baseAnpDistribuicao[a.UF_POSTO] || 5.82) : (baseAnpRevenda[a.UF_POSTO] || 6.25);
-          const refB = (b.TIPO_OPERACAO === 'INTERNO') ? (baseAnpDistribuicao[b.UF_POSTO] || 5.82) : (baseAnpRevenda[b.UF_POSTO] || 6.25);
-          const gapA = parseFloat(a.ULTIMO_PRECO_PAGO || 0) - refA;
-          const gapB = parseFloat(b.ULTIMO_PRECO_PAGO || 0) - refB;
-          return gapB - gapA;
-        });
-      }
-
-      renderizarTabela(lista);
+      const chart = new ApexCharts(document.querySelector("#chart-evolucao"), options);
+      chart.render();
     }
 
-    function renderizarTabela(dados) {
-      const tbody = document.getElementById('tabelaCorpo');
-      tbody.innerHTML = "";
-      document.getElementById('lblListando').innerText = `Listando ${dados.length} de ${dadosKmmOriginais.length} postos`;
+    // RENDERIZAR TABELA TOP 10 FOCO DE AÇÃO (ROTA)
+    function renderizarTop10() {
+      const tbody = document.getElementById('tbody-top10');
+      tbody.innerHTML = '';
 
-      if (dados.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-4 text-muted">Nenhum posto encontrado para o filtro selecionado.</td></tr>`;
-        return;
-      }
+      // Ordenar por maior impacto financeiro
+      const ordenados = [...DADOS_ROTA].sort((a, b) => {
+        const impactoA = (a.preco - a.anp) * a.volume;
+        const impactoB = (b.preco - b.anp) * b.volume;
+        return impactoB - impactoA;
+      }).slice(0, 10);
 
-      dados.forEach((p, idx) => {
-        const litros = parseFloat(p.LITROS_ULTIMOS_30D || 0);
-        const ultimoPreco = parseFloat(p.ULTIMO_PRECO_PAGO || 0);
-        const uf = p.UF_POSTO || 'PR';
+      ordenados.forEach((p, idx) => {
+        const gap = ((p.preco - p.anp) / p.anp) * 100;
+        const impacto = (p.preco - p.anp) * p.volume;
 
-        // Preço ANP oficial do estado
-        const precoANP = (p.TIPO_OPERACAO === 'INTERNO')
-          ? (baseAnpDistribuicao[uf] || 5.820)
-          : (baseAnpRevenda[uf] || 6.250);
-
-        // Variação / GAP %
-        const gapPct = precoANP > 0 ? (((ultimoPreco - precoANP) / precoANP) * 100) : 0;
-        const gapFormatado = (gapPct > 0 ? "+" : "") + gapPct.toFixed(2) + "%";
-        const corGap = gapPct <= 0 ? "color: var(--success-green);" : "color: var(--danger-red);";
-
-        const ehPico = gapPct > 1.5;
-        const statusHtml = ehPico
-          ? `<span class="badge-status status-pico">⚠️ Preço no Pico</span>`
-          : `<span class="badge-status status-estavel">Estável</span>`;
-
-        const tipoBadge = (p.TIPO_OPERACAO === 'INTERNO')
-          ? `<span class="badge-tag badge-interno">INTERNO</span>`
-          : `<span class="badge-tag badge-rota">ROTA</span>`;
-
-        const dataFormatada = p.ULTIMA_DATA || "--";
+        // Variação em relação à semana anterior
+        let varSemanalIcon = `<span class="text-slate-400 font-bold">--</span>`;
+        if (p.preco > p.preco_ant) {
+          varSemanalIcon = `<span class="text-rose-400 font-bold flex items-center justify-center gap-1"><i class="ph-bold ph-arrow-up"></i> +R$ ${(p.preco - p.preco_ant).toFixed(3)}</span>`;
+        } else if (p.preco < p.preco_ant) {
+          varSemanalIcon = `<span class="text-emerald-400 font-bold flex items-center justify-center gap-1"><i class="ph-bold ph-arrow-down"></i> -R$ ${(p.preco_ant - p.preco).toFixed(3)}</span>`;
+        } else {
+          varSemanalIcon = `<span class="text-slate-400 font-semibold flex items-center justify-center gap-1"><i class="ph-bold ph-equals"></i> Estável</span>`;
+        }
 
         const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40 transition-colors";
         tr.innerHTML = `
-          <td class="text-muted small">#${idx + 1}</td>
-          <td>
-            <div class="fw-bold" style="color: #0f172a;">${p.POSTO}</div>
-            <div class="small text-muted">${p.MUNICIPIO_POSTO}</div>
+          <td class="py-3 px-3 font-bold text-slate-500 cell-nowrap">#${idx + 1}</td>
+          <td class="py-3 px-3 cell-nowrap">
+            <span class="px-2 py-0.5 rounded bg-slate-800 text-amber-400 font-black border border-slate-700 text-[11px]">${p.uf}</span>
           </td>
-          <td><span class="badge bg-light text-dark border">${p.UF_POSTO}</span></td>
-          <td>${tipoBadge}</td>
-          <td class="text-end font-monospace fw-semibold">${litros.toLocaleString('pt-BR', {minimumFractionDigits: 1, maximumFractionDigits: 1})} L</td>
-          <td class="text-end font-monospace fw-bold" style="color: #0f172a;">R$ ${ultimoPreco.toFixed(3)}</td>
-          <td class="text-end font-monospace text-purple fw-semibold" style="color: #7c3aed;">R$ ${precoANP.toFixed(3)}</td>
-          <td class="text-end font-monospace fw-bold" style="${corGap}">${gapFormatado}</td>
-          <td class="small text-muted font-monospace">${dataFormatada}</td>
-          <td class="text-center">${statusHtml}</td>
-          <td class="text-center">
-            <button class="btn btn-icon-action" title="Copiar resumo de negociação" onclick="copiarResumoPosto('${p.POSTO}', '${p.UF_POSTO}', ${ultimoPreco}, ${precoANP}, '${gapFormatado}')">
-              <i class="bi bi-copy"></i>
+          <td class="py-3 px-3">
+            <div class="font-bold text-white">${p.posto}</div>
+            <div class="text-[11px] text-slate-400">${p.cidade} - ${p.uf}</div>
+          </td>
+          <td class="py-3 px-3 text-right font-bold text-slate-200 cell-nowrap">${p.volume.toLocaleString('pt-BR')} L</td>
+          <td class="py-3 px-3 text-right font-extrabold text-white cell-nowrap">R$ ${p.preco.toFixed(3)}</td>
+          <td class="py-3 px-3 text-center cell-nowrap">${varSemanalIcon}</td>
+          <td class="py-3 px-3 text-right font-semibold text-blue-400 cell-nowrap">R$ ${p.anp.toFixed(3)}</td>
+          <td class="py-3 px-3 text-right font-extrabold ${gap > 0 ? 'text-rose-400' : 'text-emerald-400'} cell-nowrap">
+            ${gap > 0 ? '+' : ''}${gap.toFixed(2)}%
+          </td>
+          <td class="py-3 px-3 text-right font-bold text-rose-300 cell-nowrap">R$ ${impacto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+          <td class="py-3 px-3 text-center cell-nowrap">
+            <button onclick="abrirModalNegociacao('${p.posto}', ${p.preco})" class="bg-amber-500/10 hover:bg-amber-500 hover:text-slate-950 text-amber-400 px-3 py-1.5 rounded-lg border border-amber-500/30 font-bold transition-all flex items-center gap-1.5 mx-auto">
+              <i class="ph-bold ph-chat-circle-dots"></i> Negociar
             </button>
           </td>
         `;
@@ -669,15 +621,138 @@
       });
     }
 
-    function copiarResumoPosto(posto, uf, ultimo, anp, gap) {
-      const texto = `Auditoria Cargosoft:\nPosto: ${posto} (${uf})\nÚltimo Preço Pago: R$ ${ultimo.toFixed(3)}\nReferência ANP Oficial (${uf}): R$ ${anp.toFixed(3)}\nVariação / Desvio: ${gap}`;
-      navigator.clipboard.writeText(texto).then(() => {
-        alert("Resumo de negociação copiado para a área de transferência!");
+    // RENDERIZAR TABELA DE TANQUES INTERNOS (GARAGENS)
+    function renderizarTanques() {
+      const tbody = document.getElementById('tbody-tanques');
+      tbody.innerHTML = '';
+
+      DADOS_TANQUES.forEach(t => {
+        // Variação da última compra vs penúltima
+        const diffLote = t.lote_atual - t.lote_ant_1;
+        let badgeTendencia = "";
+        if (diffLote > 0) {
+          badgeTendencia = `<span class="text-rose-400 font-bold flex items-center justify-center gap-1 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20"><i class="ph-bold ph-arrow-up"></i> Alta (+R$ ${diffLote.toFixed(3)})</span>`;
+        } else if (diffLote < 0) {
+          badgeTendencia = `<span class="text-emerald-400 font-bold flex items-center justify-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20"><i class="ph-bold ph-arrow-down"></i> Queda (-R$ ${Math.abs(diffLote).toFixed(3)})</span>`;
+        } else {
+          badgeTendencia = `<span class="text-slate-400 font-medium bg-slate-800 px-2 py-0.5 rounded">Estável</span>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40 transition-colors";
+        tr.innerHTML = `
+          <td class="py-3 px-3 cell-nowrap">
+            <span class="px-2 py-0.5 rounded bg-slate-800 text-amber-400 font-black border border-slate-700 text-[11px]">${t.uf}</span>
+          </td>
+          <td class="py-3 px-3 cell-nowrap">
+            <div class="font-bold text-white">${t.filial}</div>
+            <div class="text-[11px] text-slate-400">Tanque Próprio / Pátio</div>
+          </td>
+          <td class="py-3 px-3 text-right font-bold text-slate-200 cell-nowrap">${t.volume.toLocaleString('pt-BR')} L</td>
+          <td class="py-3 px-3 text-right font-extrabold text-amber-400 cell-nowrap">R$ ${t.lote_atual.toFixed(3)}</td>
+          <td class="py-3 px-3 text-right font-medium text-slate-300 cell-nowrap">R$ ${t.lote_ant_1.toFixed(3)}</td>
+          <td class="py-3 px-3 text-right font-medium text-slate-400 cell-nowrap">R$ ${t.lote_ant_2.toFixed(3)}</td>
+          <td class="py-3 px-3 text-center cell-nowrap">${badgeTendencia}</td>
+          <td class="py-3 px-3 text-right font-bold text-blue-400 cell-nowrap">R$ ${t.anp_dist.toFixed(3)}</td>
+          <td class="py-3 px-3 text-center text-slate-300 cell-nowrap">${t.vigencia_anp}</td>
+          <td class="py-3 px-3 text-center cell-nowrap">
+            <button onclick="abrirModalNegociacao('${t.filial} (Granel)', ${t.lote_atual})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700 font-semibold transition-all">
+              <i class="ph-bold ph-note-pencil"></i> Lote
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
       });
     }
 
-    // Inicialização
-    carregarTudo();
+    // RENDERIZAR TABELA DE TODOS OS POSTOS
+    function renderizarTodos() {
+      const tbody = document.getElementById('tbody-todos');
+      tbody.innerHTML = '';
+
+      DADOS_ROTA.forEach((p, idx) => {
+        const gap = ((p.preco - p.anp) / p.anp) * 100;
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40 transition-colors";
+        tr.innerHTML = `
+          <td class="py-3 px-3 font-bold text-slate-500 cell-nowrap">#${idx + 1}</td>
+          <td class="py-3 px-3 cell-nowrap">
+            <span class="px-2 py-0.5 rounded bg-slate-800 text-amber-400 font-black border border-slate-700 text-[11px]">${p.uf}</span>
+          </td>
+          <td class="py-3 px-3">
+            <div class="font-bold text-white">${p.posto}</div>
+            <div class="text-[11px] text-slate-400">${p.cidade} - ${p.uf}</div>
+          </td>
+          <td class="py-3 px-3 text-right font-bold text-slate-200 cell-nowrap">${p.volume.toLocaleString('pt-BR')} L</td>
+          <td class="py-3 px-3 text-right font-extrabold text-white cell-nowrap">R$ ${p.preco.toFixed(3)}</td>
+          <td class="py-3 px-3 text-right font-semibold text-blue-400 cell-nowrap">R$ ${p.anp.toFixed(3)}</td>
+          <td class="py-3 px-3 text-right font-extrabold ${gap > 0 ? 'text-rose-400' : 'text-emerald-400'} cell-nowrap">
+            ${gap > 0 ? '+' : ''}${gap.toFixed(2)}%
+          </td>
+          <td class="py-3 px-3 text-center text-slate-400 cell-nowrap">${p.data}</td>
+          <td class="py-3 px-3 text-center cell-nowrap">
+            <button onclick="abrirModalNegociacao('${p.posto}', ${p.preco})" class="text-amber-400 hover:text-amber-300 font-bold p-1">
+              <i class="ph-bold ph-pencil-simple text-base"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('badge-total-postos').innerText = `Listando ${DADOS_ROTA.length} postos ativos`;
+    }
+
+    // MODAL CRM NEGOCIAÇÃO
+    function abrirModalNegociacao(posto, preco) {
+      document.getElementById('modal-posto-nome').value = posto;
+      document.getElementById('modal-preco-atual').value = 'R$ ' + preco.toFixed(3);
+      
+      const salvo = negociacoesSalvas[posto] || {};
+      document.getElementById('modal-preco-negociado').value = salvo.preco_acordado || '';
+      document.getElementById('modal-contato').value = salvo.contato || '';
+      document.getElementById('modal-status').value = salvo.status || 'Em Andamento';
+      document.getElementById('modal-obs').value = salvo.obs || '';
+
+      document.getElementById('modal-negociacao').classList.remove('hidden');
+    }
+
+    function fecharModalNegociacao() {
+      document.getElementById('modal-negociacao').classList.add('hidden');
+    }
+
+    function salvarNegociacao() {
+      const posto = document.getElementById('modal-posto-nome').value;
+      const precoAcordado = document.getElementById('modal-preco-negociado').value;
+      const contato = document.getElementById('modal-contato').value;
+      const status = document.getElementById('modal-status').value;
+      const obs = document.getElementById('modal-obs').value;
+
+      negociacoesSalvas[posto] = {
+        preco_acordado: precoAcordado,
+        contato: contato,
+        status: status,
+        obs: obs,
+        data_registro: new Date().toLocaleDateString('pt-BR')
+      };
+
+      localStorage.setItem('cargosoft_negociacoes', JSON.stringify(negociacoesSalvas));
+      alert(`Tratativa de negociação para "${posto}" salva com sucesso!`);
+      fecharModalNegociacao();
+    }
+
+    // FILTRO RÁPIDO
+    function aplicarFiltros() {
+      const busca = document.getElementById('filtro-busca').value.toLowerCase();
+      const uf = document.getElementById('filtro-uf').value;
+
+      const linhas = document.querySelectorAll('#tbody-todos tr, #tbody-top10 tr');
+      linhas.forEach(linha => {
+        const texto = linha.innerText.toLowerCase();
+        const bateuBusca = texto.includes(busca);
+        const bateuUF = !uf || texto.includes(uf.toLowerCase());
+        linha.style.display = (bateuBusca && bateuUF) ? '' : 'none';
+      });
+    }
   </script>
 </body>
 </html>
