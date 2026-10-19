@@ -303,4 +303,11 @@
       document.getElementById('kpiLitros').innerText = totalLitros.toLocaleString('pt-BR', {maximumFractionDigits: 0}) + " L";
       document.getElementById('kpiGasto').innerText = "R$ " + totalGasto.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
       
-      const precoMedioPonderado = totalLitros > 0 ? (totalGasto / totalLitros
+      const precoMedioPonderado = totalLitros > 0 ? (totalGasto / totalLitros) : 0;
+      document.getElementById('kpiPrecoMedio').innerText = "R$ " + precoMedioPonderado.toFixed(3);
+    }
+
+    window.onload = carregarDados;
+  </script>
+</body>
+</html>
