@@ -16,12 +16,126 @@ async function obterBaseAnpOficial() {
   }
 }
 
+function alternarPainelAuditoria() {
+  const painel = document.getElementById('painelChecagemBruta');
+  const btn = document.getElementById('btnToggleAuditoria');
+  if (!painel || !btn) return;
+
+  if (painel.style.display === 'none' || painel.classList.contains('d-none')) {
+    painel.style.display = 'block';
+    painel.classList.remove('d-none');
+    btn.innerHTML = `<i class="bi bi-eye-slash-fill me-1"></i> Ocultar Tabelas de Auditoria Bruta`;
+    btn.classList.replace('btn-outline-secondary', 'btn-secondary');
+  } else {
+    painel.style.display = 'none';
+    painel.classList.add('d-none');
+    btn.innerHTML = `<i class="bi bi-shield-check me-1"></i> Exibir Tabelas de Auditoria Bruta (4)`;
+    btn.classList.replace('btn-secondary', 'btn-outline-secondary');
+  }
+}
+
+function imprimirRelatorioExecutivo() {
+  window.print();
+}
+
+function gerarInsightsInteligentes(analiseExterna, analiseInterna, analiseSpread) {
+  const cards = [];
+
+  // 1. Melhor performance de compra em rota (Externo)
+  if (analiseExterna.melhorUf) {
+    cards.push(`
+      <div class="col-12 col-md-4">
+        <div class="border-start border-4 border-success bg-white p-3 rounded shadow-sm h-100">
+          <div class="d-flex align-items-center mb-1">
+            <i class="bi bi-trophy-fill text-success fs-5 me-2"></i>
+            <span class="fw-bold text-dark small">Maior Eficiência em Rota</span>
+          </div>
+          <p class="mb-0 text-muted" style="font-size: 0.78rem;">
+            O estado do <strong>${analiseExterna.melhorUf}</strong> registrou o melhor poder de compra acumulado com 
+            <strong class="text-success">${analiseExterna.melhorVar.toFixed(2).replace('.', ',')}%</strong> abaixo da média ANP Revenda.
+          </p>
+        </div>
+      </div>
+    `);
+  }
+
+  // 2. Estado Crítico / Ponto Focal de Renegociação
+  if (analiseExterna.piorUf && analiseExterna.piorVar > 0) {
+    cards.push(`
+      <div class="col-12 col-md-4">
+        <div class="border-start border-4 border-danger bg-white p-3 rounded shadow-sm h-100">
+          <div class="d-flex align-items-center mb-1">
+            <i class="bi bi-exclamation-triangle-fill text-danger fs-5 me-2"></i>
+            <span class="fw-bold text-dark small">Atenção Prioritária: Ágio em Rota</span>
+          </div>
+          <p class="mb-0 text-muted" style="font-size: 0.78rem;">
+            A praça da <strong>${analiseExterna.piorUf}</strong> encerrou o acumulado pagando 
+            <strong class="text-danger">+${analiseExterna.piorVar.toFixed(2).replace('.', ',')}%</strong> acima da ANP. Foco imediato para renegociação de rede conveniada.
+          </p>
+        </div>
+      </div>
+    `);
+  } else {
+    cards.push(`
+      <div class="col-12 col-md-4">
+        <div class="border-start border-4 border-primary bg-white p-3 rounded shadow-sm h-100">
+          <div class="d-flex align-items-center mb-1">
+            <i class="bi bi-patch-check-fill text-primary fs-5 me-2"></i>
+            <span class="fw-bold text-dark small">Controle de Rede Externa</span>
+          </div>
+          <p class="mb-0 text-muted" style="font-size: 0.78rem;">
+            Nenhum estado apresenta desvio acumulado crítico em relação à média oficial de revenda, indicando aderência positiva aos limites de rota.
+          </p>
+        </div>
+      </div>
+    `);
+  }
+
+  // 3. Análise de Margem Operacional de Garagem (Spread)
+  if (analiseSpread.ufMenorSpread) {
+    const spreadAbaixo = analiseSpread.menorSpreadVal < 0.15;
+    const corBorda = spreadAbaixo ? 'border-danger' : 'border-warning';
+    const corTexto = spreadAbaixo ? 'text-danger' : 'text-warning';
+    const icone = spreadAbaixo ? 'bi-x-octagon-fill' : 'bi-lightning-charge-fill';
+
+    cards.push(`
+      <div class="col-12 col-md-4">
+        <div class="border-start border-4 ${corBorda} bg-white p-3 rounded shadow-sm h-100">
+          <div class="d-flex align-items-center mb-1">
+            <i class="bi ${icone} ${corTexto} fs-5 me-2"></i>
+            <span class="fw-bold text-dark small">Margem Interna (Spread Garagem)</span>
+          </div>
+          <p class="mb-0 text-muted" style="font-size: 0.78rem;">
+            ${spreadAbaixo 
+              ? `Alerta na praça <strong>${analiseSpread.ufMenorSpread}</strong>: Spread de apenas <strong class="${corTexto}">R$ ${analiseSpread.menorSpreadVal.toFixed(2).replace('.', ',')}/L</strong>, abaixo do limite operacional de viabilidade.` 
+              : `A praça de menor margem é <strong>${analiseSpread.ufMenorSpread}</strong> (Spread de <strong>R$ ${analiseSpread.menorSpreadVal.toFixed(2).replace('.', ',')}/L</strong>). O pátio do <strong>${analiseSpread.ufMaiorSpread}</strong> lidera a vantagem com <strong>R$ ${analiseSpread.maiorSpreadVal.toFixed(2).replace('.', ',')}/L</strong>.`}
+          </p>
+        </div>
+      </div>
+    `);
+  }
+
+  return `
+    <div class="card border-0 shadow-sm p-3 mb-4 bg-light">
+      <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-cpu text-primary fs-5 me-2"></i>
+          <h6 class="fw-bold mb-0 text-dark">Diagnóstico e Recomendações Estratégicas</h6>
+        </div>
+        <span class="badge bg-white text-secondary border small">Análise de Dados Automatizada</span>
+      </div>
+      <div class="row g-2">
+        ${cards.join('')}
+      </div>
+    </div>
+  `;
+}
+
 async function calcularMatrizesGerenciais(registros) {
   const dadosAnp = await obterBaseAnpOficial();
   const mapaRevenda = dadosAnp.revenda || {};
   const mapaDistribuicao = dadosAnp.distribuicao || {};
 
-  // Extrai dinamicamente a lista ordenada de competências presentes na base
   const mesesDisponiveis = [...new Set(registros.map(r => r.MES_ANO).filter(Boolean))].sort();
 
   const nomesAbrev = {
@@ -38,11 +152,9 @@ async function calcularMatrizesGerenciais(registros) {
     };
   });
 
-  // UFs com movimentação
   const ufsExterno = [...new Set(registros.filter(r => r.TIPO_OPERACAO === 'EXTERNO').map(r => r.UF_POSTO).filter(Boolean))].sort();
   const ufsInterno = [...new Set(registros.filter(r => r.TIPO_OPERACAO === 'INTERNO').map(r => r.UF_POSTO).filter(Boolean))].sort();
 
-  // Agrupador por UF, Mês e Tipo de Operação considerando o peso das transações individuais
   const dadosAgrupados = {};
 
   registros.forEach(r => {
@@ -60,14 +172,12 @@ async function calcularMatrizesGerenciais(registros) {
     }
   });
 
-  // Média exata de abastecimentos do mês para a UF (Réplica do AVERAGE do Power BI)
   function getPrecoMedioSimples(uf, mes, tipo) {
     const d = dadosAgrupados[`${uf}_${mes}_${tipo}`];
     if (!d || d.totalAbastecimentos === 0) return null;
     return d.somaPonderadaTransacoes / d.totalAbastecimentos;
   }
 
-  // Média acumulada da UF considerando todas as transações do ano
   function getTotalUfSimples(uf, tipo) {
     let somaTotal = 0;
     let qtdTotal = 0;
@@ -85,19 +195,24 @@ async function calcularMatrizesGerenciais(registros) {
 
   // 1. MATRIZ EXECUTIVA EXTERNA (Var % vs ANP Revenda)
   let htmlExterna = `
-    <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.72rem;">
+    <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.72rem;">
       <thead class="table-light">
         <tr>
-          <th style="width: 45px;">UF</th>
+          <th style="width: 48px; background-color: #f8fafc;">UF</th>
           ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
-          <th class="fw-bold bg-secondary text-white">Total</th>
+          <th style="background-color: #0f172a; color: #ffffff; border-left: 2px solid #64748b; width: 65px;">Total</th>
         </tr>
       </thead>
       <tbody>
   `;
 
+  let melhorUfExt = null;
+  let melhorVarExt = 999;
+  let piorUfExt = null;
+  let piorVarExt = -999;
+
   ufsExterno.forEach(uf => {
-    let tds = `<td><b>${uf}</b></td>`;
+    let tds = `<td class="fw-bold bg-light">${uf}</td>`;
     const precosAnpAno = [];
 
     mesesColunas.forEach(m => {
@@ -107,7 +222,7 @@ async function calcularMatrizesGerenciais(registros) {
       if (precoPago && refAnp) {
         precosAnpAno.push(refAnp);
         const varPerc = ((precoPago - refAnp) / refAnp) * 100;
-        const bgCor = varPerc <= 0 ? 'rgba(34, 197, 94, 0.28)' : 'rgba(239, 68, 68, 0.32)';
+        const bgCor = varPerc <= 0 ? 'rgba(34, 197, 94, 0.22)' : 'rgba(239, 68, 68, 0.25)';
         const textoSinal = (varPerc > 0 ? '+' : '') + varPerc.toFixed(2).replace('.', ',') + '%';
         tds += `<td style="background-color: ${bgCor}; font-weight: 500;">${textoSinal}</td>`;
       } else {
@@ -119,11 +234,21 @@ async function calcularMatrizesGerenciais(registros) {
     if (totalPago && precosAnpAno.length > 0) {
       const mediaAnpAno = precosAnpAno.reduce((a, b) => a + b, 0) / precosAnpAno.length;
       const varTotal = ((totalPago - mediaAnpAno) / mediaAnpAno) * 100;
-      const bgTotal = varTotal <= 0 ? 'rgba(34, 197, 94, 0.35)' : 'rgba(239, 68, 68, 0.38)';
+
+      if (varTotal < melhorVarExt) {
+        melhorVarExt = varTotal;
+        melhorUfExt = uf;
+      }
+      if (varTotal > piorVarExt) {
+        piorVarExt = varTotal;
+        piorUfExt = uf;
+      }
+
+      const bgTotal = varTotal <= 0 ? '#047857' : '#b91c1c';
       const textTotal = (varTotal > 0 ? '+' : '') + varTotal.toFixed(2).replace('.', ',') + '%';
-      tds += `<td style="background-color: ${bgTotal}; font-weight: 800;">${textTotal}</td>`;
+      tds += `<td style="background-color: ${bgTotal}; color: #ffffff; font-weight: 800; font-size: 0.78rem; border-left: 2px solid #64748b;">${textTotal}</td>`;
     } else {
-      tds += `<td class="text-muted">-</td>`;
+      tds += `<td class="text-muted" style="border-left: 2px solid #64748b;">-</td>`;
     }
 
     htmlExterna += `<tr>${tds}</tr>`;
@@ -132,19 +257,19 @@ async function calcularMatrizesGerenciais(registros) {
 
   // 2. MATRIZ EXECUTIVA INTERNA (Var % vs ANP Distribuição)
   let htmlInterna = `
-    <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.72rem;">
+    <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.72rem;">
       <thead class="table-light">
         <tr>
-          <th style="width: 45px;">UF</th>
+          <th style="width: 48px; background-color: #f8fafc;">UF</th>
           ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
-          <th class="fw-bold bg-secondary text-white">Total</th>
+          <th style="background-color: #0f172a; color: #ffffff; border-left: 2px solid #64748b; width: 65px;">Total</th>
         </tr>
       </thead>
       <tbody>
   `;
 
   ufsInterno.forEach(uf => {
-    let tds = `<td><b>${uf}</b></td>`;
+    let tds = `<td class="fw-bold bg-light">${uf}</td>`;
     const precosAnpAno = [];
 
     mesesColunas.forEach(m => {
@@ -154,7 +279,7 @@ async function calcularMatrizesGerenciais(registros) {
       if (precoPago && refAnp) {
         precosAnpAno.push(refAnp);
         const varPerc = ((precoPago - refAnp) / refAnp) * 100;
-        const bgCor = varPerc <= 0 ? 'rgba(34, 197, 94, 0.28)' : 'rgba(239, 68, 68, 0.32)';
+        const bgCor = varPerc <= 0 ? 'rgba(34, 197, 94, 0.22)' : 'rgba(239, 68, 68, 0.25)';
         const textoSinal = (varPerc > 0 ? '+' : '') + varPerc.toFixed(2).replace('.', ',') + '%';
         tds += `<td style="background-color: ${bgCor}; font-weight: 500;">${textoSinal}</td>`;
       } else {
@@ -166,11 +291,11 @@ async function calcularMatrizesGerenciais(registros) {
     if (totalPago && precosAnpAno.length > 0) {
       const mediaAnpAno = precosAnpAno.reduce((a, b) => a + b, 0) / precosAnpAno.length;
       const varTotal = ((totalPago - mediaAnpAno) / mediaAnpAno) * 100;
-      const bgTotal = varTotal <= 0 ? 'rgba(34, 197, 94, 0.35)' : 'rgba(239, 68, 68, 0.38)';
+      const bgTotal = varTotal <= 0 ? '#047857' : '#b91c1c';
       const textTotal = (varTotal > 0 ? '+' : '') + varTotal.toFixed(2).replace('.', ',') + '%';
-      tds += `<td style="background-color: ${bgTotal}; font-weight: 800;">${textTotal}</td>`;
+      tds += `<td style="background-color: ${bgTotal}; color: #ffffff; font-weight: 800; font-size: 0.78rem; border-left: 2px solid #64748b;">${textTotal}</td>`;
     } else {
-      tds += `<td class="text-muted">-</td>`;
+      tds += `<td class="text-muted" style="border-left: 2px solid #64748b;">-</td>`;
     }
 
     htmlInterna += `<tr>${tds}</tr>`;
@@ -179,19 +304,24 @@ async function calcularMatrizesGerenciais(registros) {
 
   // 3. MATRIZ EXECUTIVA DE SPREAD (Interno vs Externo R$/L)
   let htmlSpread = `
-    <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.72rem;">
+    <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.72rem;">
       <thead class="table-light">
         <tr>
-          <th style="width: 45px;">UF</th>
+          <th style="width: 48px; background-color: #f8fafc;">UF</th>
           ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
-          <th class="fw-bold bg-secondary text-white">Total</th>
+          <th style="background-color: #0f172a; color: #ffffff; border-left: 2px solid #64748b; width: 70px;">Total</th>
         </tr>
       </thead>
       <tbody>
   `;
 
+  let ufMenorSpread = null;
+  let menorSpreadVal = 999;
+  let ufMaiorSpread = null;
+  let maiorSpreadVal = -999;
+
   ufsInterno.forEach(uf => {
-    let tds = `<td><b>${uf}</b></td>`;
+    let tds = `<td class="fw-bold bg-light">${uf}</td>`;
     const totInt = getTotalUfSimples(uf, 'INTERNO');
     const totExt = getTotalUfSimples(uf, 'EXTERNO');
 
@@ -201,9 +331,9 @@ async function calcularMatrizesGerenciais(registros) {
 
       if (pInt && pExt) {
         const spread = pExt - pInt;
-        let bgCor = 'rgba(245, 158, 11, 0.28)';
-        if (spread >= 0.50) bgCor = 'rgba(34, 197, 94, 0.32)';
-        if (spread < 0.15) bgCor = 'rgba(239, 68, 68, 0.32)';
+        let bgCor = 'rgba(245, 158, 11, 0.22)';
+        if (spread >= 0.50) bgCor = 'rgba(34, 197, 94, 0.28)';
+        if (spread < 0.15) bgCor = 'rgba(239, 68, 68, 0.28)';
 
         tds += `<td style="background-color: ${bgCor}; font-weight: 600;">R$ ${spread.toFixed(2).replace('.', ',')}</td>`;
       } else {
@@ -213,13 +343,22 @@ async function calcularMatrizesGerenciais(registros) {
 
     if (totInt && totExt) {
       const spreadTot = totExt - totInt;
-      let bgTotal = 'rgba(245, 158, 11, 0.35)';
-      if (spreadTot >= 0.50) bgTotal = 'rgba(34, 197, 94, 0.38)';
-      if (spreadTot < 0.15) bgTotal = 'rgba(239, 68, 68, 0.38)';
+      if (spreadTot < menorSpreadVal) {
+        menorSpreadVal = spreadTot;
+        ufMenorSpread = uf;
+      }
+      if (spreadTot > maiorSpreadVal) {
+        maiorSpreadVal = spreadTot;
+        ufMaiorSpread = uf;
+      }
 
-      tds += `<td style="background-color: ${bgTotal}; font-weight: 800;">R$ ${spreadTot.toFixed(2).replace('.', ',')}</td>`;
+      let bgTotal = '#b45309';
+      if (spreadTot >= 0.50) bgTotal = '#047857';
+      if (spreadTot < 0.15) bgTotal = '#b91c1c';
+
+      tds += `<td style="background-color: ${bgTotal}; color: #ffffff; font-weight: 800; font-size: 0.78rem; border-left: 2px solid #64748b;">R$ ${spreadTot.toFixed(2).replace('.', ',')}</td>`;
     } else {
-      tds += `<td class="text-muted">-</td>`;
+      tds += `<td class="text-muted" style="border-left: 2px solid #64748b;">-</td>`;
     }
 
     htmlSpread += `<tr>${tds}</tr>`;
@@ -232,25 +371,25 @@ async function calcularMatrizesGerenciais(registros) {
 
   // CHECAGEM 1: Custo Médio Externo Pago (R$/L)
   let htmlCheckPago = `
-    <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.70rem;">
+    <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.70rem;">
       <thead class="table-dark">
         <tr>
           <th style="width: 45px;">UF</th>
           ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
-          <th class="fw-bold bg-primary text-white">Total</th>
+          <th class="fw-bold bg-primary text-white" style="border-left: 2px solid #64748b;">Total</th>
         </tr>
       </thead>
       <tbody>
   `;
 
   ufsExterno.forEach(uf => {
-    let tds = `<td><b>${uf}</b></td>`;
+    let tds = `<td class="fw-bold">${uf}</td>`;
     mesesColunas.forEach(m => {
       const p = getPrecoMedioSimples(uf, m.id, 'EXTERNO');
       tds += `<td>${p ? p.toFixed(2).replace('.', ',') : '-'}</td>`;
     });
     const tot = getTotalUfSimples(uf, 'EXTERNO');
-    tds += `<td class="fw-bold bg-light">${tot ? tot.toFixed(2).replace('.', ',') : '-'}</td>`;
+    tds += `<td class="fw-bold bg-light" style="border-left: 2px solid #64748b;">${tot ? tot.toFixed(2).replace('.', ',') : '-'}</td>`;
     htmlCheckPago += `<tr>${tds}</tr>`;
   });
   htmlCheckPago += `</tbody></table>`;
@@ -258,19 +397,19 @@ async function calcularMatrizesGerenciais(registros) {
   // CHECAGEM 2: Custo Médio ANP Revenda (R$/L)
   const ufsAnpRevenda = Object.keys(mapaRevenda).sort();
   let htmlCheckAnp = `
-    <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.70rem;">
+    <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.70rem;">
       <thead class="table-dark">
         <tr>
           <th style="width: 45px;">UF</th>
           ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
-          <th class="fw-bold bg-success text-white">Total</th>
+          <th class="fw-bold bg-success text-white" style="border-left: 2px solid #64748b;">Total</th>
         </tr>
       </thead>
       <tbody>
   `;
 
   ufsAnpRevenda.forEach(uf => {
-    let tds = `<td><b>${uf}</b></td>`;
+    let tds = `<td class="fw-bold">${uf}</td>`;
     const valoresUf = [];
     mesesColunas.forEach(m => {
       const v = (mapaRevenda[uf] && mapaRevenda[uf][m.id]) ? mapaRevenda[uf][m.id] : null;
@@ -278,32 +417,32 @@ async function calcularMatrizesGerenciais(registros) {
       tds += `<td>${v ? v.toFixed(2).replace('.', ',') : '-'}</td>`;
     });
     const mediaUf = valoresUf.length > 0 ? (valoresUf.reduce((a, b) => a + b, 0) / valoresUf.length) : null;
-    tds += `<td class="fw-bold bg-light">${mediaUf ? mediaUf.toFixed(2).replace('.', ',') : '-'}</td>`;
+    tds += `<td class="fw-bold bg-light" style="border-left: 2px solid #64748b;">${mediaUf ? mediaUf.toFixed(2).replace('.', ',') : '-'}</td>`;
     htmlCheckAnp += `<tr>${tds}</tr>`;
   });
   htmlCheckAnp += `</tbody></table>`;
 
   // CHECAGEM 3: Custo Médio Interno Pago (R$/L)
   let htmlCheckInternoPago = `
-    <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.70rem;">
+    <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.70rem;">
       <thead class="table-dark">
         <tr>
           <th style="width: 45px;">UF</th>
           ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
-          <th class="fw-bold bg-primary text-white">Total</th>
+          <th class="fw-bold bg-primary text-white" style="border-left: 2px solid #64748b;">Total</th>
         </tr>
       </thead>
       <tbody>
   `;
 
   ufsInterno.forEach(uf => {
-    let tds = `<td><b>${uf}</b></td>`;
+    let tds = `<td class="fw-bold">${uf}</td>`;
     mesesColunas.forEach(m => {
       const p = getPrecoMedioSimples(uf, m.id, 'INTERNO');
       tds += `<td>${p ? p.toFixed(2).replace('.', ',') : '-'}</td>`;
     });
     const tot = getTotalUfSimples(uf, 'INTERNO');
-    tds += `<td class="fw-bold bg-light">${tot ? tot.toFixed(2).replace('.', ',') : '-'}</td>`;
+    tds += `<td class="fw-bold bg-light" style="border-left: 2px solid #64748b;">${tot ? tot.toFixed(2).replace('.', ',') : '-'}</td>`;
     htmlCheckInternoPago += `<tr>${tds}</tr>`;
   });
   htmlCheckInternoPago += `</tbody></table>`;
@@ -311,19 +450,19 @@ async function calcularMatrizesGerenciais(registros) {
   // CHECAGEM 4: Custo Médio ANP Distribuição (R$/L)
   const ufsAnpDist = Object.keys(mapaDistribuicao).sort();
   let htmlCheckAnpDist = `
-    <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.70rem;">
+    <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.70rem;">
       <thead class="table-dark">
         <tr>
           <th style="width: 45px;">UF</th>
           ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
-          <th class="fw-bold bg-success text-white">Total</th>
+          <th class="fw-bold bg-success text-white" style="border-left: 2px solid #64748b;">Total</th>
         </tr>
       </thead>
       <tbody>
   `;
 
   ufsAnpDist.forEach(uf => {
-    let tds = `<td><b>${uf}</b></td>`;
+    let tds = `<td class="fw-bold">${uf}</td>`;
     const valoresUf = [];
     mesesColunas.forEach(m => {
       const v = (mapaDistribuicao[uf] && mapaDistribuicao[uf][m.id]) ? mapaDistribuicao[uf][m.id] : null;
@@ -331,15 +470,22 @@ async function calcularMatrizesGerenciais(registros) {
       tds += `<td>${v ? v.toFixed(2).replace('.', ',') : '-'}</td>`;
     });
     const mediaUf = valoresUf.length > 0 ? (valoresUf.reduce((a, b) => a + b, 0) / valoresUf.length) : null;
-    tds += `<td class="fw-bold bg-light">${mediaUf ? mediaUf.toFixed(2).replace('.', ',') : '-'}</td>`;
+    tds += `<td class="fw-bold bg-light" style="border-left: 2px solid #64748b;">${mediaUf ? mediaUf.toFixed(2).replace('.', ',') : '-'}</td>`;
     htmlCheckAnpDist += `<tr>${tds}</tr>`;
   });
   htmlCheckAnpDist += `</tbody></table>`;
+
+  const htmlInsights = gerarInsightsInteligentes(
+    { melhorUf: melhorUfExt, melhorVar: melhorVarExt, piorUf: piorUfExt, piorVar: piorVarExt },
+    {},
+    { ufMenorSpread, menorSpreadVal, ufMaiorSpread, maiorSpreadVal }
+  );
 
   return {
     htmlExterna,
     htmlInterna,
     htmlSpread,
+    htmlInsights,
     htmlCheckPago,
     htmlCheckAnp,
     htmlCheckInternoPago,
@@ -366,67 +512,94 @@ async function renderizarAbaMatrizes() {
   const matrizes = await calcularMatrizesGerenciais(baseRegistrosMensais);
 
   container.innerHTML = `
-    <!-- BLOCO 1: MATRIZES EXECUTIVAS -->
-    <div class="row g-3 mb-4">
+    <!-- CABEÇALHO DE AÇÕES EXECUTIVAS -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h5 class="fw-bold mb-0 text-dark">Matrizes Gerenciais de Combustível</h5>
+        <span class="small text-muted">Auditoria de Preços de Bomba de Rua e Tanques Próprios vs. ANP Oficial</span>
+      </div>
+      <div class="d-flex gap-2">
+        <button id="btnToggleAuditoria" class="btn btn-sm btn-outline-secondary" onclick="alternarPainelAuditoria()">
+          <i class="bi bi-shield-check me-1"></i> Exibir Tabelas de Auditoria Bruta (4)
+        </button>
+        <button class="btn btn-sm btn-primary shadow-sm" onclick="imprimirRelatorioExecutivo()">
+          <i class="bi bi-printer-fill me-1"></i> Emitir Relatório Executivo
+        </button>
+      </div>
+    </div>
+
+    <!-- BLOCO 1: MATRIZES EXECUTIVAS COLORIDAS -->
+    <div class="row g-3 mb-3">
       <!-- AUDITORIA EXTERNA -->
       <div class="col-12 col-xl-7">
-        <div class="card p-3 shadow-sm border-0 h-100">
+        <div class="card p-3 shadow-sm border-0 h-100 bg-white">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-graph-down-arrow me-1 text-primary"></i> Auditoria Externa: Variação do Custo Pago vs. ANP Revenda (%)</h6>
+            <div class="d-flex align-items-center">
+              <i class="bi bi-graph-down-arrow text-primary fs-5 me-2"></i>
+              <h6 class="fw-bold mb-0 text-dark">Auditoria Externa: Variação do Custo Pago vs. ANP Revenda (%)</h6>
+            </div>
             <span class="badge bg-light text-dark border">Rota Rodoviária</span>
           </div>
           <div class="table-responsive">
             ${matrizes.htmlExterna}
           </div>
           <div class="alert alert-light border mt-auto py-2 px-3 small text-muted" style="font-size: 0.72rem;">
-            <em>💡 <strong>Como interpretar:</strong> Mede o poder de compra da frota na estrada contra a bomba oficial da ANP. Células em <strong>verde (valores negativos)</strong> indicam compra abaixo da média estadual. Células em <strong>vermelho (valores positivos)</strong> alertam para ágio ou postos caros.</em>
+            <em>💡 <strong>Como interpretar:</strong> Mede o poder de compra da frota na estrada contra a bomba oficial da ANP. Células em <strong>verde (valores negativos)</strong> indicam compra abaixo da média estadual. Células em <strong>vermelho (valores positivos)</strong> alertam para ágio ou postos caros. A coluna <strong>Total</strong> em cor sólida consolida a média anual ponderada.</em>
           </div>
         </div>
       </div>
 
       <!-- AUDITORIA INTERNA E SPREAD -->
       <div class="col-12 col-xl-5 d-flex flex-column gap-3">
-        <div class="card p-3 shadow-sm border-0 flex-grow-1">
+        <div class="card p-3 shadow-sm border-0 flex-grow-1 bg-white">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-fuel-pump-fill me-1 text-success"></i> Auditoria Interna: Variação do Custo Pago vs. ANP Distribuição (%)</h6>
+            <div class="d-flex align-items-center">
+              <i class="bi bi-fuel-pump-fill text-success fs-5 me-2"></i>
+              <h6 class="fw-bold mb-0 text-dark">Auditoria Interna: Variação do Custo Pago vs. ANP Distribuição (%)</h6>
+            </div>
             <span class="badge bg-light text-dark border">Tanques Próprios</span>
           </div>
           <div class="table-responsive">
             ${matrizes.htmlInterna}
           </div>
           <div class="alert alert-light border mt-1 py-1 px-2 text-muted" style="font-size: 0.69rem;">
-            <em>💡 <strong>Como interpretar:</strong> Avalia a eficiência na compra de atacado para as garagens em relação ao Levantamento Oficial de Preços de Distribuição de Combustíveis (PDC/ANP).</em>
+            <em>💡 <strong>Como interpretar:</strong> Eficiência nas compras de atacado das garagens em relação ao Levantamento Oficial de Preços de Distribuição (PDC/ANP).</em>
           </div>
         </div>
 
-        <div class="card p-3 shadow-sm border-0 flex-grow-1">
+        <div class="card p-3 shadow-sm border-0 flex-grow-1 bg-white">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-cash-stack me-1 text-warning"></i> Spread Interno X Externo (R$/L)</h6>
+            <div class="d-flex align-items-center">
+              <i class="bi bi-cash-stack text-warning fs-5 me-2"></i>
+              <h6 class="fw-bold mb-0 text-dark">Spread Interno X Externo (R$/L)</h6>
+            </div>
             <span class="badge bg-light text-dark border">Margem Garagem vs Bomba</span>
           </div>
           <div class="table-responsive">
             ${matrizes.htmlSpread}
           </div>
           <div class="alert alert-light border mt-1 py-1 px-2 text-muted" style="font-size: 0.69rem;">
-            <em>💡 <strong>Como interpretar:</strong> Ganho unitário líquido por abastecer na garagem em vez da rua. <strong>Vermelho (abaixo de R$ 0,15/L)</strong> alerta para margem insuficiente.</em>
+            <em>💡 <strong>Como interpretar:</strong> Ganho unitário líquido por abastecer na garagem em vez da rua. Células em <strong>vermelho (abaixo de R$ 0,15/L)</strong> alertam para margem insuficiente.</em>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- BLOCO 2: MODO DE CHECAGEM BRUTO (ESPELHO POWER BI) -->
-    <div class="card p-3 shadow-sm border-0 bg-light">
+    <!-- BLOCO DE TEXTOS INTELIGENTES / DIAGNÓSTICO ESTRATÉGICO -->
+    ${matrizes.htmlInsights}
+
+    <!-- BLOCO 2: MODO DE CHECAGEM BRUTO (OCULTO POR PADRÃO VIA TOGGLE) -->
+    <div id="painelChecagemBruta" class="card p-3 shadow-sm border-0 bg-light d-none" style="display: none;">
       <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
         <div>
-          <h6 class="fw-bold text-dark mb-0"><i class="bi bi-ui-checks-grid me-1 text-secondary"></i> Painel de Checagem: Confronto de Preços Brutos em Reais (R$/L)</h6>
-          <span class="small text-muted">Valores médios ponderados por transação e preços oficiais da ANP (Revenda e Distribuição)</span>
+          <h6 class="fw-bold text-dark mb-0"><i class="bi bi-ui-checks-grid me-2 text-secondary fs-5"></i> Painel de Checagem: Confronto de Preços Brutos em Reais (R$/L)</h6>
+          <span class="small text-muted">Valores médios ponderados por transação (KMM) e preços oficiais da ANP (Revenda e Distribuição PDC)</span>
         </div>
         <span class="badge bg-secondary text-white font-monospace">Auditoria Interna de Dados</span>
       </div>
 
       <!-- CHECAGEM DE REVENDA -->
       <div class="row g-3 mb-3">
-        <!-- TABELA CHECAGEM 1: CUSTO MEDIO EXTERNO PAGO -->
         <div class="col-12 col-xl-6">
           <div class="card p-2 bg-white border h-100">
             <span class="fw-bold small text-dark mb-2 d-block">1. Custo Médio Externo Pago (R$/L) - Bomba de Rua</span>
@@ -436,7 +609,6 @@ async function renderizarAbaMatrizes() {
           </div>
         </div>
 
-        <!-- TABELA CHECAGEM 2: CUSTO MEDIO ANP REVENDA -->
         <div class="col-12 col-xl-6">
           <div class="card p-2 bg-white border h-100">
             <span class="fw-bold small text-dark mb-2 d-block">2. Custo Médio ANP Revenda (R$/L) - Base Oficial</span>
@@ -449,7 +621,6 @@ async function renderizarAbaMatrizes() {
 
       <!-- CHECAGEM DE DISTRIBUIÇÃO -->
       <div class="row g-3">
-        <!-- TABELA CHECAGEM 3: CUSTO MEDIO INTERNO PAGO -->
         <div class="col-12 col-xl-6">
           <div class="card p-2 bg-white border h-100">
             <span class="fw-bold small text-dark mb-2 d-block">3. Custo Médio Interno Pago (R$/L) - Garagens / Tanques</span>
@@ -459,7 +630,6 @@ async function renderizarAbaMatrizes() {
           </div>
         </div>
 
-        <!-- TABELA CHECAGEM 4: CUSTO MEDIO ANP DISTRIBUIÇÃO -->
         <div class="col-12 col-xl-6">
           <div class="card p-2 bg-white border h-100">
             <span class="fw-bold small text-dark mb-2 d-block">4. Custo Médio ANP Distribuição (R$/L) - Base Oficial PDC</span>
