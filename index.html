@@ -37,7 +37,7 @@
       background-size: 500px auto;
       color: var(--text-dark);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      padding: 18px 22px;
+      padding: 16px 20px;
       margin: 0;
       min-height: 100vh;
     }
@@ -47,26 +47,26 @@
       backdrop-filter: blur(8px);
       border: 1px solid var(--border-color);
       border-radius: 12px;
-      padding: 12px 20px;
-      margin-bottom: 16px;
+      padding: 10px 18px;
+      margin-bottom: 14px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     }
-    .brand-logo-cargo { height: 40px; width: auto; object-fit: contain; }
-    .brand-logo-voctt { height: 40px; width: auto; border-radius: 50%; border: 2px solid var(--border-color); }
+    .brand-logo-cargo { height: 38px; width: auto; object-fit: contain; }
+    .brand-logo-voctt { height: 38px; width: auto; border-radius: 50%; border: 2px solid var(--border-color); }
 
     /* BARRA SUPERIOR COCKPIT (VERDE ESCURA INSTITUCIONAL) */
     .cockpit-bar {
       background: linear-gradient(135deg, #062316 0%, #0f3d26 50%, #144e31 100%);
       border-radius: 12px;
-      padding: 10px 18px;
-      margin-bottom: 16px;
+      padding: 9px 16px;
+      margin-bottom: 14px;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
     }
     .cockpit-bar .form-select {
       background-color: rgba(255, 255, 255, 0.12);
       border: 1px solid rgba(255, 255, 255, 0.25);
       color: #ffffff;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
     }
     .cockpit-bar .form-select option {
@@ -78,9 +78,9 @@
       border: 1px solid rgba(255, 255, 255, 0.22);
       background: rgba(255, 255, 255, 0.08);
       color: #e2e8f0;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      padding: 6px 14px;
+      padding: 5px 12px;
       border-radius: 20px;
       transition: all 0.2s ease;
       display: inline-flex;
@@ -100,22 +100,19 @@
     .control-sub-bar {
       background: #ffffff;
       border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 12px 16px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      border-radius: 10px;
+      padding: 10px 14px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
     }
 
+    /* CARDS KPIS ENXUTOS E COMPACTOS */
     .card-kpi {
       background: #ffffff;
       border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 12px 14px;
+      border-radius: 10px;
+      padding: 10px 12px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
       border-left: 4px solid var(--cargosoft-green);
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
       transition: transform 0.15s ease;
     }
     .card-kpi:hover {
@@ -127,24 +124,24 @@
     }
 
     .kpi-label {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       font-weight: 800;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
       margin-bottom: 2px;
     }
     .kpi-val {
-      font-size: 1.35rem;
+      font-size: 1.25rem;
       font-weight: 800;
       color: var(--cargosoft-green);
       letter-spacing: -0.02em;
-      line-height: 1.2;
+      line-height: 1.15;
     }
     .kpi-sub {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       color: var(--text-muted);
-      margin-top: 3px;
+      margin-top: 2px;
     }
 
     .panel-box {
@@ -157,7 +154,7 @@
       position: relative;
     }
     .panel-header {
-      padding: 12px 18px;
+      padding: 10px 16px;
       background: #f8fafc;
       border-bottom: 1px solid var(--border-color);
       display: flex;
@@ -168,43 +165,45 @@
     .card-posto-termometro {
       background: #ffffff;
       border: 1px solid var(--border-color);
-      border-radius: 10px;
-      margin-bottom: 10px;
+      border-radius: 8px;
+      margin-bottom: 8px;
       position: relative;
       overflow: hidden;
       transition: all 0.2s ease;
     }
     .card-posto-termometro:hover {
-      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.05);
       border-color: #cbd5e1;
     }
 
-    /* GRÁFICO CENTRAL 100% VISÍVEL ATÉ A MARGEM DA CAIXA BRANCA */
+    /* GRÁFICO SUAVE COM DESVANECIMENTO LATERAL */
     .chart-background-container {
       position: absolute;
       top: 0;
-      left: 280px;
-      right: 560px;
+      left: 0;
+      right: 0;
       bottom: 0;
       z-index: 1;
-      opacity: 0.38;
+      opacity: 0.32;
       pointer-events: none;
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.6) 15%, rgba(0,0,0,0.9) 70%, transparent 100%);
+      mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.6) 15%, rgba(0,0,0,0.9) 70%, transparent 100%);
     }
 
     .posto-foreground {
       position: relative;
       z-index: 2;
-      padding: 8px 14px;
+      padding: 8px 12px;
     }
 
-    /* BLOCO TRANSLÚCIDO COMPACTADO À DIREITA */
+    /* BLOCO TRANSLÚCIDO COMPACTADO */
     .valores-box-blur {
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       border: 1px solid rgba(226, 232, 240, 0.95);
-      border-radius: 8px;
-      padding: 5px 12px;
+      border-radius: 6px;
+      padding: 4px 10px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
       white-space: nowrap;
     }
@@ -220,17 +219,17 @@
     .badge-uf {
       background: #0f172a;
       color: #ffffff;
-      padding: 3px 8px;
-      border-radius: 6px;
+      padding: 3px 7px;
+      border-radius: 5px;
       font-weight: 800;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       letter-spacing: 0.03em;
     }
 
     .badge-tipo {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: 800;
-      padding: 3px 6px;
+      padding: 2px 5px;
       border-radius: 4px;
     }
     .tipo-rota { background: #ffedd5; color: #c2410c; }
@@ -240,48 +239,48 @@
       background: var(--cargosoft-green);
       color: #ffffff;
       font-weight: 600;
-      font-size: 0.82rem;
+      font-size: 0.80rem;
       border: none;
-      padding: 6px 14px;
-      border-radius: 8px;
+      padding: 5px 12px;
+      border-radius: 6px;
     }
     .btn-sync:hover { background: var(--cargosoft-green-hover); color: #ffffff; }
 
     .btn-tratativa {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       background: #ffffff;
       border: 1px solid var(--border-color);
       color: var(--cargosoft-green);
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 6px;
+      padding: 3px 8px;
+      border-radius: 5px;
       white-space: nowrap;
     }
     .btn-tratativa:hover { background: var(--cargosoft-green); color: #ffffff; }
 
     .legend-indicator {
       display: inline-block;
-      width: 10px;
-      height: 10px;
+      width: 9px;
+      height: 9px;
       border-radius: 2px;
-      margin-right: 4px;
+      margin-right: 3px;
     }
 
-    /* MAPA SVG ESTADOS COM HEATMAP E SILHUETA COMPLETA */
+    /* MAPA SVG DO BRASIL: SILHUETA REAL COM CONTORNOS GEOGRÁFICOS */
     .map-container {
       background: #ffffff;
       border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      border-radius: 10px;
+      padding: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
       height: 100%;
     }
     .svg-state {
       stroke: #ffffff;
-      stroke-width: 1.2;
+      stroke-width: 0.8;
       transition: all 0.2s ease;
       cursor: pointer;
     }
@@ -294,11 +293,11 @@
     .svg-state:hover {
       filter: brightness(0.85);
       stroke: #0f172a;
-      stroke-width: 1.8;
+      stroke-width: 1.5;
     }
     .svg-state.active {
       stroke: #f59e0b !important;
-      stroke-width: 2.8 !important;
+      stroke-width: 2.2 !important;
     }
 
     #mapTooltip {
@@ -306,15 +305,15 @@
       display: none;
       background: rgba(15, 23, 42, 0.94);
       color: #ffffff;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 0.75rem;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
       pointer-events: none;
       z-index: 1000;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
-    /* TELA ROTEIRIZADOR LEAFLET */
+    /* ROTEIRIZADOR LEAFLET */
     #secaoRoteirizador, #secaoMatrizesGerenciais {
       display: none;
     }
@@ -359,16 +358,16 @@
   <div class="container-fluid px-0">
 
     <!-- CABEÇALHO -->
-    <div class="header-bar d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div class="header-bar d-flex justify-content-between align-items-center flex-wrap gap-2">
       <div class="d-flex align-items-center gap-3">
         <img src="logo_cargo_verde.png" alt="Cargosoft" class="brand-logo-cargo">
-        <div style="border-left: 2px solid var(--border-color); height: 36px; margin: 0 4px;"></div>
+        <div style="border-left: 2px solid var(--border-color); height: 32px; margin: 0 2px;"></div>
         <div>
           <h1 class="h6 mb-0 fw-bold" style="color: var(--cargosoft-green);">Torre de Gestão & Auditoria de Diesel S10</h1>
-          <span class="small text-muted">Controle Contábil e Confronto de Mercado com Referência Oficial ANP</span>
+          <span class="small text-muted" style="font-size: 0.72rem;">Controle Contábil e Confronto de Mercado com Referência Oficial ANP</span>
         </div>
       </div>
-      <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2">
         <button id="btnSincronizar" class="btn btn-sync shadow-sm" onclick="carregarDados()">
           <i class="bi bi-arrow-repeat me-1"></i> Sincronizar Base KMM
         </button>
@@ -377,10 +376,10 @@
     </div>
 
     <!-- BARRA SUPERIOR COCKPIT (VERDE ESCURA) -->
-    <div class="cockpit-bar d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div class="cockpit-bar d-flex flex-wrap align-items-center justify-content-between gap-2">
       <div class="d-flex align-items-center gap-2">
-        <label class="small fw-bold text-white-50 text-uppercase"><i class="bi bi-calendar3 me-1"></i> Competência:</label>
-        <select id="filtroMesAno" class="form-select form-select-sm" style="width: 230px;" onchange="processarPainel()">
+        <label class="small fw-bold text-white-50 text-uppercase" style="font-size: 0.70rem;"><i class="bi bi-calendar3 me-1"></i> Competência:</label>
+        <select id="filtroMesAno" class="form-select form-select-sm" style="width: 220px;" onchange="processarPainel()">
         </select>
       </div>
 
@@ -405,26 +404,24 @@
     </div>
 
     <!-- CONTROLE SECUNDÁRIO, KPIS E MAPA DO BRASIL -->
-    <div class="row g-3 mb-3">
-      <div class="col-12 col-lg-8 d-flex flex-column gap-3">
+    <div class="row g-2 mb-3">
+      <div class="col-12 col-lg-8 d-flex flex-column gap-2">
         
-        <!-- SEGUNDA LINHA: FILTRO DE REDE (COM CONTAGEM DINÂMICA), POSTO E BUSCA -->
+        <!-- LINHA DE FILTROS: REDE (COM CONTAGEM), POSTO E BUSCA -->
         <div class="control-sub-bar">
           <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div class="d-flex flex-wrap align-items-center gap-2">
               
-              <!-- FILTRO POR REDE DE POSTOS COM CONTAGEM -->
               <div class="d-flex align-items-center gap-1">
-                <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.7rem;">Rede:</label>
-                <select id="filtroRede" class="form-select form-select-sm" style="width: 200px;" onchange="aplicarFiltroRede()">
+                <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.68rem;">Rede:</label>
+                <select id="filtroRede" class="form-select form-select-sm" style="width: 190px;" onchange="aplicarFiltroRede()">
                   <option value="">Todas as Redes</option>
                 </select>
               </div>
 
-              <!-- FILTRO POR POSTO ESPECÍFICO -->
               <div class="d-flex align-items-center gap-1">
-                <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.7rem;">Posto:</label>
-                <select id="filtroPosto" class="form-select form-select-sm" style="width: 200px;" onchange="aplicarFiltroPostoSelect()">
+                <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.68rem;">Posto:</label>
+                <select id="filtroPosto" class="form-select form-select-sm" style="width: 190px;" onchange="aplicarFiltroPostoSelect()">
                   <option value="">Todos os Postos</option>
                 </select>
               </div>
@@ -440,7 +437,7 @@
               </span>
             </div>
 
-            <div style="min-width: 180px; max-width: 250px; flex-grow: 1;">
+            <div style="min-width: 180px; max-width: 240px; flex-grow: 1;">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
                 <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Buscar posto ou cidade..." oninput="filtrarTabelaTexto()">
@@ -449,69 +446,75 @@
           </div>
         </div>
 
-        <!-- 5 CARDS EXECUTIVOS CALCULADOS (INCLUINDO CARD OFICIAL ANP / ANTT) -->
+        <!-- 5 CARDS EXECUTIVOS CALCULADOS -->
         <div class="row g-2 flex-grow-1">
           <div class="col-6 col-md">
-            <div class="card-kpi p-2">
+            <div class="card-kpi">
               <div class="kpi-label">VOLUME ENTREGUE</div>
-              <div class="kpi-val fs-5" id="cardVolume">-- L</div>
+              <div class="kpi-val" id="cardVolume">-- L</div>
               <div class="kpi-sub">Litros na competência</div>
             </div>
           </div>
           
           <div class="col-6 col-md">
-            <div class="card-kpi p-2">
+            <div class="card-kpi">
               <div class="kpi-label">GASTO TOTAL</div>
-              <div class="kpi-val fs-5" id="cardGasto">R$ --</div>
+              <div class="kpi-val" id="cardGasto">R$ --</div>
               <div class="kpi-sub">Custo total auditado</div>
             </div>
           </div>
           
           <div class="col-6 col-md">
-            <div class="card-kpi p-2">
+            <div class="card-kpi">
               <div class="kpi-label" id="cardPrecoMedioLabel">PREÇO MÉDIO REAL</div>
-              <div class="kpi-val fs-5" id="cardPrecoMedio">R$ --</div>
+              <div class="kpi-val" id="cardPrecoMedio">R$ --</div>
               <div class="kpi-sub" id="cardPrecoMedioSub">Média ponderada</div>
             </div>
           </div>
           
           <div class="col-6 col-md">
-            <div class="card-kpi p-2">
+            <div class="card-kpi">
               <div class="kpi-label">PONTOS COM VOLUME</div>
-              <div class="kpi-val fs-5" id="cardPontos">--</div>
+              <div class="kpi-val" id="cardPontos">--</div>
               <div class="kpi-sub">Unidades ativas</div>
             </div>
           </div>
 
-          <!-- CARD 5: OFICIAL ANP / ANTT BRASIL (PUXADO DO JSON SEM VALORES MOCKADOS) -->
+          <!-- CARD 5: OFICIAL ANP / ANTT BRASIL (ESTRITAMENTE AUDITADO DO JSON) -->
           <div class="col-12 col-md">
-            <div class="card-kpi card-kpi-anp p-2">
+            <div class="card-kpi card-kpi-anp">
               <div class="d-flex justify-content-between align-items-center">
                 <div class="kpi-label text-primary">ANP / ANTT BRASIL</div>
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.58rem;">OFICIAL</span>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.55rem;">OFICIAL</span>
               </div>
-              <div class="kpi-val fs-5 text-primary" id="cardAnpAntt">A carregar...</div>
-              <div class="kpi-sub" id="cardAnpAnttSub"><i class="bi bi-clock-history me-1"></i>Lendo anp_base.json</div>
+              <div class="kpi-val text-primary" id="cardAnpAntt">Indisponível</div>
+              <div class="kpi-sub text-truncate" id="cardAnpAnttSub" style="font-size: 0.62rem;">
+                <i class="bi bi-clock-history me-1"></i>Aguardando publicação oficial
+              </div>
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- MAPA SVG DO BRASIL: SILHUETA COMPLETA 27 ESTADOS + HEATMAP -->
+      <!-- MAPA SVG DO BRASIL: SILHUETA REAL COM CONTORNOS GEOGRÁFICOS -->
       <div class="col-12 col-lg-4">
         <div class="map-container d-flex flex-column justify-content-between">
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="small fw-bold text-dark text-uppercase"><i class="bi bi-geo-alt-fill me-1 text-success"></i> Filtro Interativo por Estado</span>
+            <span class="small fw-bold text-dark text-uppercase" style="font-size: 0.70rem;">
+              <i class="bi bi-geo-alt-fill me-1 text-success"></i> FILTRO POR ESTADO
+            </span>
             <span class="text-muted" style="font-size: 0.65rem;" id="lblHoverEstado">Passe o mouse ou clique</span>
           </div>
-          <div class="d-flex justify-content-center align-items-center flex-grow-1" style="min-height: 180px; position: relative;">
-            <svg id="brazilSvg" viewBox="0 0 500 500" style="width: 100%; max-height: 210px;"></svg>
+
+          <div class="d-flex justify-content-center align-items-center flex-grow-1" style="min-height: 165px; position: relative;">
+            <svg id="brazilSvg" viewBox="0 0 520 520" style="width: 100%; height: 165px;"></svg>
           </div>
-          <div class="d-flex justify-content-between align-items-center mt-1 pt-1 border-top" style="font-size: 0.68rem;">
+
+          <div class="d-flex justify-content-between align-items-center pt-1 border-top" style="font-size: 0.65rem;">
             <span class="text-muted"><span class="legend-indicator" style="background:#e2e8f0;"></span>Sem Base</span>
             <div class="d-flex align-items-center gap-1">
-              <span class="text-muted">Volume:</span>
+              <span class="text-muted">Concentração:</span>
               <span class="legend-indicator" style="background:#86efac;" title="Baixo"></span>
               <span class="legend-indicator" style="background:#22c55e;" title="Médio"></span>
               <span class="legend-indicator" style="background:#15803d;" title="Alto"></span>
@@ -526,20 +529,20 @@
     <div id="secaoPainelPrincipal" class="panel-box">
       <div class="panel-header">
         <div>
-          <strong class="text-dark" id="lblTituloPainel"><i class="bi bi-speedometer2 me-1 text-success"></i> Painel Consolidado &bull; Visão Integrada da Frota</strong>
-          <div class="small text-muted" id="lblSubtituloTabela">Todas as garagens internas e postos de rodovia consolidados por ranking de litragem</div>
+          <strong class="text-dark" id="lblTituloPainel" style="font-size: 0.88rem;"><i class="bi bi-speedometer2 me-1 text-success"></i> Painel Consolidado &bull; Visão Integrada da Frota</strong>
+          <div class="small text-muted" id="lblSubtituloTabela" style="font-size: 0.72rem;">Todas as garagens internas e postos de rodovia consolidados por ranking de litragem</div>
         </div>
         <div class="d-flex align-items-center gap-3">
-          <span class="small text-muted font-monospace" id="lblLegendaGrafico">
+          <span class="small text-muted font-monospace" id="lblLegendaGrafico" style="font-size: 0.70rem;">
             <span class="legend-indicator" style="background:#059669;"></span>Referência Oficial ANP
-            <span class="legend-indicator" style="background:#2563eb; margin-left: 8px;"></span>Custo Garagem KMM
-            <span class="legend-indicator" style="background:#c2410c; margin-left: 8px;"></span>Bomba Rota KMM
+            <span class="legend-indicator" style="background:#2563eb; margin-left: 8px;"></span>Garagem
+            <span class="legend-indicator" style="background:#c2410c; margin-left: 8px;"></span>Rota
           </span>
-          <span class="badge bg-white text-dark border px-3 py-1 rounded-pill font-monospace" id="lblListando">Carregando...</span>
+          <span class="badge bg-white text-dark border px-2 py-1 rounded-pill font-monospace" id="lblListando" style="font-size: 0.72rem;">Carregando...</span>
         </div>
       </div>
       
-      <div class="p-3" id="listaTermometroPostos">
+      <div class="p-2" id="listaTermometroPostos">
         <div class="text-center py-5 text-muted">
           <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
           Buscando histórico consolidado KMM e referências ANP...
@@ -627,7 +630,6 @@
 
     <!-- SEÇÃO 3: MATRIZES GERENCIAIS & SPREADS (CARREGADAS VIA MATRIZES.JS) -->
     <div id="secaoMatrizesGerenciais" class="panel-box p-3">
-      <!-- O conteúdo é injetado dinamicamente pela função renderizarAbaMatrizes() -->
     </div>
 
     <!-- RODAPÉ -->
@@ -661,28 +663,8 @@
 
     const listaCidades = (typeof baseCidadesBrasil !== 'undefined' && Array.isArray(baseCidadesBrasil)) ? baseCidadesBrasil : [];
 
-    // Tabela estática de contingência caso o anp_base.json demore a carregar
-    let anpDistribuicao = {
-      "BA": { "2026-01": 5.44, "2026-02": 5.40, "2026-03": 6.28, "2026-04": 6.47, "2026-05": 6.34, "2026-06": 6.27, "2026-07": 6.12, "2026-08": 6.09, "2026-09": 6.239, "2026-10": 6.239 },
-      "CE": { "2026-01": 5.44, "2026-02": 5.40, "2026-03": 6.28, "2026-04": 6.47, "2026-05": 6.34, "2026-06": 6.27, "2026-07": 6.12, "2026-08": 6.09, "2026-09": 6.167, "2026-10": 6.167 },
-      "PR": { "2026-01": 5.44, "2026-02": 5.40, "2026-03": 6.28, "2026-04": 6.47, "2026-05": 6.34, "2026-06": 6.27, "2026-07": 6.12, "2026-08": 5.97, "2026-09": 6.000, "2026-10": 6.000 },
-      "SP": { "2026-01": 5.44, "2026-02": 5.40, "2026-03": 6.28, "2026-04": 6.47, "2026-05": 6.34, "2026-06": 6.27, "2026-07": 6.11, "2026-08": 6.09, "2026-09": 6.014, "2026-10": 6.014 },
-      "GO": { "2026-01": 5.40, "2026-02": 5.35, "2026-03": 6.15, "2026-04": 6.35, "2026-05": 6.20, "2026-06": 6.15, "2026-07": 6.02, "2026-08": 5.95, "2026-09": 5.868, "2026-10": 5.868 },
-      "MG": { "2026-01": 5.42, "2026-02": 5.38, "2026-03": 6.20, "2026-04": 6.40, "2026-05": 6.28, "2026-06": 6.20, "2026-07": 6.08, "2026-08": 6.02, "2026-09": 6.380, "2026-10": 6.380 },
-      "ES": { "2026-01": 5.45, "2026-02": 5.40, "2026-03": 6.25, "2026-04": 6.45, "2026-05": 6.30, "2026-06": 6.25, "2026-07": 6.10, "2026-08": 6.05, "2026-09": 6.390, "2026-10": 6.390 },
-      "MS": { "2026-01": 5.45, "2026-02": 5.40, "2026-03": 6.25, "2026-04": 6.45, "2026-05": 6.30, "2026-06": 6.25, "2026-07": 6.10, "2026-08": 6.05, "2026-09": 6.390, "2026-10": 6.390 }
-    };
-
-    let anpRevenda = {
-      "BA": { "2026-01": 5.95, "2026-02": 5.92, "2026-03": 6.65, "2026-04": 6.82, "2026-05": 6.75, "2026-06": 6.70, "2026-07": 6.58, "2026-08": 6.55, "2026-09": 6.680, "2026-10": 6.680 },
-      "CE": { "2026-01": 5.88, "2026-02": 5.85, "2026-03": 6.60, "2026-04": 6.78, "2026-05": 6.70, "2026-06": 6.65, "2026-07": 6.52, "2026-08": 6.48, "2026-09": 6.550, "2026-10": 6.550 },
-      "PR": { "2026-01": 5.75, "2026-02": 5.70, "2026-03": 6.48, "2026-04": 6.65, "2026-05": 6.55, "2026-06": 6.50, "2026-07": 6.38, "2026-08": 6.32, "2026-09": 6.390, "2026-10": 6.390 },
-      "SP": { "2026-01": 5.80, "2026-02": 5.76, "2026-03": 6.52, "2026-04": 6.70, "2026-05": 6.60, "2026-06": 6.55, "2026-07": 6.42, "2026-08": 6.38, "2026-09": 6.450, "2026-10": 6.450 },
-      "GO": { "2026-01": 5.85, "2026-02": 5.80, "2026-03": 6.58, "2026-04": 6.75, "2026-05": 6.65, "2026-06": 6.60, "2026-07": 6.48, "2026-08": 6.42, "2026-09": 6.420, "2026-10": 6.420 },
-      "MG": { "2026-01": 5.82, "2026-02": 5.78, "2026-03": 6.55, "2026-04": 6.72, "2026-05": 6.62, "2026-06": 6.58, "2026-07": 6.45, "2026-08": 6.40, "2026-09": 6.480, "2026-10": 6.480 },
-      "ES": { "2026-01": 5.80, "2026-02": 5.75, "2026-03": 6.50, "2026-04": 6.68, "2026-05": 6.58, "2026-06": 6.52, "2026-07": 6.40, "2026-08": 6.35, "2026-09": 6.390, "2026-10": 6.390 },
-      "MS": { "2026-01": 5.80, "2026-02": 5.75, "2026-03": 6.50, "2026-04": 6.68, "2026-05": 6.58, "2026-06": 6.52, "2026-07": 6.40, "2026-08": 6.35, "2026-09": 6.390, "2026-10": 6.390 }
-    };
+    let anpDistribuicao = {};
+    let anpRevenda = {};
 
     function identificarNomePonto(posto, municipio, uf, tipo) {
       if (tipo === 'INTERNO') {
@@ -704,7 +686,6 @@
       btn.disabled = true;
 
       try {
-        // Carrega a base oficial de preços reais da ANP/ANTT
         try {
           const respAnp = await fetch('anp_base.json');
           if (respAnp.ok) {
@@ -712,9 +693,11 @@
             if (dadosAnpBaseGlobal.revenda) anpRevenda = dadosAnpBaseGlobal.revenda;
             if (dadosAnpBaseGlobal.distribuicao) anpDistribuicao = dadosAnpBaseGlobal.distribuicao;
             atualizarCardAnttOficial();
+          } else {
+            definirCardAnttIndisponivel();
           }
         } catch (e) {
-          console.warn("Base anp_base.json externa em carregamento padrão.");
+          definirCardAnttIndisponivel();
         }
 
         const resp = await fetch(WORKER_URL);
@@ -740,16 +723,22 @@
       }
     }
 
-    // ATUALIZA CARD 5 COM INFORMAÇÃO REAL DA ANTT / PORTARIA SUROC
     function atualizarCardAnttOficial() {
-      if (!dadosAnpBaseGlobal || !dadosAnpBaseGlobal.referencia_antt) return;
-      const ref = dadosAnpBaseGlobal.referencia_antt;
-      const precoNum = parseFloat(ref.valor);
-
-      if (!isNaN(precoNum) && precoNum > 0) {
-        document.getElementById('cardAnpAntt').innerText = 'R$ ' + precoNum.toFixed(2).replace('.', ',');
-        document.getElementById('cardAnpAnttSub').innerHTML = `<i class="bi bi-file-earmark-check me-1"></i>${ref.ato_oficial} (Vigência: ${ref.vigencia})`;
+      if (dadosAnpBaseGlobal && dadosAnpBaseGlobal.referencia_antt) {
+        const ref = dadosAnpBaseGlobal.referencia_antt;
+        const precoNum = parseFloat(ref.valor);
+        if (!isNaN(precoNum) && precoNum > 0) {
+          document.getElementById('cardAnpAntt').innerText = 'R$ ' + precoNum.toFixed(2).replace('.', ',');
+          document.getElementById('cardAnpAnttSub').innerHTML = `<i class="bi bi-file-earmark-check me-1"></i>${ref.ato_oficial} (${ref.vigencia})`;
+          return;
+        }
       }
+      definirCardAnttIndisponivel();
+    }
+
+    function definirCardAnttIndisponivel() {
+      document.getElementById('cardAnpAntt').innerText = "Indisponível";
+      document.getElementById('cardAnpAnttSub').innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>Sem publicação localizada`;
     }
 
     function popularFiltrosDinamicos() {
@@ -771,7 +760,6 @@
         selectMes.appendChild(opt);
       });
 
-      // CONTAGEM DINÂMICA REAL POR REDE: REDE (QTD)
       const contagemRedes = {
         'MARAJO': new Set(),
         'GRAAL': new Set(),
@@ -1006,9 +994,9 @@
         }
 
         const tabelaReferencia = (p.TIPO_OPERACAO === 'INTERNO') ? anpDistribuicao : anpRevenda;
-        const anpUf = tabelaReferencia[p.UF_POSTO] || tabelaReferencia["PR"];
+        const anpUf = tabelaReferencia[p.UF_POSTO] || null;
         const mesRefAnp = (mesSel === 'YTD') ? p.MES_MAIS_RECENTE : mesSel;
-        const refAnpValor = anpUf ? (anpUf[mesRefAnp] || anpUf['2026-10'] || 0) : 0;
+        const refAnpValor = (anpUf && anpUf[mesRefAnp]) ? anpUf[mesRefAnp] : 0;
         const gapMercado = (precoMedioExibicao > 0 && refAnpValor > 0) ? (precoMedioExibicao - refAnpValor) : 0;
         const gapPerc = refAnpValor > 0 ? ((gapMercado / refAnpValor) * 100) : 0;
 
@@ -1088,53 +1076,53 @@
         const card = document.createElement('div');
         card.className = "card-posto-termometro";
         card.innerHTML = `
-          <!-- GRÁFICO AO FUNDO TOTALMENTE DESOBSTRUÍDO -->
+          <!-- GRÁFICO SUAVE AO FUNDO -->
           <div id="${chartDomId}" class="chart-background-container"></div>
 
-          <div class="posto-foreground d-flex flex-wrap align-items-center justify-content-between gap-3">
-            <div class="d-flex align-items-center gap-3" style="min-width: 260px; max-width: 270px; flex-shrink: 0;">
+          <div class="posto-foreground d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="d-flex align-items-center gap-2" style="min-width: 250px; max-width: 270px; flex-shrink: 0;">
               <span class="badge-uf">${p.UF_POSTO || '--'}</span>
               <div class="text-truncate">
                 <div class="fw-bold fs-6 text-dark text-truncate clickable-posto" onclick="filtrarPorPostoClique('${p.POSTO.replace(/'/g, "\\'")}')" title="Clique para filtrar este posto">
                   ${p.NOME_EXIBICAO}
                 </div>
-                <div class="small text-muted">${p.MUNICIPIO_POSTO || 'ND'} &bull; ${badgeTipo}</div>
+                <div class="small text-muted" style="font-size: 0.68rem;">${p.MUNICIPIO_POSTO || 'ND'} &bull; ${badgeTipo}</div>
               </div>
             </div>
 
-            <!-- QUADRO TRANSLÚCIDO COM BLUR COMPACTADO À DIREITA -->
+            <!-- QUADRO TRANSLÚCIDO COMPACTADO -->
             <div class="valores-box-blur d-flex align-items-center gap-3 text-end ms-auto">
               <div>
-                <div class="small text-muted text-uppercase" style="font-size: 0.62rem; font-weight: 800;">Volume</div>
-                <div class="font-monospace fw-bold fs-6">${Math.round(p.LITROS_TOTAL).toLocaleString('pt-BR')} L</div>
+                <div class="small text-muted text-uppercase" style="font-size: 0.60rem; font-weight: 800;">Volume</div>
+                <div class="font-monospace fw-bold" style="font-size: 0.82rem;">${Math.round(p.LITROS_TOTAL).toLocaleString('pt-BR')} L</div>
               </div>
 
               <div>
-                <div class="small text-muted text-uppercase" style="font-size: 0.62rem; font-weight: 800;">Preço Médio</div>
-                <div class="font-monospace fw-bold fs-6" style="color: ${ehInterno ? '#2563eb' : '#c2410c'};">
+                <div class="small text-muted text-uppercase" style="font-size: 0.60rem; font-weight: 800;">Preço Médio</div>
+                <div class="font-monospace fw-bold" style="font-size: 0.82rem; color: ${ehInterno ? '#2563eb' : '#c2410c'};">
                   R$ ${p.PRECO_MEDIO_EXIBICAO.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
                 </div>
               </div>
 
               <div>
-                <div class="small text-muted text-uppercase" style="font-size: 0.62rem; font-weight: 800;">Ref. ANP</div>
-                <div class="font-monospace text-success fw-semibold fs-6">
+                <div class="small text-muted text-uppercase" style="font-size: 0.60rem; font-weight: 800;">Ref. ANP</div>
+                <div class="font-monospace text-success fw-semibold" style="font-size: 0.82rem;">
                   ${p.REF_ANP > 0 ? "R$ " + p.REF_ANP.toFixed(3) : "--"}
                 </div>
               </div>
 
-              <div style="min-width: 95px;">
-                <div class="small text-muted text-uppercase" style="font-size: 0.62rem; font-weight: 800;">GAP Mercado</div>
-                <div class="font-monospace">${gapHtml}</div>
+              <div style="min-width: 90px;">
+                <div class="small text-muted text-uppercase" style="font-size: 0.60rem; font-weight: 800;">GAP Mercado</div>
+                <div class="font-monospace" style="font-size: 0.78rem;">${gapHtml}</div>
               </div>
 
               <div>
-                <div class="small text-muted text-uppercase" style="font-size: 0.62rem; font-weight: 800;">Último Pago</div>
-                <div class="font-monospace fs-6">R$ ${p.ULTIMO_PRECO.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</div>
+                <div class="small text-muted text-uppercase" style="font-size: 0.60rem; font-weight: 800;">Último Pago</div>
+                <div class="font-monospace fw-bold" style="font-size: 0.82rem;">R$ ${p.ULTIMO_PRECO.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</div>
               </div>
 
-              <div style="min-width: 85px;">
-                <div class="small text-muted text-uppercase" style="font-size: 0.62rem; font-weight: 800;">Var. Mês</div>
+              <div style="min-width: 75px;">
+                <div class="small text-muted text-uppercase" style="font-size: 0.60rem; font-weight: 800;">Var. Mês</div>
                 <div class="font-monospace">${variacaoHtml}</div>
               </div>
 
@@ -1158,8 +1146,8 @@
           dadosKmmMes.push(precoKmm > 0 ? parseFloat(precoKmm.toFixed(2)) : null);
 
           const tabelaRef = ehInterno ? anpDistribuicao : anpRevenda;
-          const anpUf = tabelaRef[p.UF_POSTO] || tabelaRef["PR"];
-          dadosAnpMes.push(anpUf[m] || null);
+          const anpUf = tabelaRef[p.UF_POSTO] || null;
+          dadosAnpMes.push((anpUf && anpUf[m]) ? anpUf[m] : null);
         });
 
         const seriesColors = ehInterno ? ['#2563eb', '#059669'] : ['#c2410c', '#059669'];
@@ -1190,35 +1178,35 @@
       });
     }
 
-    /* MAPA SVG COMPLETO DO BRASIL: 27 ESTADOS */
+    /* MAPA SVG COM CURVAS GEOGRÁFICAS REAIS (SILHUETA DO BRASIL) */
     const estadosSvg = [
-      { uf: "RR", d: "M 165 25 L 190 40 L 180 75 L 150 60 Z" },
-      { uf: "AP", d: "M 275 55 L 300 75 L 285 100 L 265 85 Z" },
-      { uf: "AM", d: "M 60 75 L 160 75 L 165 150 L 110 180 L 50 130 Z" },
-      { uf: "PA", d: "M 175 70 L 265 85 L 285 155 L 215 185 L 175 145 Z" },
-      { uf: "AC", d: "M 20 150 L 65 155 L 55 185 L 15 175 Z" },
-      { uf: "RO", d: "M 105 185 L 145 165 L 160 210 L 120 225 Z" },
-      { uf: "TO", d: "M 255 175 L 285 180 L 275 255 L 245 235 Z" },
-      { uf: "MA", d: "M 285 115 L 335 135 L 315 185 L 285 160 Z" },
-      { uf: "PI", d: "M 330 145 L 355 165 L 335 215 L 315 185 Z" },
-      { uf: "CE", d: "M 360 135 L 395 145 L 385 175 L 355 165 Z" },
-      { uf: "RN", d: "M 395 145 L 425 150 L 415 165 L 390 165 Z" },
-      { uf: "PB", d: "M 400 165 L 430 165 L 425 180 L 395 175 Z" },
-      { uf: "PE", d: "M 370 180 L 430 180 L 415 195 L 360 195 Z" },
-      { uf: "AL", d: "M 405 195 L 425 195 L 415 210 L 395 205 Z" },
-      { uf: "SE", d: "M 395 210 L 410 210 L 400 225 L 385 220 Z" },
-      { uf: "BA", d: "M 295 205 L 375 195 L 395 255 L 325 295 L 285 235 Z" },
-      { uf: "MT", d: "M 165 195 L 245 190 L 240 285 L 160 265 Z" },
-      { uf: "GO", d: "M 245 245 L 295 245 L 285 315 L 235 305 Z" },
-      { uf: "DF", d: "M 270 265 L 280 265 L 280 275 L 270 275 Z" },
-      { uf: "MS", d: "M 195 295 L 245 295 L 235 365 L 185 355 Z" },
-      { uf: "MG", d: "M 285 285 L 355 275 L 350 345 L 275 340 Z" },
-      { uf: "ES", d: "M 355 305 L 375 310 L 365 335 L 350 330 Z" },
-      { uf: "RJ", d: "M 335 345 L 365 340 L 355 360 L 325 355 Z" },
-      { uf: "SP", d: "M 245 330 L 315 330 L 305 380 L 235 365 Z" },
-      { uf: "PR", d: "M 225 370 L 285 370 L 275 410 L 215 400 Z" },
-      { uf: "SC", d: "M 225 410 L 275 410 L 265 435 L 220 430 Z" },
-      { uf: "RS", d: "M 205 435 L 265 435 L 245 485 L 185 475 Z" }
+      { uf: "RR", d: "M 195 25 C 220 30 240 50 235 85 C 225 105 200 100 185 80 C 180 50 185 30 195 25 Z" },
+      { uf: "AP", d: "M 320 60 C 345 70 365 95 350 120 C 330 125 315 100 320 60 Z" },
+      { uf: "AM", d: "M 55 90 C 130 85 190 95 195 140 C 200 195 135 225 110 220 C 70 210 30 150 55 90 Z" },
+      { uf: "PA", d: "M 200 95 C 280 90 325 110 345 160 C 335 210 260 230 215 200 C 190 180 195 120 200 95 Z" },
+      { uf: "AC", d: "M 15 180 C 50 185 65 205 60 225 C 40 230 10 215 15 180 Z" },
+      { uf: "RO", d: "M 115 220 C 160 210 180 235 175 270 C 150 285 120 265 115 220 Z" },
+      { uf: "TO", d: "M 290 205 C 320 210 325 240 320 300 C 295 295 285 260 290 205 Z" },
+      { uf: "MA", d: "M 325 130 C 375 145 385 175 365 215 C 335 210 320 180 325 130 Z" },
+      { uf: "PI", d: "M 365 170 C 395 180 405 215 390 255 C 365 245 355 210 365 170 Z" },
+      { uf: "CE", d: "M 400 150 C 435 155 445 180 430 200 C 405 195 395 175 400 150 Z" },
+      { uf: "RN", d: "M 445 165 C 475 170 470 190 445 190 C 435 180 440 170 445 165 Z" },
+      { uf: "PB", d: "M 445 195 C 480 195 475 210 445 210 C 435 205 440 195 445 195 Z" },
+      { uf: "PE", d: "M 410 210 C 475 210 475 230 415 230 C 395 225 400 215 410 210 Z" },
+      { uf: "AL", d: "M 450 230 C 470 235 465 250 445 245 C 440 235 445 230 450 230 Z" },
+      { uf: "SE", d: "M 440 250 C 455 255 450 268 435 265 C 430 255 435 250 440 250 Z" },
+      { uf: "BA", d: "M 335 235 C 425 225 445 270 425 345 C 360 365 325 310 335 235 Z" },
+      { uf: "MT", d: "M 185 220 C 275 215 285 265 270 335 C 215 345 175 300 185 220 Z" },
+      { uf: "GO", d: "M 275 295 C 335 290 340 335 320 380 C 270 375 265 330 275 295 Z" },
+      { uf: "DF", d: "M 310 320 C 322 320 322 332 310 332 Z" },
+      { uf: "MS", d: "M 220 345 C 275 345 280 395 260 435 C 215 425 205 385 220 345 Z" },
+      { uf: "MG", d: "M 325 330 C 415 330 425 385 385 425 C 320 420 305 370 325 330 Z" },
+      { uf: "ES", d: "M 415 355 C 435 365 430 395 410 395 C 405 380 410 365 415 355 Z" },
+      { uf: "RJ", d: "M 385 410 C 425 410 415 435 375 430 C 370 420 380 415 385 410 Z" },
+      { uf: "SP", d: "M 270 390 C 365 390 365 445 305 455 C 255 445 255 410 270 390 Z" },
+      { uf: "PR", d: "M 255 445 C 330 445 330 480 275 490 C 235 480 240 455 255 445 Z" },
+      { uf: "SC", d: "M 265 485 C 320 485 315 515 270 515 C 250 505 255 490 265 485 Z" },
+      { uf: "RS", d: "M 240 510 C 305 510 295 565 245 560 C 215 540 220 515 240 510 Z" }
     ];
 
     function desenharMapaBrasil() {
@@ -1254,7 +1242,6 @@
       atualizarCoresMapa();
     }
 
-    // HEATMAP DE CONCENTRAÇÃO DE LITROS NOS ESTADOS
     function atualizarCoresMapa() {
       const volPorUf = {};
       baseRegistrosMensais.forEach(d => {
@@ -1308,7 +1295,7 @@
       } else {
         tooltip.innerHTML = `
           <strong>${uf} &bull; Resumo Operacional</strong><br>
-          <div style="font-size:0.7rem; margin-top:4px;">
+          <div style="font-size:0.68rem; margin-top:2px;">
             Total: <b>${Math.round(totalL).toLocaleString('pt-BR')} L</b><br>
             Garagens: ${Math.round(litInterno).toLocaleString('pt-BR')} L ${medInterno > 0 ? '(R$ ' + medInterno.toFixed(3) + ')' : ''}<br>
             Rota Rodovia: ${Math.round(litExterno).toLocaleString('pt-BR')} L ${medExterno > 0 ? '(R$ ' + medExterno.toFixed(3) + ')' : ''}
