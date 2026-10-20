@@ -2,6 +2,7 @@ import os
 import re
 import json
 import urllib.request
+from bs4 import BeautifulSoup
 import pandas as pd
 
 # 1. Base Oficial de Preços de Revenda (Bomba de Rua)
@@ -10,11 +11,10 @@ URL_REVENDA_ESTADOS = "https://www.gov.br/anp/pt-br/assuntos/precos-e-defesa-da-
 # 2. Base Oficial de Preços de Distribuição (Atacado - PDC / i-SIMP)
 URL_DISTRIBUICAO_ESTADOS = "https://www.gov.br/anp/pt-br/assuntos/precos-e-defesa-da-concorrencia/precos/pdc/semanal/combustiveis-liquidos-estados.xlsx"
 
-# URLs oficiais de consulta da ANTT
-URLS_ANTT_BUSCA = [
-    "https://www.gov.br/antt/pt-br/assuntos/noticias-defeso-eleitoral/antt-atualiza-coeficientes-do-piso-minimo-do-frete-e-divulga-novo-preco-de-referencia-do-diesel",
-    "https://www.gov.br/antt/pt-br/assuntos/noticias-defeso-eleitoral"
-    "https://sindipesa.org.br/"
+# Páginas de notícias da ANTT onde os comunicados de reajuste do piso e diesel são listados
+URLS_ANTT_LISTAGEM = [
+    "https://www.gov.br/antt/pt-br/assuntos/noticias-defeso-eleitoral",
+    "https://www.gov.br/antt/pt-br/assuntos/ultimas-noticias"
 ]
 
 MAPA_ESTADOS = {
@@ -27,52 +27,42 @@ MAPA_ESTADOS = {
     "SERGIPE": "SE", "TOCANTINS": "TO"
 }
 
-def obter_referencia_antt():
-    """
-    Rastreia e extrai a última Portaria SUROC e o preço oficial de referência
-    do Diesel S10 publicado pela ANTT. Se não encontrar, retorna erro.
-    """
+def obter_html(url):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
     }
+    req = urllib.request.Request(url, headers=headers)
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        return resp.read().decode('utf-8', errors='ignore')
 
-    dados_coletados = None
+def obter_referencia_antt():
+    """
+    Entra na listagem de notícias da ANTT, localiza o link da publicação
+    de reajuste do piso/diesel e extrai os dados diretamente da matéria.
+    """
+    print("\n--- Buscando Publicação Oficial da ANTT ---")
+    link_noticia_alvo = None
 
-    for url in URLS_ANTT_BUSCA:
+    for url_listagem in URLS_ANTT_LISTAGEM:
         try:
-            req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req, timeout=12) as resp:
-                html = resp.read().decode('utf-8', errors='ignore')
-
-                preco_match = re.search(r'R\$\s*(\d+[\.,]\d{2})\s*(?:por\s+litro|/l)?', html, re.IGNORECASE)
-                portaria_match = re.search(r'Portaria\s+SUROC\s+n[ºo°]?\s*(\d+)', html, re.IGNORECASE)
-                
-                vigencia_match = re.search(r'vigor\s+em\s+(\d{1,2}\s+de\s+[a-zA-Zç]+\s+de\s+\d{4}|\d{2}/\d{2}/\d{4})', html, re.IGNORECASE)
-                if not vigencia_match:
-                    vigencia_match = re.search(r'vig[êe]ncia\s+a\s+partir\s+de\s+(\d{1,2}\s+de\s+[a-zA-Zç]+\s+de\s+\d{4}|\d{2}/\d{2}/\d{4})', html, re.IGNORECASE)
-
-                if preco_match and portaria_match:
-                    valor_num = float(preco_match.group(1).replace(',', '.'))
-                    num_portaria = portaria_match.group(1)
-                    vig_texto = vigencia_match.group(1) if vigencia_match else "Não identificada"
-
-                    dados_coletados = {
-                        "status": "sucesso",
-                        "valor": valor_num,
-                        "ato_oficial": f"Portaria SUROC nº {num_portaria}",
-                        "vigencia": vig_texto,
-                        "base_calculo_anp": "Pesquisa Oficial ANP Semanal"
-                    }
-                    print(f"Referência ANTT encontrada: {dados_coletados['ato_oficial']} - R$ {dados_coletados['valor']}")
-                    break
+            print(f"Varrendo listagem: {url_listagem}")
+            html_listagem = obter_html(url_listagem)
+            
+            # Procura links de notícias que falem sobre piso mínimo ou diesel
+            padrao_links = re.findall(r'href=["\'](https://www\.gov\.br/antt/pt-br/assuntos/[^"\']*(?:piso-minimo|diesel|frete)[^"\']*)["\']', html_listagem, re.IGNORECASE)
+            
+            if padrao_links:
+                link_noticia_alvo = padrao_links[0]
+                print(f"Notícia oficial localizada: {link_noticia_alvo}")
+                break
         except Exception as e:
-            print(f"Tentativa de busca na URL {url} falhou: {e}")
+            print(f"Falha ao consultar listagem {url_listagem}: {e}")
             continue
 
-    if not dados_coletados:
-        print("ERRO: Nenhuma publicação oficial da ANTT foi encontrada ou extraída.")
-        dados_coletados = {
+    if not link_noticia_alvo:
+        print("ERRO: Nenhum link de notícia sobre diesel/piso mínimo foi localizado na listagem da ANTT.")
+        return {
             "status": "erro",
             "valor": None,
             "ato_oficial": "Não localizado",
@@ -80,7 +70,56 @@ def obter_referencia_antt():
             "base_calculo_anp": None
         }
 
-    return dados_coletados
+    # Acessa o link direto da notícia encontrada
+    try:
+        html_noticia = obter_html(link_noticia_alvo)
+        
+        # Limpa quebras e espaços não quebráveis do HTML
+        texto_limpo = re.sub(r'&nbsp;|\s+', ' ', html_noticia)
+
+        # 1. Busca valor em R$ (ex: R$ 7,33 ou R$ 7.33) associado ao diesel
+        preco_match = re.search(r'R\$\s*(\d+[\.,]\d{2})', texto_limpo)
+        
+        # 2. Busca número da Portaria SUROC
+        portaria_match = re.search(r'Portaria\s+SUROC\s+n[ºo°]?\s*(\d+)', texto_limpo, re.IGNORECASE)
+        
+        # 3. Busca data de vigência
+        vigencia_match = re.search(r'(?:vigor\s+em|vig[êe]ncia\s+a\s+partir\s+de)\s+(\d{1,2}\s+de\s+[a-zA-Zç]+\s+de\s+\d{4}|\d{2}/\d{2}/\d{4})', texto_limpo, re.IGNORECASE)
+
+        if preco_match and portaria_match:
+            valor_num = float(preco_match.group(1).replace(',', '.'))
+            num_portaria = portaria_match.group(1)
+            vig_texto = vigencia_match.group(1) if vigencia_match else "Não identificada"
+
+            resultado = {
+                "status": "sucesso",
+                "valor": valor_num,
+                "ato_oficial": f"Portaria SUROC nº {num_portaria}",
+                "vigencia": vig_texto,
+                "base_calculo_anp": "Pesquisa Oficial ANP Semanal",
+                "link_fonte": link_noticia_alvo
+            }
+            print(f"Sucesso na extração: {resultado['ato_oficial']} | R$ {resultado['valor']} | Vigência: {resultado['vigencia']}")
+            return resultado
+        else:
+            print(f"ERRO: A notícia foi aberta ({link_noticia_alvo}), mas o padrão de preço ou portaria não foi encontrado no texto.")
+            return {
+                "status": "erro",
+                "valor": None,
+                "ato_oficial": "Padrão não reconhecido",
+                "vigencia": None,
+                "base_calculo_anp": None
+            }
+
+    except Exception as e:
+        print(f"ERRO ao acessar o texto da notícia {link_noticia_alvo}: {e}")
+        return {
+            "status": "erro",
+            "valor": None,
+            "ato_oficial": "Erro de conexão",
+            "vigencia": None,
+            "base_calculo_anp": None
+        }
 
 def processar_base_revenda():
     """
