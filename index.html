@@ -319,7 +319,6 @@
                 <span class="input-group-text bg-light text-muted border-end-0 fw-semibold" style="font-size: 0.72rem;">REDE:</span>
                 <select class="form-select border-start-0" id="filtroRede">
                   <option value="TODAS">Todas as Redes</option>
-                  <!-- Opções com contagem de postos populadas via JS -->
                 </select>
               </div>
             </div>
@@ -347,7 +346,7 @@
             <div class="kpi-card" style="border-left: 4px solid #198754;">
               <div>
                 <span class="kpi-label">Volume Entregue</span>
-                <div class="kpi-val text-dark" id="kpiVolume">1.737.403 L</div>
+                <div class="kpi-val text-dark" id="kpiVolume">-</div>
               </div>
               <span class="kpi-sub">Litros na competência</span>
             </div>
@@ -358,7 +357,7 @@
             <div class="kpi-card" style="border-left: 4px solid #0f172a;">
               <div>
                 <span class="kpi-label">Gasto Total</span>
-                <div class="kpi-val text-dark" id="kpiGasto">R$ 11.085.827</div>
+                <div class="kpi-val text-dark" id="kpiGasto">-</div>
               </div>
               <span class="kpi-sub">Custo total auditado</span>
             </div>
@@ -369,7 +368,7 @@
             <div class="kpi-card" style="border-left: 4px solid #f59e0b;">
               <div>
                 <span class="kpi-label">Preço Médio Real</span>
-                <div class="kpi-val text-dark" id="kpiPrecoMedio">R$ 6,739</div>
+                <div class="kpi-val text-dark" id="kpiPrecoMedio">-</div>
               </div>
               <span class="kpi-sub">Média dos abastecimentos</span>
             </div>
@@ -380,13 +379,13 @@
             <div class="kpi-card" style="border-left: 4px solid #64748b;">
               <div>
                 <span class="kpi-label">Pontos Ativos</span>
-                <div class="kpi-val text-dark" id="kpiPontos">99</div>
+                <div class="kpi-val text-dark" id="kpiPontos">-</div>
               </div>
               <span class="kpi-sub">Unidades com consumo</span>
             </div>
           </div>
 
-          <!-- CARD 5: OFICIAL ANP / ANTT (NOVO) -->
+          <!-- CARD 5: OFICIAL ANP / ANTT (CONSUMO REAL DINÂMICO) -->
           <div class="col-12 col-md-6 col-xl">
             <div class="kpi-card kpi-anp-antt">
               <div>
@@ -394,9 +393,9 @@
                   <span class="kpi-label text-primary">ANP / ANTT Brasil</span>
                   <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.60rem;">OFICIAL</span>
                 </div>
-                <div class="kpi-val text-primary" id="kpiAnpBrasil">R$ 6,052</div>
+                <div class="kpi-val text-primary" id="kpiAnpBrasil">A carregar...</div>
               </div>
-              <span class="kpi-sub" id="kpiDataAnp"><i class="bi bi-clock-history me-1"></i>Ref: Semanal ANP</span>
+              <span class="kpi-sub" id="kpiDataAnp"><i class="bi bi-clock-history me-1"></i>Consultando anp_base.json</span>
             </div>
           </div>
         </div>
@@ -483,7 +482,7 @@
           <span class="fw-bold text-dark" style="font-size: 0.88rem;">
             <i class="bi bi-pie-chart-fill text-success me-1"></i> Painel Consolidado • Visão Integrada da Frota
           </span>
-          <span class="badge bg-light text-muted border" id="badgeTotalPostos">A listar 99 postos</span>
+          <span class="badge bg-light text-muted border" id="badgeTotalPostos">A carregar postos...</span>
         </div>
         <div class="d-flex align-items-center gap-3 small" style="font-size: 0.72rem;">
           <div class="d-flex align-items-center gap-1">
@@ -503,14 +502,12 @@
 
       <!-- CONTAINER DOS CARDS DINÂMICOS -->
       <div id="containerCardsPostos">
-        <!-- RENDERIZADO VIA JAVASCRIPT: ESTRUTURA COM GRÁFICO 100% LIVRE NO MEIO -->
+        <!-- Renderizado dinamicamente via JS -->
       </div>
     </div>
 
-    <!-- SEÇÃO 3: CONTAINER DAS MATRIZES GERENCIAIS (QUANDO CLICAR NO BOTÃO DA BARRA SUPERIOR) -->
-    <div id="secaoMatrizesGerenciais" style="display: none;">
-      <!-- RENDERIZADO PELO MÓDULO matrizes.js -->
-    </div>
+    <!-- SEÇÃO 3: CONTAINER DAS MATRIZES GERENCIAIS (RENDERIZADO VIA matrizes.js) -->
+    <div id="secaoMatrizesGerenciais" style="display: none;"></div>
 
   </div>
 
@@ -521,12 +518,20 @@
   <script>
     // ESTADO GLOBAL DA APLICAÇÃO
     let baseRegistrosMensais = [];
+    let dadosAnpBaseGlobal = null;
     let ufFiltroSelecionada = null;
 
-    // INICIALIZAÇÃO E NAVEGAÇÃO ENTRE ABAS
+    // INICIALIZAÇÃO
     document.addEventListener('DOMContentLoaded', () => {
       configurarAbas();
-      carregarBaseAbastecimentos();
+      configurarMapaInterativo();
+      carregarTodasAsBases();
+
+      document.getElementById('filtroCompetencia').addEventListener('change', filtrarERenderizarCards);
+      document.getElementById('filtroRede').addEventListener('change', filtrarERenderizarCards);
+      document.getElementById('filtroPosto').addEventListener('change', filtrarERenderizarCards);
+      document.getElementById('buscaTexto').addEventListener('input', filtrarERenderizarCards);
+      document.getElementById('btnSincronizar').addEventListener('click', carregarTodasAsBases);
     });
 
     function configurarAbas() {
@@ -556,37 +561,71 @@
       });
     }
 
-    // CARREGAMENTO DA BASE DO WORKER KMM
-    async function carregarBaseAbastecimentos() {
+    // CARREGAMENTO CONJUNTO: WORKER KMM + ANP BASE REAL
+    async function carregarTodasAsBases() {
+      const btnSync = document.getElementById('btnSincronizar');
+      btnSync.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Carregando...';
+      btnSync.disabled = true;
+
       try {
-        const resp = await fetch('https://api-abastecimentos.klapowsko.workers.dev');
-        if (!resp.ok) throw new Error("Falha na API");
-        const json = await resp.json();
-        baseRegistrosMensais = json.dados || [];
+        // 1. Carrega a base oficial de preços ANP e ANTT
+        try {
+          const respAnp = await fetch('anp_base.json');
+          if (respAnp.ok) {
+            dadosAnpBaseGlobal = await respAnp.json();
+            atualizarCardAnttOficial(dadosAnpBaseGlobal);
+          }
+        } catch (e) {
+          console.warn("anp_base.json ainda não acessível localmente:", e);
+        }
+
+        // 2. Carrega a base mensal agrupada do Worker KMM
+        const respKmm = await fetch('https://api-abastecimentos.klapowsko.workers.dev');
+        if (!respKmm.ok) throw new Error("Falha na API do Cloudflare Worker");
+        const jsonKmm = await respKmm.json();
+        baseRegistrosMensais = jsonKmm.dados || [];
 
         popularFiltroRedes();
+        popularFiltroPostos();
         atualizarKpisGerais();
+        atualizarCoresHeatmap();
         filtrarERenderizarCards();
+
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
+      } finally {
+        btnSync.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Sincronizar Base KMM';
+        btnSync.disabled = false;
       }
     }
 
-    // POPULAR FILTRO DE REDES COM CONTAGEM DINÂMICA ENTRE PARÊNTESES: REDE (QTD)
+    // ATUALIZA CARD 5 COM DADOS REAIS DO ANP_BASE.JSON
+    function atualizarCardAnttOficial(dadosAnp) {
+      if (!dadosAnp || !dadosAnp.referencia_antt) return;
+      const ref = dadosAnp.referencia_antt;
+      const precoNum = parseFloat(ref.valor);
+
+      if (!isNaN(precoNum) && precoNum > 0) {
+        document.getElementById('kpiAnpBrasil').innerText = 'R$ ' + precoNum.toFixed(2).replace('.', ',');
+        document.getElementById('kpiDataAnp').innerHTML = `<i class="bi bi-file-earmark-check me-1"></i>${ref.ato_oficial} (Vigência: ${ref.vigencia})`;
+      }
+    }
+
+    // POPULAR FILTRO DE REDES COM CONTAGEM REAL: REDE (QTD)
     function popularFiltroRedes() {
       const selectRede = document.getElementById('filtroRede');
       if (!selectRede) return;
 
       const contagemRedes = {};
       baseRegistrosMensais.forEach(r => {
-        const nomePosto = r.POSTO || '';
+        const nomePosto = (r.POSTO || '').toUpperCase();
         let rede = 'OUTROS';
 
         if (nomePosto.includes('MARAJO') || nomePosto.includes('MARAJÓ')) rede = 'REDE MARAJÓ';
         else if (nomePosto.includes('GRAAL')) rede = 'REDE GRAAL';
         else if (nomePosto.includes('CARGOSOFT')) rede = 'BASES PRÓPRIAS';
         else if (nomePosto.includes('IPIRANGA')) rede = 'REDE IPIRANGA';
-        else if (nomePosto.includes('SIM')) rede = 'REDE SIM';
+        else if (nomePosto.includes('SIM ')) rede = 'REDE SIM';
         else if (nomePosto.includes('DEBONI')) rede = 'REDE DEBONI';
 
         if (!contagemRedes[rede]) contagemRedes[rede] = new Set();
@@ -600,13 +639,28 @@
       });
     }
 
-    // ATUALIZAÇÃO DOS KPIS DE CABEÇALHO
+    function popularFiltroPostos() {
+      const selectPosto = document.getElementById('filtroPosto');
+      if (!selectPosto) return;
+
+      const postos = [...new Set(baseRegistrosMensais.map(r => r.POSTO).filter(Boolean))].sort();
+      selectPosto.innerHTML = '<option value="TODOS">Todos os Postos</option>';
+      postos.forEach(p => {
+        selectPosto.innerHTML += `<option value="${p}">${p}</option>`;
+      });
+    }
+
+    // ATUALIZA KPIS COM OS DADOS REAIS DA OPERAÇÃO
     function atualizarKpisGerais() {
       let vol = 0;
       let gasto = 0;
       let postosUnicos = new Set();
 
+      const competencia = document.getElementById('filtroCompetencia').value;
+
       baseRegistrosMensais.forEach(r => {
+        if (competencia !== 'ANO_2026' && r.MES_ANO !== competencia) return;
+
         vol += parseFloat(r.LITROS_MES || 0);
         gasto += parseFloat(r.VALOR_TOTAL_MES || 0);
         postosUnicos.add(r.POSTO);
@@ -616,19 +670,106 @@
 
       document.getElementById('kpiVolume').innerText = vol.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + ' L';
       document.getElementById('kpiGasto').innerText = 'R$ ' + gasto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      document.getElementById('kpiPrecoMedio').innerText = 'R$ ' + precoMed.toFixed(3).replace('.', ',');
+      document.getElementById('kpiPrecoMedio').innerText = precoMed > 0 ? ('R$ ' + precoMed.toFixed(3).replace('.', ',')) : '-';
       document.getElementById('kpiPontos').innerText = postosUnicos.size;
     }
 
-    // RENDERIZAÇÃO DOS CARDS COM O GRÁFICO 100% LIVRE NO MEIO
+    // CONFIGURAÇÃO DO MAPA SVG INTERATIVO E HEATMAP POR VOLUME REAL
+    function configurarMapaInterativo() {
+      const paths = document.querySelectorAll('#estadosBrasil path');
+      paths.forEach(p => {
+        p.addEventListener('mouseenter', () => {
+          const uf = p.id;
+          const tit = p.querySelector('title')?.textContent || uf;
+          document.getElementById('infoEstadoHover').innerText = `${tit} (${uf})`;
+        });
+
+        p.addEventListener('mouseleave', () => {
+          document.getElementById('infoEstadoHover').innerText = ufFiltroSelecionada ? `Filtrando por ${ufFiltroSelecionada}` : 'Passe o mouse ou clique';
+        });
+
+        p.addEventListener('click', () => {
+          const uf = p.id;
+          if (ufFiltroSelecionada === uf) {
+            ufFiltroSelecionada = null;
+            p.classList.remove('selecionado');
+          } else {
+            paths.forEach(el => el.classList.remove('selecionado'));
+            ufFiltroSelecionada = uf;
+            p.classList.add('selecionado');
+          }
+          filtrarERenderizarCards();
+        });
+      });
+    }
+
+    function atualizarCoresHeatmap() {
+      const volPorUf = {};
+      baseRegistrosMensais.forEach(r => {
+        const uf = r.UF_POSTO;
+        if (!uf) return;
+        volPorUf[uf] = (volPorUf[uf] || 0) + parseFloat(r.LITROS_MES || 0);
+      });
+
+      const paths = document.querySelectorAll('#estadosBrasil path');
+      paths.forEach(p => {
+        const uf = p.id;
+        const vol = volPorUf[uf] || 0;
+        p.classList.remove('sem-op', 'op-baixa', 'op-media', 'op-alta', 'op-muito-alta');
+
+        if (vol === 0) p.classList.add('sem-op');
+        else if (vol < 50000) p.classList.add('op-baixa');
+        else if (vol < 200000) p.classList.add('op-media');
+        else if (vol < 500000) p.classList.add('op-alta');
+        else p.classList.add('op-muito-alta');
+      });
+    }
+
+    // FILTRAGEM E RENDERIZAÇÃO DA LISTA DE POSTOS
     function filtrarERenderizarCards() {
       const container = document.getElementById('containerCardsPostos');
       if (!container) return;
 
-      // Agrupa os registros por posto para gerar a série histórica e os totais
-      const postosMapa = {};
+      const comp = document.getElementById('filtroCompetencia').value;
+      const redeSel = document.getElementById('filtroRede').value;
+      const postoSel = document.getElementById('filtroPosto').value;
+      const texto = document.getElementById('buscaTexto').value.toLowerCase().trim();
 
-      baseRegistrosMensais.forEach(r => {
+      const btnAtivo = document.querySelector('#grupoBotoesVisao .nav-pill-btn.active');
+      const aba = btnAtivo ? btnAtivo.getAttribute('data-aba') : 'consolidado';
+
+      // Filtra registros brutos
+      let filtrados = baseRegistrosMensais.filter(r => {
+        if (comp !== 'ANO_2026' && r.MES_ANO !== comp) return false;
+        if (ufFiltroSelecionada && r.UF_POSTO !== ufFiltroSelecionada) return false;
+        if (postoSel !== 'TODOS' && r.POSTO !== postoSel) return false;
+        
+        if (aba === 'interno' && r.TIPO_OPERACAO !== 'INTERNO') return false;
+        if (aba === 'externo' && r.TIPO_OPERACAO !== 'EXTERNO') return false;
+
+        const nome = (r.POSTO || '').toUpperCase();
+        if (redeSel !== 'TODAS') {
+          if (redeSel === 'REDE MARAJÓ' && !nome.includes('MARAJO') && !nome.includes('MARAJÓ')) return false;
+          if (redeSel === 'REDE GRAAL' && !nome.includes('GRAAL')) return false;
+          if (redeSel === 'BASES PRÓPRIAS' && !nome.includes('CARGOSOFT')) return false;
+          if (redeSel === 'REDE IPIRANGA' && !nome.includes('IPIRANGA')) return false;
+          if (redeSel === 'REDE SIM' && !nome.includes('SIM ')) return false;
+          if (redeSel === 'REDE DEBONI' && !nome.includes('DEBONI')) return false;
+        }
+
+        if (texto) {
+          const matchNome = nome.toLowerCase().includes(texto);
+          const matchMun = (r.MUNICIPIO_POSTO || '').toLowerCase().includes(texto);
+          const matchUf = (r.UF_POSTO || '').toLowerCase().includes(texto);
+          if (!matchNome && !matchMun && !matchUf) return false;
+        }
+
+        return true;
+      });
+
+      // Consolida dados por posto
+      const postosMapa = {};
+      filtrados.forEach(r => {
         if (!postosMapa[r.POSTO]) {
           postosMapa[r.POSTO] = {
             nome: r.POSTO,
@@ -637,33 +778,48 @@
             tipo: r.TIPO_OPERACAO,
             volumeTotal: 0,
             gastoTotal: 0,
+            ultimoPreco: parseFloat(r.ULTIMO_PRECO_MES || 0),
             meses: {}
           };
         }
-        const v = parseFloat(r.LITROS_MES || 0);
-        const g = parseFloat(r.VALOR_TOTAL_MES || 0);
-        postosMapa[r.POSTO].volumeTotal += v;
-        postosMapa[r.POSTO].gastoTotal += g;
+        postosMapa[r.POSTO].volumeTotal += parseFloat(r.LITROS_MES || 0);
+        postosMapa[r.POSTO].gastoTotal += parseFloat(r.VALOR_TOTAL_MES || 0);
         postosMapa[r.POSTO].meses[r.MES_ANO] = parseFloat(r.PRECO_MEDIO_MES || 0);
       });
 
       const lista = Object.values(postosMapa).sort((a, b) => b.volumeTotal - a.volumeTotal);
       document.getElementById('badgeTotalPostos').innerText = `A listar ${lista.length} postos`;
 
-      let html = '';
+      if (lista.length === 0) {
+        container.innerHTML = `<div class="alert alert-light border text-center py-4 text-muted">Nenhum posto encontrado para os filtros selecionados.</div>`;
+        return;
+      }
 
-      lista.slice(0, 30).forEach(p => {
+      let html = '';
+      lista.forEach(p => {
         const precoMed = p.volumeTotal > 0 ? (p.gastoTotal / p.volumeTotal) : 0;
         const badgeTipo = p.tipo === 'INTERNO' 
           ? '<span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:0.65rem;">GARAGEM</span>'
           : '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:0.65rem;">ROTA</span>';
 
-        // Gera o SVG Sparkline central livre sem tocar na barra branca
-        const svgSparkline = gerarSvgSparkline(p.meses);
+        // Obtém o valor real de referência da ANP para o estado do posto
+        let refAnpUf = null;
+        if (dadosAnpBaseGlobal && dadosAnpBaseGlobal.revenda && dadosAnpBaseGlobal.revenda[p.uf]) {
+          const valoresAno = Object.values(dadosAnpBaseGlobal.revenda[p.uf]);
+          if (valoresAno.length > 0) {
+            refAnpUf = valoresAno.reduce((a, b) => a + b, 0) / valoresAno.length;
+          }
+        }
+
+        const gapTexto = refAnpUf 
+          ? ((precoMed - refAnpUf) >= 0 ? `+R$ ${(precoMed - refAnpUf).toFixed(3).replace('.', ',')}` : `-R$ ${(Math.abs(precoMed - refAnpUf)).toFixed(3).replace('.', ',')}`)
+          : '-';
+        const gapCor = (refAnpUf && precoMed > refAnpUf) ? 'text-danger' : 'text-success';
+
+        const svgSparkline = gerarSvgSparkline(p.meses, p.uf);
 
         html += `
           <div class="posto-card">
-            <!-- 1. IDENTIFICAÇÃO DO POSTO -->
             <div class="posto-info">
               <span class="uf-tag">${p.uf}</span>
               <div class="text-truncate">
@@ -674,12 +830,10 @@
               </div>
             </div>
 
-            <!-- 2. GRÁFICO CENTRAL 100% LIVRE E VISÍVEL -->
             <div class="sparkline-wrapper">
               ${svgSparkline}
             </div>
 
-            <!-- 3. BLOCO BRANCO FINANCEIRO COMPACTADO À DIREITA -->
             <div class="bloco-financeiro">
               <div class="item-metrica">
                 <span class="lbl">Volume</span>
@@ -691,11 +845,11 @@
               </div>
               <div class="item-metrica">
                 <span class="lbl">Ref. ANP</span>
-                <span class="val text-success">R$ 6,052</span>
+                <span class="val text-success">${refAnpUf ? ('R$ ' + refAnpUf.toFixed(3).replace('.', ',')) : '-'}</span>
               </div>
               <div class="item-metrica">
                 <span class="lbl">Gap Mercado</span>
-                <span class="val text-danger">+R$ 0,404</span>
+                <span class="val ${gapCor}">${gapTexto}</span>
               </div>
               <button class="btn btn-tratativa ms-1">
                 <i class="bi bi-card-checklist me-1"></i>Tratativa
@@ -708,11 +862,11 @@
       container.innerHTML = html;
     }
 
-    // GERADOR DE LINHA TEMPORAL SPARKLINE EM SVG NATIVO
-    function gerarSvgSparkline(mesesObj) {
+    // SPARKLINE SVG 100% NATIVO DESOBSTRUÍDO
+    function gerarSvgSparkline(mesesObj, uf) {
       const meses = ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08', '2026-09', '2026-10'];
       const pontos = [];
-      
+
       meses.forEach((m, idx) => {
         const val = mesesObj[m];
         if (val) {
