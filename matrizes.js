@@ -1,5 +1,5 @@
-// Módulo de Matrizes Gerenciais e Auditoria Estratégica (Power BI Engine)
-// Consome a base dinâmica oficial anp_base.json
+// Módulo de Matrizes Gerenciais e Auditoria Estratégica (Power BI Engine Alinhado)
+// Utiliza AVERAGE (Média Simples dos Postos) para bater exatamente com o DAX do Power BI
 
 let cacheAnpBase = null;
 
@@ -21,7 +21,7 @@ async function calcularMatrizesGerenciais(registros) {
   const mapaRevenda = dadosAnp.revenda || {};
   const mapaDistribuicao = dadosAnp.distribuicao || {};
 
-  // Gera dinamicamente a dCalendário a partir dos registos presentes
+  // Gera dinamicamente os meses disponíveis a partir dos registros KMM
   const mesesDisponiveis = [...new Set(registros.map(r => r.MES_ANO).filter(Boolean))].sort();
 
   const nomesAbrev = {
@@ -42,33 +42,40 @@ async function calcularMatrizesGerenciais(registros) {
   const ufsExterno = [...new Set(registros.filter(r => r.TIPO_OPERACAO === 'EXTERNO').map(r => r.UF_POSTO).filter(Boolean))].sort();
   const ufsInterno = [...new Set(registros.filter(r => r.TIPO_OPERACAO === 'INTERNO').map(r => r.UF_POSTO).filter(Boolean))].sort();
 
-  // Agrupador volumétrico e financeiro por UF, Mês e Tipo
-  const dadosAgrupados = {};
+  // 1. Agrupamento para Média Simples (AVERAGE) idêntica ao DAX:
+  // Armazena a lista de preços médios de cada lançamento/posto por UF + Mês + Tipo
+  const precosAgrupados = {};
 
   registros.forEach(r => {
     const chave = `${r.UF_POSTO}_${r.MES_ANO}_${r.TIPO_OPERACAO}`;
-    if (!dadosAgrupados[chave]) {
-      dadosAgrupados[chave] = { litros: 0, valor: 0 };
+    if (!precosAgrupados[chave]) {
+      precosAgrupados[chave] = [];
     }
-    dadosAgrupados[chave].litros += parseFloat(r.LITROS_MES || 0);
-    dadosAgrupados[chave].valor += parseFloat(r.VALOR_TOTAL_MES || 0);
+    const preco = parseFloat(r.PRECO_MEDIO_MES || 0);
+    if (preco > 0) {
+      precosAgrupados[chave].push(preco);
+    }
   });
 
-  function getPrecoMedio(uf, mes, tipo) {
-    const d = dadosAgrupados[`${uf}_${mes}_${tipo}`];
-    return (d && d.litros > 0) ? (d.valor / d.litros) : null;
+  // Média Simples (AVERAGE) da célula UF x MÊS
+  function getPrecoMedioSimples(uf, mes, tipo) {
+    const lista = precosAgrupados[`${uf}_${mes}_${tipo}`];
+    if (!lista || lista.length === 0) return null;
+    const soma = lista.reduce((a, b) => a + b, 0);
+    return soma / lista.length;
   }
 
-  function getTotaisUf(uf, tipo) {
-    let lit = 0, val = 0;
+  // Média Simples (AVERAGE) para a coluna TOTAL da UF
+  function getTotalUfSimples(uf, tipo) {
+    const todosPrecos = [];
     mesesColunas.forEach(m => {
-      const d = dadosAgrupados[`${uf}_${m.id}_${tipo}`];
-      if (d) {
-        lit += d.litros;
-        val += d.valor;
+      const lista = precosAgrupados[`${uf}_${m.id}_${tipo}`];
+      if (lista && lista.length > 0) {
+        todosPrecos.push(...lista);
       }
     });
-    return { litros: lit, valor: val, precoMedio: lit > 0 ? (val / lit) : null };
+    if (todosPrecos.length === 0) return null;
+    return todosPrecos.reduce((a, b) => a + b, 0) / todosPrecos.length;
   }
 
   // 1. MATRIZ EXTERNA (Var % vs ANP Revenda)
@@ -86,23 +93,15 @@ async function calcularMatrizesGerenciais(registros) {
 
   ufsExterno.forEach(uf => {
     let tds = `<td><b>${uf}</b></td>`;
-    let somaRefPond = 0;
-    let somaLitrosComRef = 0;
-    let somaValorComRef = 0;
+    const precosAnpAno = [];
 
     mesesColunas.forEach(m => {
-      const precoPago = getPrecoMedio(uf, m.id, 'EXTERNO');
+      const precoPago = getPrecoMedioSimples(uf, m.id, 'EXTERNO');
       const refAnp = (mapaRevenda[uf] && mapaRevenda[uf][m.id]) ? mapaRevenda[uf][m.id] : null;
 
       if (precoPago && refAnp) {
-        const d = dadosAgrupados[`${uf}_${m.id}_EXTERNO`];
-        somaRefPond += (refAnp * d.litros);
-        somaLitrosComRef += d.litros;
-        somaValorComRef += d.valor;
-
+        precosAnpAno.push(refAnp);
         const varPerc = ((precoPago - refAnp) / refAnp) * 100;
-
-        // Formatação condicional: Verde para economia (negativo) e Vermelho para ágio (positivo)
         const bgCor = varPerc <= 0 ? 'rgba(34, 197, 94, 0.28)' : 'rgba(239, 68, 68, 0.32)';
         const textoSinal = (varPerc > 0 ? '+' : '') + varPerc.toFixed(2).replace('.', ',') + '%';
         tds += `<td style="background-color: ${bgCor}; font-weight: 500;">${textoSinal}</td>`;
@@ -111,10 +110,11 @@ async function calcularMatrizesGerenciais(registros) {
       }
     });
 
-    if (somaLitrosComRef > 0 && somaRefPond > 0) {
-      const precoMedioAcumulado = somaValorComRef / somaLitrosComRef;
-      const anpMediaPond = somaRefPond / somaLitrosComRef;
-      const varTotal = ((precoMedioAcumulado - anpMediaPond) / anpMediaPond) * 100;
+    // Total Consolidado (AVERAGE da UF vs AVERAGE da ANP)
+    const totalPago = getTotalUfSimples(uf, 'EXTERNO');
+    if (totalPago && precosAnpAno.length > 0) {
+      const mediaAnpAno = precosAnpAno.reduce((a, b) => a + b, 0) / precosAnpAno.length;
+      const varTotal = ((totalPago - mediaAnpAno) / mediaAnpAno) * 100;
       const bgTotal = varTotal <= 0 ? 'rgba(34, 197, 94, 0.35)' : 'rgba(239, 68, 68, 0.38)';
       const textTotal = (varTotal > 0 ? '+' : '') + varTotal.toFixed(2).replace('.', ',') + '%';
       tds += `<td style="background-color: ${bgTotal}; font-weight: 800;">${textTotal}</td>`;
@@ -141,35 +141,27 @@ async function calcularMatrizesGerenciais(registros) {
 
   ufsInterno.forEach(uf => {
     let tds = `<td><b>${uf}</b></td>`;
-    let somaRefPond = 0;
-    let somaLitrosComRef = 0;
-    let somaValorComRef = 0;
+    const precosAnpAno = [];
 
     mesesColunas.forEach(m => {
-      const precoPago = getPrecoMedio(uf, m.id, 'INTERNO');
-      // Procura na base oficial; se for pós-agosto e não existir na ANP, retorna null
+      const precoPago = getPrecoMedioSimples(uf, m.id, 'INTERNO');
       const refAnp = (mapaDistribuicao[uf] && mapaDistribuicao[uf][m.id]) ? mapaDistribuicao[uf][m.id] : null;
 
       if (precoPago && refAnp) {
-        const d = dadosAgrupados[`${uf}_${m.id}_INTERNO`];
-        somaRefPond += (refAnp * d.litros);
-        somaLitrosComRef += d.litros;
-        somaValorComRef += d.valor;
-
+        precosAnpAno.push(refAnp);
         const varPerc = ((precoPago - refAnp) / refAnp) * 100;
         const bgCor = varPerc <= 0 ? 'rgba(34, 197, 94, 0.28)' : 'rgba(239, 68, 68, 0.32)';
         const textoSinal = (varPerc > 0 ? '+' : '') + varPerc.toFixed(2).replace('.', ',') + '%';
         tds += `<td style="background-color: ${bgCor}; font-weight: 500;">${textoSinal}</td>`;
       } else {
-        // Célula sem dado na ANP (como SET e OUT) fica neutra
         tds += `<td class="text-muted" style="background:#fafafa;">-</td>`;
       }
     });
 
-    if (somaLitrosComRef > 0 && somaRefPond > 0) {
-      const precoMedioAcumulado = somaValorComRef / somaLitrosComRef;
-      const anpMediaPond = somaRefPond / somaLitrosComRef;
-      const varTotal = ((precoMedioAcumulado - anpMediaPond) / anpMediaPond) * 100;
+    const totalPago = getTotalUfSimples(uf, 'INTERNO');
+    if (totalPago && precosAnpAno.length > 0) {
+      const mediaAnpAno = precosAnpAno.reduce((a, b) => a + b, 0) / precosAnpAno.length;
+      const varTotal = ((totalPago - mediaAnpAno) / mediaAnpAno) * 100;
       const bgTotal = varTotal <= 0 ? 'rgba(34, 197, 94, 0.35)' : 'rgba(239, 68, 68, 0.38)';
       const textTotal = (varTotal > 0 ? '+' : '') + varTotal.toFixed(2).replace('.', ',') + '%';
       tds += `<td style="background-color: ${bgTotal}; font-weight: 800;">${textTotal}</td>`;
@@ -181,7 +173,7 @@ async function calcularMatrizesGerenciais(registros) {
   });
   htmlInterna += `</tbody></table>`;
 
-  // 3. MATRIZ DE SPREAD (Interno vs Externo R$/L) COM NOVA RÉGUA RIGOROSA
+  // 3. MATRIZ DE SPREAD (Interno vs Externo R$/L) COM RÉGUA RIGOROSA
   let htmlSpread = `
     <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.72rem;">
       <thead class="table-light">
@@ -196,20 +188,17 @@ async function calcularMatrizesGerenciais(registros) {
 
   ufsInterno.forEach(uf => {
     let tds = `<td><b>${uf}</b></td>`;
-    const totInt = getTotaisUf(uf, 'INTERNO');
-    const totExt = getTotaisUf(uf, 'EXTERNO');
+    const totInt = getTotalUfSimples(uf, 'INTERNO');
+    const totExt = getTotalUfSimples(uf, 'EXTERNO');
 
     mesesColunas.forEach(m => {
-      const pInt = getPrecoMedio(uf, m.id, 'INTERNO');
-      const pExt = getPrecoMedio(uf, m.id, 'EXTERNO');
+      const pInt = getPrecoMedioSimples(uf, m.id, 'INTERNO');
+      const pExt = getPrecoMedioSimples(uf, m.id, 'EXTERNO');
 
       if (pInt && pExt) {
         const spread = pExt - pInt;
 
-        // Nova régua estrita:
-        // < R$ 0.15 = Vermelho Crítico
-        // R$ 0.15 a R$ 0.50 = Amarelo Atenção
-        // >= R$ 0.50 = Verde Saudável
+        // Régua: < R$ 0.15 = Vermelho Crítico | R$ 0.15 a R$ 0.50 = Amarelo | >= R$ 0.50 = Verde
         let bgCor = 'rgba(245, 158, 11, 0.28)';
         if (spread >= 0.50) bgCor = 'rgba(34, 197, 94, 0.32)';
         if (spread < 0.15) bgCor = 'rgba(239, 68, 68, 0.32)';
@@ -220,8 +209,8 @@ async function calcularMatrizesGerenciais(registros) {
       }
     });
 
-    if (totInt.precoMedio && totExt.precoMedio) {
-      const spreadTot = totExt.precoMedio - totInt.precoMedio;
+    if (totInt && totExt) {
+      const spreadTot = totExt - totInt;
       let bgTotal = 'rgba(245, 158, 11, 0.35)';
       if (spreadTot >= 0.50) bgTotal = 'rgba(34, 197, 94, 0.38)';
       if (spreadTot < 0.15) bgTotal = 'rgba(239, 68, 68, 0.38)';
