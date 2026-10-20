@@ -14,6 +14,9 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
+  <!-- MOTOR EXTERNO DE CIDADES EXPANDIDO -->
+  <script src="cidades.js"></script>
+
   <style>
     :root {
       --cargosoft-green: #1c483a;
@@ -147,7 +150,7 @@
       right: 0;
       bottom: 0;
       z-index: 1;
-      opacity: 0.35;
+      opacity: 0.22;
       pointer-events: none;
     }
 
@@ -181,7 +184,7 @@
       padding: 3px 6px;
       border-radius: 4px;
     }
-    .tipo-rota { background: #fef3c7; color: #b45309; }
+    .tipo-rota { background: #ffedd5; color: #c2410c; }
     .tipo-interno { background: #dcfce7; color: #15803d; }
 
     .btn-sync {
@@ -450,7 +453,7 @@
       </div>
     </div>
 
-    <!-- SEÇÃO 2: ROTEIRIZADOR LEAFLET.JS (BUSCA INSTANTÂNEA + CLIQUE NO MAPA) -->
+    <!-- SEÇÃO 2: ROTEIRIZADOR LEAFLET.JS COM BASE CIDADES EXTERNA -->
     <div id="secaoRoteirizador" class="panel-box">
       <div class="panel-header">
         <div>
@@ -467,7 +470,7 @@
             <div class="card p-3 border-0 bg-light position-relative">
               
               <div class="alert alert-info py-2 px-3 small mb-3">
-                <i class="bi bi-info-circle me-1"></i> <strong>Como usar:</strong> Digite o nome da cidade ou clique no campo desejado e depois <strong>clique direto no mapa</strong>.
+                <i class="bi bi-info-circle me-1"></i> <strong>Como usar:</strong> Digite a cidade (busca instantânea) ou clique no campo desejado e depois <strong>clique direto no mapa</strong>.
               </div>
 
               <div id="containerPontosRota">
@@ -546,69 +549,8 @@
     let markersWaypoints = [];
     let campoFocoAtivo = null;
 
-    // BASE LOCAL DE CIDADES E HUBS LOGÍSTICOS (Zero dependência de API externa, busca instantânea)
-    const baseCidadesBrasil = [
-      { nome: "Colombo, PR", lat: -25.2917, lon: -49.2242 },
-      { nome: "Curitiba, PR", lat: -25.4284, lon: -49.2733 },
-      { nome: "Araucária, PR", lat: -25.5925, lon: -49.4069 },
-      { nome: "São José dos Pinhais, PR", lat: -25.5347, lon: -49.2064 },
-      { nome: "Ponta Grossa, PR", lat: -25.0994, lon: -50.1583 },
-      { nome: "Londrina, PR", lat: -23.3103, lon: -51.1628 },
-      { nome: "Maringá, PR", lat: -23.4205, lon: -51.9333 },
-      { nome: "Cascavel, PR", lat: -24.9578, lon: -53.4595 },
-      { nome: "Foz do Iguaçu, PR", lat: -25.5469, lon: -54.5882 },
-      { nome: "Paranaguá, PR", lat: -25.5205, lon: -48.5092 },
-      { nome: "Joinville, SC", lat: -26.3045, lon: -48.8487 },
-      { nome: "Itajaí, SC", lat: -26.9078, lon: -48.6619 },
-      { nome: "Florianópolis, SC", lat: -27.5954, lon: -48.5480 },
-      { nome: "Porto Alegre, RS", lat: -30.0346, lon: -51.2177 },
-      { nome: "Caxias do Sul, RS", lat: -29.1678, lon: -51.1794 },
-      { nome: "São Paulo, SP", lat: -23.5505, lon: -46.6333 },
-      { nome: "Barueri, SP", lat: -23.5113, lon: -46.8765 },
-      { nome: "Campinas, SP", lat: -22.9056, lon: -47.0608 },
-      { nome: "Ribeirão Preto, SP", lat: -21.1767, lon: -47.8208 },
-      { nome: "Santos, SP", lat: -23.9608, lon: -46.3336 },
-      { nome: "São José do Rio Preto, SP", lat: -20.8113, lon: -49.3758 },
-      { nome: "Belo Horizonte, MG", lat: -19.9167, lon: -43.9345 },
-      { nome: "Betim, MG", lat: -19.9678, lon: -44.1983 },
-      { nome: "Contagem, MG", lat: -19.9322, lon: -44.0539 },
-      { nome: "Uberlândia, MG", lat: -18.9186, lon: -48.2772 },
-      { nome: "Uberaba, MG", lat: -19.7483, lon: -47.9319 },
-      { nome: "Frutal, MG", lat: -20.0247, lon: -48.9406 },
-      { nome: "Araporã, MG", lat: -18.1436, lon: -49.1828 },
-      { nome: "Centralina, MG", lat: -18.5836, lon: -49.4994 },
-      { nome: "Campos Altos, MG", lat: -19.6961, lon: -46.1728 },
-      { nome: "Monte Carmelo, MG", lat: -18.7275, lon: -47.4981 },
-      { nome: "Delta, MG", lat: -19.9753, lon: -47.7711 },
-      { nome: "São Sebastião da Bela Vista, MG", lat: -22.1583, lon: -45.7486 },
-      { nome: "Rio de Janeiro, RJ", lat: -22.9068, lon: -43.1729 },
-      { nome: "Goiânia, GO", lat: -16.6869, lon: -49.2648 },
-      { nome: "Aparecida de Goiânia, GO", lat: -16.8228, lon: -49.2481 },
-      { nome: "Anápolis, GO", lat: -16.3267, lon: -48.9533 },
-      { nome: "Rio Verde, GO", lat: -17.7925, lon: -50.9192 },
-      { nome: "Itumbiara, GO", lat: -18.4194, lon: -49.2153 },
-      { nome: "Brasília, DF", lat: -15.7975, lon: -47.8919 },
-      { nome: "Cuiabá, MT", lat: -15.6014, lon: -56.0979 },
-      { nome: "Várzea Grande, MT", lat: -15.6469, lon: -56.1325 },
-      { nome: "Rondonópolis, MT", lat: -16.4678, lon: -54.6361 },
-      { nome: "Primavera do Leste, MT", lat: -15.5583, lon: -54.2986 },
-      { nome: "Campo Verde, MT", lat: -15.5453, lon: -55.1678 },
-      { nome: "Nova Mutum, MT", lat: -13.8319, lon: -56.0828 },
-      { nome: "Lucas do Rio Verde, MT", lat: -13.0533, lon: -55.9114 },
-      { nome: "Sorriso, MT", lat: -12.5447, lon: -55.7214 },
-      { nome: "Sinop, MT", lat: -11.8608, lon: -55.5097 },
-      { nome: "Campo Grande, MS", lat: -20.4697, lon: -54.6201 },
-      { nome: "Dourados, MS", lat: -22.2231, lon: -54.8119 },
-      { nome: "Três Lagoas, MS", lat: -20.7847, lon: -51.7019 },
-      { nome: "Salvador, BA", lat: -12.9777, lon: -38.5016 },
-      { nome: "Simões Filho, BA", lat: -12.7878, lon: -38.4028 },
-      { nome: "Feira de Santana, BA", lat: -12.2664, lon: -38.9663 },
-      { nome: "Vitória da Conquista, BA", lat: -14.8661, lon: -40.8394 },
-      { nome: "Luís Eduardo Magalhães, BA", lat: -12.0958, lon: -45.7958 },
-      { nome: "Fortaleza, CE", lat: -3.7172, lon: -38.5433 },
-      { nome: "Eusébio, CE", lat: -3.8906, lon: -38.4597 },
-      { nome: "Recife, PE", lat: -8.0476, lon: -34.8770 }
-    ];
+    // Garantia de fallback caso o cidades.js demore a responder
+    const listaCidades = (typeof baseCidadesBrasil !== 'undefined' && Array.isArray(baseCidadesBrasil)) ? baseCidadesBrasil : [];
 
     const anpDistribuicao = {
       "BA": { "2026-01": 5.44, "2026-02": 5.40, "2026-03": 6.28, "2026-04": 6.47, "2026-05": 6.34, "2026-06": 6.27, "2026-07": 6.12, "2026-08": 6.09, "2026-09": 6.239, "2026-10": 6.239 },
@@ -616,7 +558,9 @@
       "PR": { "2026-01": 5.44, "2026-02": 5.40, "2026-03": 6.28, "2026-04": 6.47, "2026-05": 6.34, "2026-06": 6.27, "2026-07": 6.12, "2026-08": 5.97, "2026-09": 6.000, "2026-10": 6.000 },
       "SP": { "2026-01": 5.44, "2026-02": 5.40, "2026-03": 6.28, "2026-04": 6.47, "2026-05": 6.34, "2026-06": 6.27, "2026-07": 6.11, "2026-08": 6.09, "2026-09": 6.014, "2026-10": 6.014 },
       "GO": { "2026-01": 5.40, "2026-02": 5.35, "2026-03": 6.15, "2026-04": 6.35, "2026-05": 6.20, "2026-06": 6.15, "2026-07": 6.02, "2026-08": 5.95, "2026-09": 5.868, "2026-10": 5.868 },
-      "MG": { "2026-01": 5.42, "2026-02": 5.38, "2026-03": 6.20, "2026-04": 6.40, "2026-05": 6.28, "2026-06": 6.20, "2026-07": 6.08, "2026-08": 6.02, "2026-09": 6.380, "2026-10": 6.380 }
+      "MG": { "2026-01": 5.42, "2026-02": 5.38, "2026-03": 6.20, "2026-04": 6.40, "2026-05": 6.28, "2026-06": 6.20, "2026-07": 6.08, "2026-08": 6.02, "2026-09": 6.380, "2026-10": 6.380 },
+      "ES": { "2026-01": 5.45, "2026-02": 5.40, "2026-03": 6.25, "2026-04": 6.45, "2026-05": 6.30, "2026-06": 6.25, "2026-07": 6.10, "2026-08": 6.05, "2026-09": 6.390, "2026-10": 6.390 },
+      "MS": { "2026-01": 5.45, "2026-02": 5.40, "2026-03": 6.25, "2026-04": 6.45, "2026-05": 6.30, "2026-06": 6.25, "2026-07": 6.10, "2026-08": 6.05, "2026-09": 6.390, "2026-10": 6.390 }
     };
 
     const anpRevenda = {
@@ -624,8 +568,10 @@
       "CE": { "2026-01": 5.88, "2026-02": 5.85, "2026-03": 6.60, "2026-04": 6.78, "2026-05": 6.70, "2026-06": 6.65, "2026-07": 6.52, "2026-08": 6.48, "2026-09": 6.550, "2026-10": 6.550 },
       "PR": { "2026-01": 5.75, "2026-02": 5.70, "2026-03": 6.48, "2026-04": 6.65, "2026-05": 6.55, "2026-06": 6.50, "2026-07": 6.38, "2026-08": 6.32, "2026-09": 6.390, "2026-10": 6.390 },
       "SP": { "2026-01": 5.80, "2026-02": 5.76, "2026-03": 6.52, "2026-04": 6.70, "2026-05": 6.60, "2026-06": 6.55, "2026-07": 6.42, "2026-08": 6.38, "2026-09": 6.450, "2026-10": 6.450 },
-      "GO": { "2026-01": 5.85, "2026-02": 5.80, "2026-03": 6.58, "2026-04": 6.75, "2026-05": 6.65, "2026-06": 6.60, "2026-07": 6.48, "2026-08": 6.42, "2026-09": 6.490, "2026-10": 6.490 },
-      "MG": { "2026-01": 5.82, "2026-02": 5.78, "2026-03": 6.55, "2026-04": 6.72, "2026-05": 6.62, "2026-06": 6.58, "2026-07": 6.45, "2026-08": 6.40, "2026-09": 6.480, "2026-10": 6.480 }
+      "GO": { "2026-01": 5.85, "2026-02": 5.80, "2026-03": 6.58, "2026-04": 6.75, "2026-05": 6.65, "2026-06": 6.60, "2026-07": 6.48, "2026-08": 6.42, "2026-09": 6.420, "2026-10": 6.420 },
+      "MG": { "2026-01": 5.82, "2026-02": 5.78, "2026-03": 6.55, "2026-04": 6.72, "2026-05": 6.62, "2026-06": 6.58, "2026-07": 6.45, "2026-08": 6.40, "2026-09": 6.480, "2026-10": 6.480 },
+      "ES": { "2026-01": 5.80, "2026-02": 5.75, "2026-03": 6.50, "2026-04": 6.68, "2026-05": 6.58, "2026-06": 6.52, "2026-07": 6.40, "2026-08": 6.35, "2026-09": 6.390, "2026-10": 6.390 },
+      "MS": { "2026-01": 5.80, "2026-02": 5.75, "2026-03": 6.50, "2026-04": 6.68, "2026-05": 6.58, "2026-06": 6.52, "2026-07": 6.40, "2026-08": 6.35, "2026-09": 6.390, "2026-10": 6.390 }
     };
 
     function identificarNomePonto(posto, municipio, uf, tipo) {
@@ -730,11 +676,11 @@
         lblTitulo.innerHTML = `<i class="bi bi-fuel-pump-fill me-1 text-success"></i> Termômetro de Garagens & Tanques Próprios`;
         lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#2563eb;"></span>Custo Interno KMM <span class="legend-indicator" style="background:#0d9488; margin-left:8px;"></span>ANP Distribuição`;
       } else if (modoAtual === 'EXTERNO') {
-        lblTitulo.innerHTML = `<i class="bi bi-truck me-1 text-warning"></i> Painel de Negociação de Rota Rodoviária`;
-        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#d97706;"></span>Preço Bomba KMM <span class="legend-indicator" style="background:#f59e0b; margin-left:8px;"></span>ANP Revenda`;
+        lblTitulo.innerHTML = `<i class="bi bi-truck me-1 text-danger"></i> Painel de Negociação de Rota Rodoviária`;
+        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#c2410c;"></span>Preço Bomba KMM <span class="legend-indicator" style="background:#059669; margin-left:8px;"></span>ANP Revenda`;
       } else {
         lblTitulo.innerHTML = `<i class="bi bi-speedometer2 me-1 text-success"></i> Painel Consolidado &bull; Visão Integrada da Frota`;
-        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#2563eb;"></span>Custo Interno KMM <span class="legend-indicator" style="background:#d97706; margin-left:8px;"></span>Rota Externa`;
+        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#2563eb;"></span>Custo Interno KMM <span class="legend-indicator" style="background:#c2410c; margin-left:8px;"></span>Rota Externa`;
       }
     }
 
@@ -956,6 +902,7 @@
         const card = document.createElement('div');
         card.className = "card-posto-termometro";
         card.innerHTML = `
+          <!-- GRÁFICO DE CONTRASTE AO FUNDO -->
           <div id="${chartDomId}" class="chart-background-container"></div>
 
           <div class="posto-foreground d-flex flex-wrap align-items-center justify-content-between gap-3">
@@ -977,7 +924,7 @@
 
               <div>
                 <div class="small text-muted text-uppercase" style="font-size: 0.65rem; font-weight: 800;">Preço Médio</div>
-                <div class="font-monospace fw-bold fs-6" style="color: ${ehInterno ? '#2563eb' : '#d97706'};">
+                <div class="font-monospace fw-bold fs-6" style="color: ${ehInterno ? '#2563eb' : '#c2410c'};">
                   R$ ${p.PRECO_MEDIO_EXIBICAO.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
                 </div>
               </div>
@@ -1028,12 +975,15 @@
           dadosAnpMes.push(anpUf[m] || null);
         });
 
-        const seriesColors = ehInterno ? ['#2563eb', '#0d9488'] : ['#d97706', '#f59e0b'];
+        // PALETA COM CONTRASTE: 
+        // Interno: Azul (#2563eb) vs Verde-Água (#0d9488)
+        // Externo: Laranja Cobre (#c2410c) vs Verde Esmeralda (#059669)
+        const seriesColors = ehInterno ? ['#2563eb', '#0d9488'] : ['#c2410c', '#059669'];
 
         const optionsSpark = {
           series: [
             { name: ehInterno ? "Custo Interno" : "Preço Bomba", data: dadosKmmMes },
-            { name: "Referência ANP", data: dadosAnpMes }
+            { name: ehInterno ? "ANP Distribuição" : "ANP Revenda", data: dadosAnpMes }
           ],
           chart: {
             type: 'area',
@@ -1045,7 +995,7 @@
           stroke: { curve: 'smooth', width: 2.2 },
           fill: {
             type: 'solid',
-            opacity: ehInterno ? 0.35 : 0.40
+            opacity: 0.25
           },
           tooltip: { enabled: false }
         };
@@ -1176,7 +1126,7 @@
       document.getElementById('mapTooltip').style.display = "none";
     }
 
-    /* MÓDULO ROTEIRIZADOR LEAFLET (LOCAL + CLIQUE NO MAPA) */
+    /* MÓDULO ROTEIRIZADOR LEAFLET (USANDO O CIDADES.JS) */
     function normalizarTexto(txt) {
       return (txt || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
     }
@@ -1202,8 +1152,7 @@
           return;
         }
 
-        // Filtro local instantâneo na base própria
-        const filtradas = baseCidadesBrasil.filter(c => normalizarTexto(c.nome).includes(termo)).slice(0, 7);
+        const filtradas = listaCidades.filter(c => normalizarTexto(c.nome).includes(termo)).slice(0, 8);
 
         lista.innerHTML = "";
         if (filtradas.length === 0) {
@@ -1299,24 +1248,21 @@
 
         document.querySelectorAll('.ponto-rota-item').forEach(configurarAutocompletarItem);
 
-        // Define o primeiro campo como ativo por padrão
         const primeiro = document.querySelector('.ponto-rota-item');
         if (primeiro) {
           primeiro.querySelector('.input-cidade-rota').classList.add('foco-ativo');
           campoFocoAtivo = primeiro;
         }
 
-        // CLIQUE NO MAPA: ABSORVE COORDENADA DIRETO NO CAMPO SELECIONADO
         leafletMapInstance.on('click', function(e) {
           if (!campoFocoAtivo) return;
 
           const lat = parseFloat(e.latlng.lat.toFixed(4));
           const lon = parseFloat(e.latlng.lng.toFixed(4));
 
-          // Procura cidade mais próxima da base local
           let cidadeMaisProxima = "Ponto no Mapa";
           let menorDist = Infinity;
-          baseCidadesBrasil.forEach(c => {
+          listaCidades.forEach(c => {
             const d = calcularDistanciaKm(lat, lon, c.lat, c.lon);
             if (d < menorDist && d < 60) {
               menorDist = d;
@@ -1330,8 +1276,6 @@
           hidden.value = `${lat},${lon}`;
 
           atualizarMarcadoresWaypoints();
-
-          // Passa foco automaticamente para o próximo campo vazio
           avancarParaProximoCampo();
         });
       }
@@ -1395,10 +1339,9 @@
         return hidden.value.split(',').map(Number);
       }
 
-      // Se o usuário digitou sem clicar na sugestão, busca na base local
       if (input.value.trim()) {
         const termo = normalizarTexto(input.value);
-        const achada = baseCidadesBrasil.find(c => normalizarTexto(c.nome).includes(termo));
+        const achada = listaCidades.find(c => normalizarTexto(c.nome).includes(termo));
         if (achada) {
           hidden.value = `${achada.lat},${achada.lon}`;
           return [achada.lat, achada.lon];
@@ -1421,7 +1364,7 @@
       });
 
       if (waypoints.length < 2) {
-        alert("Preencha ao menos uma Cidade de Origem e uma Cidade de Destino válidas (digitando ou clicando no mapa).");
+        alert("Preencha ao menos uma Cidade de Origem e uma Cidade de Destino válidas.");
         return;
       }
 
@@ -1441,7 +1384,7 @@
 
       routingControlInstance.on('routesfound', function(e) {
         const routeCoords = e.routes[0].coordinates;
-        plotarPostosNoRaioDaRota(routeCoords, 200); // Filtro estrito de até 200 km
+        plotarPostosNoRaioDaRota(routeCoords, 200);
       });
     }
 
@@ -1466,8 +1409,7 @@
       postos.forEach(p => {
         if (!p.municipio || p.municipio === 'ND') return;
 
-        // Localiza coordenadas do município do posto na base local
-        const achada = baseCidadesBrasil.find(c => 
+        const achada = listaCidades.find(c => 
           normalizarTexto(c.nome).includes(normalizarTexto(p.municipio))
         );
         if (!achada) return;
@@ -1479,7 +1421,6 @@
           if (menorDist <= maxDistKm) break;
         }
 
-        // Só plota se estiver dentro do raio de 200 km da estrada
         if (menorDist <= maxDistKm) {
           const corPin = p.preco < 6.40 ? "#16a34a" : (p.preco < 6.75 ? "#eab308" : "#dc2626");
           const marker = L.circleMarker([achada.lat, achada.lon], {
