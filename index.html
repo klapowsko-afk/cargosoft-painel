@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cargosoft - Gestão & Auditoria de Diesel S10</title>
+  <title>Cargosoft | Data Analytics Diesel</title>
   
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -37,7 +37,7 @@
       background-size: 500px auto;
       color: var(--text-dark);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      padding: 16px 20px;
+      padding: 14px 18px;
       margin: 0;
       min-height: 100vh;
     }
@@ -47,19 +47,18 @@
       backdrop-filter: blur(8px);
       border: 1px solid var(--border-color);
       border-radius: 12px;
-      padding: 10px 18px;
-      margin-bottom: 14px;
+      padding: 10px 20px;
+      margin-bottom: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     }
-    .brand-logo-cargo { height: 38px; width: auto; object-fit: contain; }
-    .brand-logo-voctt { height: 38px; width: auto; border-radius: 50%; border: 2px solid var(--border-color); }
+    .brand-logo-cargo { height: 44px; width: auto; object-fit: contain; }
+    .brand-logo-voctt { height: 44px; width: auto; border-radius: 50%; border: 2px solid var(--border-color); }
 
     /* BARRA SUPERIOR COCKPIT (VERDE ESCURA INSTITUCIONAL) */
     .cockpit-bar {
       background: linear-gradient(135deg, #062316 0%, #0f3d26 50%, #144e31 100%);
-      border-radius: 12px;
-      padding: 9px 16px;
-      margin-bottom: 14px;
+      border-radius: 10px;
+      padding: 6px 14px;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
     }
     .cockpit-bar .form-select {
@@ -101,18 +100,22 @@
       background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 10px;
-      padding: 10px 14px;
+      padding: 8px 12px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
     }
 
-    /* CARDS KPIS ENXUTOS E COMPACTOS */
+    /* CARDS KPIS ENXUTOS E UNIFORMES */
     .card-kpi {
       background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 10px;
-      padding: 10px 12px;
+      padding: 10px 14px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
       border-left: 4px solid var(--cargosoft-green);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       transition: transform 0.15s ease;
     }
     .card-kpi:hover {
@@ -132,7 +135,7 @@
       margin-bottom: 2px;
     }
     .kpi-val {
-      font-size: 1.25rem;
+      font-size: 1.30rem;
       font-weight: 800;
       color: var(--cargosoft-green);
       letter-spacing: -0.02em;
@@ -172,11 +175,11 @@
       transition: all 0.2s ease;
     }
     .card-posto-termometro:hover {
-      box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
       border-color: #cbd5e1;
     }
 
-    /* GRÁFICO SUAVE COM DESVANECIMENTO LATERAL */
+    /* GRÁFICO REFORÇADO COM MAIOR PRESENÇA VISUAL */
     .chart-background-container {
       position: absolute;
       top: 0;
@@ -184,10 +187,10 @@
       right: 0;
       bottom: 0;
       z-index: 1;
-      opacity: 0.32;
+      opacity: 0.48;
       pointer-events: none;
-      -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.6) 15%, rgba(0,0,0,0.9) 70%, transparent 100%);
-      mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.6) 15%, rgba(0,0,0,0.9) 70%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 12%, rgba(0,0,0,0.95) 75%, transparent 100%);
+      mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 12%, rgba(0,0,0,0.95) 75%, transparent 100%);
     }
 
     .posto-foreground {
@@ -196,17 +199,30 @@
       padding: 8px 12px;
     }
 
-    /* BLOCO TRANSLÚCIDO COMPACTADO */
+    /* BLOCO TRANSLÚCIDO COM LARGURA PADRONIZADA EM TODAS AS LINHAS */
     .valores-box-blur {
-      background: rgba(255, 255, 255, 0.94);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      border: 1px solid rgba(226, 232, 240, 0.95);
+      width: 600px;
+      min-width: 600px;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      border: 1px solid rgba(226, 232, 240, 0.85);
       border-radius: 6px;
-      padding: 4px 10px;
+      padding: 5px 12px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
       white-space: nowrap;
     }
+
+    .col-metrica-fixa {
+      text-align: right;
+    }
+    .col-metrica-vol { width: 75px; }
+    .col-metrica-pm { width: 85px; }
+    .col-metrica-anp { width: 80px; }
+    .col-metrica-gap { width: 105px; }
+    .col-metrica-ult { width: 85px; }
+    .col-metrica-var { width: 75px; }
 
     .clickable-posto {
       cursor: pointer;
@@ -241,7 +257,7 @@
       font-weight: 600;
       font-size: 0.80rem;
       border: none;
-      padding: 5px 12px;
+      padding: 6px 14px;
       border-radius: 6px;
     }
     .btn-sync:hover { background: var(--cargosoft-green-hover); color: #ffffff; }
@@ -269,12 +285,12 @@
       margin-right: 3px;
     }
 
-    /* MAPA SVG DO BRASIL: SILHUETA REAL COM CONTORNOS GEOGRÁFICOS */
+    /* MAPA SVG DO BRASIL: SILHUETA AMPLIADA COM CORES FORTES */
     .map-container {
       background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 10px;
-      padding: 10px;
+      padding: 12px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
       height: 100%;
     }
@@ -285,19 +301,19 @@
       cursor: pointer;
     }
     .svg-state.sem-op { fill: #e2e8f0; }
-    .svg-state.op-baixa { fill: #86efac; }
-    .svg-state.op-media { fill: #22c55e; }
+    .svg-state.op-baixa { fill: #4ade80; }
+    .svg-state.op-media { fill: #16a34a; }
     .svg-state.op-alta { fill: #15803d; }
     .svg-state.op-muito-alta { fill: #052e16; }
     
     .svg-state:hover {
       filter: brightness(0.85);
       stroke: #0f172a;
-      stroke-width: 1.5;
+      stroke-width: 1.6;
     }
     .svg-state.active {
       stroke: #f59e0b !important;
-      stroke-width: 2.2 !important;
+      stroke-width: 2.4 !important;
     }
 
     #mapTooltip {
@@ -361,10 +377,10 @@
     <div class="header-bar d-flex justify-content-between align-items-center flex-wrap gap-2">
       <div class="d-flex align-items-center gap-3">
         <img src="logo_cargo_verde.png" alt="Cargosoft" class="brand-logo-cargo">
-        <div style="border-left: 2px solid var(--border-color); height: 32px; margin: 0 2px;"></div>
+        <div style="border-left: 2px solid var(--border-color); height: 36px; margin: 0 2px;"></div>
         <div>
-          <h1 class="h6 mb-0 fw-bold" style="color: var(--cargosoft-green);">Torre de Gestão & Auditoria de Diesel S10</h1>
-          <span class="small text-muted" style="font-size: 0.72rem;">Controle Contábil e Confronto de Mercado com Referência Oficial ANP</span>
+          <h1 class="h5 mb-0 fw-bold" style="color: var(--cargosoft-green);">CARGOSOFT | Data Analytics Diesel</h1>
+          <span class="small text-muted" style="font-size: 0.72rem;">Monitoramento de Abastecimento, Auditoria de Rota e Benchmarking Regulatório ANP</span>
         </div>
       </div>
       <div class="d-flex align-items-center gap-2">
@@ -375,80 +391,85 @@
       </div>
     </div>
 
-    <!-- BARRA SUPERIOR COCKPIT (VERDE ESCURA) -->
-    <div class="cockpit-bar d-flex flex-wrap align-items-center justify-content-between gap-2">
-      <div class="d-flex align-items-center gap-2">
-        <label class="small fw-bold text-white-50 text-uppercase" style="font-size: 0.70rem;"><i class="bi bi-calendar3 me-1"></i> Competência:</label>
-        <select id="filtroMesAno" class="form-select form-select-sm" style="width: 220px;" onchange="processarPainel()">
-        </select>
+    <!-- LINHA 1: BARRA SUPERIOR INTEGRADA (COMPETÊNCIA, FILTROS E MODOS) -->
+    <div class="row g-2 mb-2">
+      <!-- FILTRO DE COMPETÊNCIA -->
+      <div class="col-12 col-md-auto">
+        <div class="cockpit-bar d-flex align-items-center gap-2 h-100">
+          <label class="small fw-bold text-white-50 text-uppercase" style="font-size: 0.70rem; white-space: nowrap;">
+            <i class="bi bi-calendar3 me-1"></i> Competência:
+          </label>
+          <select id="filtroMesAno" class="form-select form-select-sm" style="min-width: 210px;" onchange="processarPainel()">
+          </select>
+        </div>
       </div>
 
-      <!-- BOTÕES DE SELEÇÃO DE MODO -->
-      <div class="d-flex flex-wrap align-items-center gap-2">
-        <button class="btn-toggle-tipo active" id="btnModoGeral" onclick="alternarModoOperacao('TODOS')">
-          <i class="bi bi-pie-chart-fill me-1"></i> Consolidado Geral
-        </button>
-        <button class="btn-toggle-tipo" id="btnModoInterno" onclick="alternarModoOperacao('INTERNO')">
-          <i class="bi bi-fuel-pump-fill me-1"></i> Tanques Próprios
-        </button>
-        <button class="btn-toggle-tipo" id="btnModoExterno" onclick="alternarModoOperacao('EXTERNO')">
-          <i class="bi bi-truck me-1"></i> Rota Rodoviária
-        </button>
-        <button class="btn-toggle-tipo" id="btnModoRota" onclick="alternarModoOperacao('ROTEIRIZADOR')">
-          <i class="bi bi-map-fill me-1"></i> Roteirizador
-        </button>
-        <button class="btn-toggle-tipo" id="btnModoMatrizes" onclick="alternarModoOperacao('MATRIZES')">
-          <i class="bi bi-table me-1"></i> Matrizes Gerenciais
-        </button>
-      </div>
-    </div>
-
-    <!-- CONTROLE SECUNDÁRIO, KPIS E MAPA DO BRASIL -->
-    <div class="row g-2 mb-3">
-      <div class="col-12 col-lg-8 d-flex flex-column gap-2">
-        
-        <!-- LINHA DE FILTROS: REDE (COM CONTAGEM), POSTO E BUSCA -->
-        <div class="control-sub-bar">
-          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-            <div class="d-flex flex-wrap align-items-center gap-2">
-              
-              <div class="d-flex align-items-center gap-1">
-                <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.68rem;">Rede:</label>
-                <select id="filtroRede" class="form-select form-select-sm" style="width: 190px;" onchange="aplicarFiltroRede()">
-                  <option value="">Todas as Redes</option>
-                </select>
-              </div>
-
-              <div class="d-flex align-items-center gap-1">
-                <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.68rem;">Posto:</label>
-                <select id="filtroPosto" class="form-select form-select-sm" style="width: 190px;" onchange="aplicarFiltroPostoSelect()">
-                  <option value="">Todos os Postos</option>
-                </select>
-              </div>
-
-              <span id="badgeFiltroUf" class="badge bg-dark text-white px-2 py-1" style="display: none;">
-                Estado: <span id="lblUfAtiva"></span>
-                <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroUf()"></i>
-              </span>
-
-              <span id="badgeFiltroPosto" class="badge bg-primary text-white px-2 py-1" style="display: none;">
-                Filtro: <span id="lblPostoAtivo"></span>
-                <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroPosto()"></i>
-              </span>
+      <!-- FILTROS DE PESQUISA RÁPIDA -->
+      <div class="col-12 col-md">
+        <div class="control-sub-bar d-flex align-items-center justify-content-between flex-wrap gap-2 h-100">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="d-flex align-items-center gap-1">
+              <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.68rem;">Rede:</label>
+              <select id="filtroRede" class="form-select form-select-sm" style="width: 175px;" onchange="aplicarFiltroRede()">
+                <option value="">Todas as Redes</option>
+              </select>
             </div>
 
-            <div style="min-width: 180px; max-width: 240px; flex-grow: 1;">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Buscar posto ou cidade..." oninput="filtrarTabelaTexto()">
-              </div>
+            <div class="d-flex align-items-center gap-1">
+              <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.68rem;">Posto:</label>
+              <select id="filtroPosto" class="form-select form-select-sm" style="width: 175px;" onchange="aplicarFiltroPostoSelect()">
+                <option value="">Todos os Postos</option>
+              </select>
+            </div>
+
+            <span id="badgeFiltroUf" class="badge bg-dark text-white px-2 py-1" style="display: none;">
+              UF: <span id="lblUfAtiva"></span>
+              <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroUf()"></i>
+            </span>
+
+            <span id="badgeFiltroPosto" class="badge bg-primary text-white px-2 py-1" style="display: none;">
+              Filtro: <span id="lblPostoAtivo"></span>
+              <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroPosto()"></i>
+            </span>
+          </div>
+
+          <div style="min-width: 180px; max-width: 260px; flex-grow: 1;">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+              <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Buscar posto ou cidade..." oninput="filtrarTabelaTexto()">
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- 5 CARDS EXECUTIVOS CALCULADOS -->
-        <div class="row g-2 flex-grow-1">
-          <div class="col-6 col-md">
+      <!-- BOTÕES DE SELEÇÃO DE MODO -->
+      <div class="col-12 col-xl-auto">
+        <div class="cockpit-bar d-flex align-items-center gap-1 h-100 flex-wrap">
+          <button class="btn-toggle-tipo active" id="btnModoGeral" onclick="alternarModoOperacao('TODOS')">
+            <i class="bi bi-pie-chart-fill me-1"></i> Consolidado Geral
+          </button>
+          <button class="btn-toggle-tipo" id="btnModoInterno" onclick="alternarModoOperacao('INTERNO')">
+            <i class="bi bi-fuel-pump-fill me-1"></i> Tanques Próprios
+          </button>
+          <button class="btn-toggle-tipo" id="btnModoExterno" onclick="alternarModoOperacao('EXTERNO')">
+            <i class="bi bi-truck me-1"></i> Rota Rodoviária
+          </button>
+          <button class="btn-toggle-tipo" id="btnModoRota" onclick="alternarModoOperacao('ROTEIRIZADOR')">
+            <i class="bi bi-map-fill me-1"></i> Roteirizador
+          </button>
+          <button class="btn-toggle-tipo" id="btnModoMatrizes" onclick="alternarModoOperacao('MATRIZES')">
+            <i class="bi bi-table me-1"></i> Matrizes Gerenciais
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LINHA 2: 5 CARDS KPIS DISTRIBUÍDOS + FILTRO POR ESTADO (MAPA) -->
+    <div class="row g-2 mb-3 align-items-stretch">
+      <!-- 5 CARDS EXECUTIVOS CALCULADOS (EXPANDINDO NO GRID TOTAL) -->
+      <div class="col-12 col-xl-8">
+        <div class="row g-2 h-100">
+          <div class="col-6 col-sm-4 col-md">
             <div class="card-kpi">
               <div class="kpi-label">VOLUME ENTREGUE</div>
               <div class="kpi-val" id="cardVolume">-- L</div>
@@ -456,7 +477,7 @@
             </div>
           </div>
           
-          <div class="col-6 col-md">
+          <div class="col-6 col-sm-4 col-md">
             <div class="card-kpi">
               <div class="kpi-label">GASTO TOTAL</div>
               <div class="kpi-val" id="cardGasto">R$ --</div>
@@ -464,7 +485,7 @@
             </div>
           </div>
           
-          <div class="col-6 col-md">
+          <div class="col-6 col-sm-4 col-md">
             <div class="card-kpi">
               <div class="kpi-label" id="cardPrecoMedioLabel">PREÇO MÉDIO REAL</div>
               <div class="kpi-val" id="cardPrecoMedio">R$ --</div>
@@ -472,7 +493,7 @@
             </div>
           </div>
           
-          <div class="col-6 col-md">
+          <div class="col-6 col-sm-6 col-md">
             <div class="card-kpi">
               <div class="kpi-label">PONTOS COM VOLUME</div>
               <div class="kpi-val" id="cardPontos">--</div>
@@ -480,8 +501,8 @@
             </div>
           </div>
 
-          <!-- CARD 5: OFICIAL ANP / ANTT BRASIL (ESTRITAMENTE AUDITADO DO JSON) -->
-          <div class="col-12 col-md">
+          <!-- CARD 5: OFICIAL ANP / ANTT BRASIL -->
+          <div class="col-12 col-sm-6 col-md">
             <div class="card-kpi card-kpi-anp">
               <div class="d-flex justify-content-between align-items-center">
                 <div class="kpi-label text-primary">ANP / ANTT BRASIL</div>
@@ -494,11 +515,10 @@
             </div>
           </div>
         </div>
-
       </div>
 
       <!-- MAPA SVG DO BRASIL: SILHUETA REAL COM CONTORNOS GEOGRÁFICOS -->
-      <div class="col-12 col-lg-4">
+      <div class="col-12 col-xl-4">
         <div class="map-container d-flex flex-column justify-content-between">
           <div class="d-flex justify-content-between align-items-center mb-1">
             <span class="small fw-bold text-dark text-uppercase" style="font-size: 0.70rem;">
@@ -507,16 +527,16 @@
             <span class="text-muted" style="font-size: 0.65rem;" id="lblHoverEstado">Passe o mouse ou clique</span>
           </div>
 
-          <div class="d-flex justify-content-center align-items-center flex-grow-1" style="min-height: 165px; position: relative;">
-            <svg id="brazilSvg" viewBox="0 0 520 520" style="width: 100%; height: 165px;"></svg>
+          <div class="d-flex justify-content-center align-items-center flex-grow-1" style="min-height: 145px; position: relative;">
+            <svg id="brazilSvg" viewBox="0 0 520 520" style="width: 100%; height: 145px;"></svg>
           </div>
 
           <div class="d-flex justify-content-between align-items-center pt-1 border-top" style="font-size: 0.65rem;">
             <span class="text-muted"><span class="legend-indicator" style="background:#e2e8f0;"></span>Sem Base</span>
             <div class="d-flex align-items-center gap-1">
               <span class="text-muted">Concentração:</span>
-              <span class="legend-indicator" style="background:#86efac;" title="Baixo"></span>
-              <span class="legend-indicator" style="background:#22c55e;" title="Médio"></span>
+              <span class="legend-indicator" style="background:#4ade80;" title="Baixo"></span>
+              <span class="legend-indicator" style="background:#16a34a;" title="Médio"></span>
               <span class="legend-indicator" style="background:#15803d;" title="Alto"></span>
               <span class="legend-indicator" style="background:#052e16;" title="Muito Alto"></span>
             </div>
@@ -550,7 +570,7 @@
       </div>
     </div>
 
-    <!-- SEÇÃO 2: ROTEIRIZADOR LEAFLET (COM DUPLO RAIO 200KM / 600KM E IMPRESSÃO) -->
+    <!-- SEÇÃO 2: ROTEIRIZADOR LEAFLET -->
     <div id="secaoRoteirizador" class="panel-box">
       <div class="panel-header">
         <div>
@@ -628,17 +648,20 @@
       </div>
     </div>
 
-    <!-- SEÇÃO 3: MATRIZES GERENCIAIS & SPREADS (CARREGADAS VIA MATRIZES.JS) -->
+    <!-- SEÇÃO 3: MATRIZES GERENCIAIS & SPREADS -->
     <div id="secaoMatrizesGerenciais" class="panel-box p-3">
     </div>
 
-    <!-- RODAPÉ -->
-    <div class="d-flex justify-content-between align-items-center py-2 px-1 small text-muted">
-      <span>Cargosoft Transportes &copy; 2026</span>
-      <span class="d-flex align-items-center gap-2">
+    <!-- RODAPÉ COM VERSIONAMENTO DISCRETO -->
+    <div class="d-flex justify-content-between align-items-center py-2 px-1 small text-muted border-top mt-3" style="font-size: 0.72rem;">
+      <div class="d-flex align-items-center gap-2">
+        <span>Cargosoft Transportes &copy; 2026</span>
+        <span class="badge bg-light text-secondary border font-monospace px-2 py-0" style="font-size: 0.65rem;">v2.4.0</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
         Desenvolvido por <strong>VOCTT Inteligência & Consultoria de Frotas</strong>
         <img src="logo_voctt.png" alt="VOCTT" style="height: 18px; width: 18px; border-radius: 50%;">
-      </span>
+      </div>
     </div>
 
   </div>
@@ -1076,11 +1099,11 @@
         const card = document.createElement('div');
         card.className = "card-posto-termometro";
         card.innerHTML = `
-          <!-- GRÁFICO SUAVE AO FUNDO -->
+          <!-- GRÁFICO SUAVE AO FUNDO COM CONTRASTE REFORÇADO -->
           <div id="${chartDomId}" class="chart-background-container"></div>
 
           <div class="posto-foreground d-flex flex-wrap align-items-center justify-content-between gap-2">
-            <div class="d-flex align-items-center gap-2" style="min-width: 250px; max-width: 270px; flex-shrink: 0;">
+            <div class="d-flex align-items-center gap-2" style="min-width: 250px; max-width: 280px; flex-shrink: 0;">
               <span class="badge-uf">${p.UF_POSTO || '--'}</span>
               <div class="text-truncate">
                 <div class="fw-bold fs-6 text-dark text-truncate clickable-posto" onclick="filtrarPorPostoClique('${p.POSTO.replace(/'/g, "\\'")}')" title="Clique para filtrar este posto">
@@ -1090,38 +1113,38 @@
               </div>
             </div>
 
-            <!-- QUADRO TRANSLÚCIDO COMPACTADO -->
-            <div class="valores-box-blur d-flex align-items-center gap-3 text-end ms-auto">
-              <div>
+            <!-- QUADRO TRANSLÚCIDO COM LARGURA PADRONIZADA EM TODAS AS LINHAS -->
+            <div class="valores-box-blur d-flex align-items-center justify-content-between text-end ms-auto">
+              <div class="col-metrica-fixa col-metrica-vol">
                 <div class="small text-muted text-uppercase" style="font-size: 0.60rem; font-weight: 800;">Volume</div>
                 <div class="font-monospace fw-bold" style="font-size: 0.82rem;">${Math.round(p.LITROS_TOTAL).toLocaleString('pt-BR')} L</div>
               </div>
 
-              <div>
+              <div class="col-metrica-fixa col-metrica-pm">
                 <div class="small text-muted text-uppercase" style="font-size: 0.60rem; font-weight: 800;">Preço Médio</div>
                 <div class="font-monospace fw-bold" style="font-size: 0.82rem; color: ${ehInterno ? '#2563eb' : '#c2410c'};">
                   R$ ${p.PRECO_MEDIO_EXIBICAO.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
                 </div>
               </div>
 
-              <div>
+              <div class="col-metrica-fixa col-metrica-anp">
                 <div class="small text-muted text-uppercase" style="font-size: 0.60rem; font-weight: 800;">Ref. ANP</div>
                 <div class="font-monospace text-success fw-semibold" style="font-size: 0.82rem;">
                   ${p.REF_ANP > 0 ? "R$ " + p.REF_ANP.toFixed(3) : "--"}
                 </div>
               </div>
 
-              <div style="min-width: 90px;">
+              <div class="col-metrica-fixa col-metrica-gap">
                 <div class="small text-muted text-uppercase" style="font-size: 0.60rem; font-weight: 800;">GAP Mercado</div>
-                <div class="font-monospace" style="font-size: 0.78rem;">${gapHtml}</div>
+                <div class="font-monospace" style="font-size: 0.76rem;">${gapHtml}</div>
               </div>
 
-              <div>
+              <div class="col-metrica-fixa col-metrica-ult">
                 <div class="small text-muted text-uppercase" style="font-size: 0.60rem; font-weight: 800;">Último Pago</div>
                 <div class="font-monospace fw-bold" style="font-size: 0.82rem;">R$ ${p.ULTIMO_PRECO.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</div>
               </div>
 
-              <div style="min-width: 75px;">
+              <div class="col-metrica-fixa col-metrica-var">
                 <div class="small text-muted text-uppercase" style="font-size: 0.60rem; font-weight: 800;">Var. Mês</div>
                 <div class="font-monospace">${variacaoHtml}</div>
               </div>
@@ -1164,10 +1187,10 @@
             animations: { enabled: false }
           },
           colors: seriesColors,
-          stroke: { curve: 'smooth', width: 2.2 },
+          stroke: { curve: 'smooth', width: 2.5 },
           fill: {
             type: 'solid',
-            opacity: 0.28
+            opacity: 0.38
           },
           tooltip: { enabled: false }
         };
@@ -1178,7 +1201,7 @@
       });
     }
 
-    /* MAPA SVG COM CURVAS GEOGRÁFICAS REAIS (SILHUETA DO BRASIL) */
+    /* MAPA SVG COM TRAÇADO GEOGRÁFICO DA SILHUETA DO BRASIL */
     const estadosSvg = [
       { uf: "RR", d: "M 195 25 C 220 30 240 50 235 85 C 225 105 200 100 185 80 C 180 50 185 30 195 25 Z" },
       { uf: "AP", d: "M 320 60 C 345 70 365 95 350 120 C 330 125 315 100 320 60 Z" },
