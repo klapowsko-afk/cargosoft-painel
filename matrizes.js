@@ -1,5 +1,5 @@
 // Módulo de Matrizes Gerenciais e Auditoria Estratégica (Power BI Engine Alinhado)
-// Utiliza AVERAGE (Média Simples dos Postos) para bater exatamente com o DAX do Power BI
+// Inclui o Modo de Checagem com matrizes brutas de Custo Médio Pago e ANP Revenda
 
 let cacheAnpBase = null;
 
@@ -42,8 +42,7 @@ async function calcularMatrizesGerenciais(registros) {
   const ufsExterno = [...new Set(registros.filter(r => r.TIPO_OPERACAO === 'EXTERNO').map(r => r.UF_POSTO).filter(Boolean))].sort();
   const ufsInterno = [...new Set(registros.filter(r => r.TIPO_OPERACAO === 'INTERNO').map(r => r.UF_POSTO).filter(Boolean))].sort();
 
-  // 1. Agrupamento para Média Simples (AVERAGE) idêntica ao DAX:
-  // Armazena a lista de preços médios de cada lançamento/posto por UF + Mês + Tipo
+  // Agrupamento para Média Simples (AVERAGE) idêntica ao DAX do Power BI
   const precosAgrupados = {};
 
   registros.forEach(r => {
@@ -57,7 +56,6 @@ async function calcularMatrizesGerenciais(registros) {
     }
   });
 
-  // Média Simples (AVERAGE) da célula UF x MÊS
   function getPrecoMedioSimples(uf, mes, tipo) {
     const lista = precosAgrupados[`${uf}_${mes}_${tipo}`];
     if (!lista || lista.length === 0) return null;
@@ -65,7 +63,6 @@ async function calcularMatrizesGerenciais(registros) {
     return soma / lista.length;
   }
 
-  // Média Simples (AVERAGE) para a coluna TOTAL da UF
   function getTotalUfSimples(uf, tipo) {
     const todosPrecos = [];
     mesesColunas.forEach(m => {
@@ -78,7 +75,7 @@ async function calcularMatrizesGerenciais(registros) {
     return todosPrecos.reduce((a, b) => a + b, 0) / todosPrecos.length;
   }
 
-  // 1. MATRIZ EXTERNA (Var % vs ANP Revenda)
+  // 1. MATRIZ EXECUTIVA EXTERNA (Var % vs ANP Revenda)
   let htmlExterna = `
     <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.72rem;">
       <thead class="table-light">
@@ -110,7 +107,6 @@ async function calcularMatrizesGerenciais(registros) {
       }
     });
 
-    // Total Consolidado (AVERAGE da UF vs AVERAGE da ANP)
     const totalPago = getTotalUfSimples(uf, 'EXTERNO');
     if (totalPago && precosAnpAno.length > 0) {
       const mediaAnpAno = precosAnpAno.reduce((a, b) => a + b, 0) / precosAnpAno.length;
@@ -126,7 +122,7 @@ async function calcularMatrizesGerenciais(registros) {
   });
   htmlExterna += `</tbody></table>`;
 
-  // 2. MATRIZ INTERNA (Var % vs ANP Distribuição - encerra em AGO/26)
+  // 2. MATRIZ EXECUTIVA INTERNA (Var % vs ANP Distribuição)
   let htmlInterna = `
     <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.72rem;">
       <thead class="table-light">
@@ -173,7 +169,7 @@ async function calcularMatrizesGerenciais(registros) {
   });
   htmlInterna += `</tbody></table>`;
 
-  // 3. MATRIZ DE SPREAD (Interno vs Externo R$/L) COM RÉGUA RIGOROSA
+  // 3. MATRIZ EXECUTIVA DE SPREAD (Interno vs Externo R$/L)
   let htmlSpread = `
     <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.72rem;">
       <thead class="table-light">
@@ -197,8 +193,6 @@ async function calcularMatrizesGerenciais(registros) {
 
       if (pInt && pExt) {
         const spread = pExt - pInt;
-
-        // Régua: < R$ 0.15 = Vermelho Crítico | R$ 0.15 a R$ 0.50 = Amarelo | >= R$ 0.50 = Verde
         let bgCor = 'rgba(245, 158, 11, 0.28)';
         if (spread >= 0.50) bgCor = 'rgba(34, 197, 94, 0.32)';
         if (spread < 0.15) bgCor = 'rgba(239, 68, 68, 0.32)';
@@ -224,7 +218,64 @@ async function calcularMatrizesGerenciais(registros) {
   });
   htmlSpread += `</tbody></table>`;
 
-  return { htmlExterna, htmlInterna, htmlSpread };
+  // ==========================================
+  // TABELAS DE CHECAGEM BRUTAS (ESPELHO POWER BI)
+  // ==========================================
+
+  // CHECAGEM 1: Custo Médio Externo Pago (R$/L)
+  let htmlCheckPago = `
+    <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.70rem;">
+      <thead class="table-dark">
+        <tr>
+          <th style="width: 45px;">UF</th>
+          ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
+          <th class="fw-bold bg-primary text-white">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  ufsExterno.forEach(uf => {
+    let tds = `<td><b>${uf}</b></td>`;
+    mesesColunas.forEach(m => {
+      const p = getPrecoMedioSimples(uf, m.id, 'EXTERNO');
+      tds += `<td>${p ? p.toFixed(2).replace('.', ',') : '-'}</td>`;
+    });
+    const tot = getTotalUfSimples(uf, 'EXTERNO');
+    tds += `<td class="fw-bold bg-light">${tot ? tot.toFixed(2).replace('.', ',') : '-'}</td>`;
+    htmlCheckPago += `<tr>${tds}</tr>`;
+  });
+  htmlCheckPago += `</tbody></table>`;
+
+  // CHECAGEM 2: Custo Médio ANP Revenda (R$/L)
+  const ufsAnp = Object.keys(mapaRevenda).sort();
+  let htmlCheckAnp = `
+    <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.70rem;">
+      <thead class="table-dark">
+        <tr>
+          <th style="width: 45px;">UF</th>
+          ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
+          <th class="fw-bold bg-success text-white">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  ufsAnp.forEach(uf => {
+    let tds = `<td><b>${uf}</b></td>`;
+    const valoresUf = [];
+    mesesColunas.forEach(m => {
+      const v = (mapaRevenda[uf] && mapaRevenda[uf][m.id]) ? mapaRevenda[uf][m.id] : null;
+      if (v) valoresUf.push(v);
+      tds += `<td>${v ? v.toFixed(2).replace('.', ',') : '-'}</td>`;
+    });
+    const mediaUf = valoresUf.length > 0 ? (valoresUf.reduce((a, b) => a + b, 0) / valoresUf.length) : null;
+    tds += `<td class="fw-bold bg-light">${mediaUf ? mediaUf.toFixed(2).replace('.', ',') : '-'}</td>`;
+    htmlCheckAnp += `<tr>${tds}</tr>`;
+  });
+  htmlCheckAnp += `</tbody></table>`;
+
+  return { htmlExterna, htmlInterna, htmlSpread, htmlCheckPago, htmlCheckAnp };
 }
 
 async function renderizarAbaMatrizes() {
@@ -246,7 +297,8 @@ async function renderizarAbaMatrizes() {
   const matrizes = await calcularMatrizesGerenciais(baseRegistrosMensais);
 
   container.innerHTML = `
-    <div class="row g-3">
+    <!-- BLOCO 1: MATRIZES EXECUTIVAS -->
+    <div class="row g-3 mb-4">
       <!-- AUDITORIA EXTERNA -->
       <div class="col-12 col-xl-7">
         <div class="card p-3 shadow-sm border-0 h-100">
@@ -258,7 +310,7 @@ async function renderizarAbaMatrizes() {
             ${matrizes.htmlExterna}
           </div>
           <div class="alert alert-light border mt-auto py-2 px-3 small text-muted" style="font-size: 0.72rem;">
-            <em>💡 <strong>Como interpretar:</strong> Mede o poder de compra da frota na estrada contra a bomba oficial da ANP. Células em <strong>verde (valores negativos)</strong> indicam compra abaixo da média estadual (economia real). Células em <strong>vermelho (valores positivos)</strong> alertam para ágio ou postos caros onde a frota pagou acima do mercado regional.</em>
+            <em>💡 <strong>Como interpretar:</strong> Mede o poder de compra da frota na estrada contra a bomba oficial da ANP. Células em <strong>verde (valores negativos)</strong> indicam compra abaixo da média estadual. Células em <strong>vermelho (valores positivos)</strong> alertam para ágio ou postos caros.</em>
           </div>
         </div>
       </div>
@@ -274,7 +326,7 @@ async function renderizarAbaMatrizes() {
             ${matrizes.htmlInterna}
           </div>
           <div class="alert alert-light border mt-1 py-1 px-2 text-muted" style="font-size: 0.69rem;">
-            <em>💡 <strong>Como interpretar:</strong> Avalia a eficiência na compra de atacado para as garagens. <strong>Verde</strong> confirma compra abaixo das distribuidoras. <strong>Vermelho</strong> indica lotes onde o custo da garagem perdeu tração contra o mercado atacadista. A série oficial da ANP encerrou em agosto/2026.</em>
+            <em>💡 <strong>Como interpretar:</strong> Avalia a eficiência na compra de atacado para as garagens. A série oficial da ANP encerrou em agosto/2026.</em>
           </div>
         </div>
 
@@ -287,7 +339,40 @@ async function renderizarAbaMatrizes() {
             ${matrizes.htmlSpread}
           </div>
           <div class="alert alert-light border mt-1 py-1 px-2 text-muted" style="font-size: 0.69rem;">
-            <em>💡 <strong>Como interpretar:</strong> Representa o ganho unitário líquido por abastecer na garagem em vez da rua (Preço Rota menos Custo Garagem). <strong>Valores altos em verde (acima de R$ 0,50/L)</strong> comprovam a economia da infraestrutura própria. <strong>Valores em vermelho (abaixo de R$ 0,15/L)</strong> alertam para margem insuficiente frente ao custo operacional interno.</em>
+            <em>💡 <strong>Como interpretar:</strong> Ganho unitário líquido por abastecer na garagem em vez da rua. <strong>Vermelho (abaixo de R$ 0,15/L)</strong> alerta para margem insuficiente.</em>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 2: MODO DE CHECAGEM BRUTO (ESPELHO POWER BI) -->
+    <div class="card p-3 shadow-sm border-0 bg-light">
+      <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+        <div>
+          <h6 class="fw-bold text-dark mb-0"><i class="bi bi-ui-checks-grid me-1 text-secondary"></i> Painel de Checagem: Confronto de Preços Brutos em Reais (R$/L)</h6>
+          <span class="small text-muted">Use estas duas tabelas para auditar os valores de Custo Pago e ANP Revenda direto contra o Power BI</span>
+        </div>
+        <span class="badge bg-secondary text-white font-monospace">Auditoria Interna de Dados</span>
+      </div>
+
+      <div class="row g-3">
+        <!-- TABELA CHECAGEM 1: CUSTO MEDIO EXTERNO PAGO -->
+        <div class="col-12 col-xl-6">
+          <div class="card p-2 bg-white border">
+            <span class="fw-bold small text-dark mb-2 d-block">1. Custo Médio Externo Pago (R$/L)</span>
+            <div class="table-responsive">
+              ${matrizes.htmlCheckPago}
+            </div>
+          </div>
+        </div>
+
+        <!-- TABELA CHECAGEM 2: CUSTO MEDIO ANP REVENDA -->
+        <div class="col-12 col-xl-6">
+          <div class="card p-2 bg-white border">
+            <span class="fw-bold small text-dark mb-2 d-block">2. Custo Médio ANP Revenda (R$/L)</span>
+            <div class="table-responsive">
+              ${matrizes.htmlCheckAnp}
+            </div>
           </div>
         </div>
       </div>
