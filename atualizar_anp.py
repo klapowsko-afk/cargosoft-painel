@@ -11,7 +11,7 @@ URL_REVENDA_ESTADOS = "https://www.gov.br/anp/pt-br/assuntos/precos-e-defesa-da-
 # 2. Base Oficial de Preços de Distribuição (Atacado - PDC / i-SIMP)
 URL_DISTRIBUICAO_ESTADOS = "https://www.gov.br/anp/pt-br/assuntos/precos-e-defesa-da-concorrencia/precos/pdc/semanal/combustiveis-liquidos-estados.xlsx"
 
-# Páginas de notícias da ANTT onde os comunicados de reajuste do piso e diesel são listados
+# Páginas de listagem com paginação oficial da ANTT
 URLS_ANTT_LISTAGEM = [
     "https://www.gov.br/antt/pt-br/assuntos/noticias-defeso-eleitoral",
     "https://www.gov.br/antt/pt-br/assuntos/noticias-defeso-eleitoral?b_start:int=30",
@@ -42,31 +42,89 @@ def obter_html(url):
 
 def obter_referencia_antt():
     """
-    Entra na listagem de notícias da ANTT, localiza o link da publicação
-    de reajuste do piso/diesel e extrai os dados diretamente da matéria.
+    Rastreia a listagem oficial da ANTT, localiza a matéria de reajuste do piso/diesel
+    e extrai o preço oficial, ato e vigência diretamente do conteúdo oficial.
     """
-    print("\n--- Buscando Publicação Oficial da ANTT ---")
-    link_noticia_alvo = None
+    print("\n--- Consultando Publicações Oficiais da ANTT ---")
+    dados_coletados = None
 
     for url_listagem in URLS_ANTT_LISTAGEM:
         try:
-            print(f"Varrendo listagem: {url_listagem}")
-            html_listagem = obter_html(url_listagem)
+            print(f"Varrendo: {url_listagem}")
+            html = obter_html(url_listagem)
+            soup = BeautifulSoup(html, 'html.parser')
+
+            # Cada notícia no Plone/gov.br fica num container 'tileItem', 'article' ou tags <li>
+            itens_noticia = soup.find_all(['article', 'li', 'div'], class_=re.compile(r'(tileItem|entry|noticia|item)'))
             
-            # Procura links de notícias que falem sobre piso mínimo ou diesel
-            padrao_links = re.findall(r'href=["\'](https://www\.gov\.br/antt/pt-br/assuntos/[^"\']*(?:piso-minimo|diesel|frete)[^"\']*)["\']', html_listagem, re.IGNORECASE)
+            # Se a estrutura não tiver as classes padrão, varre todos os links <a> que tenham texto relevante
+            links_candidatos = []
+            if itens_noticia:
+                for item in itens_noticia:
+                    texto_item = item.get_text()
+                    if ("piso m" in texto_item.lower() or "frete" in texto_item.lower()) and "diesel" in texto_item.lower():
+                        a_tag = item.find('a', href=True)
+                        if a_tag:
+                            links_candidatos.append((a_tag['href'], texto_item))
             
-            if padrao_links:
-                link_noticia_alvo = padrao_links[0]
-                print(f"Notícia oficial localizada: {link_noticia_alvo}")
+            if not links_candidatos:
+                for a in soup.find_all('a', href=True):
+                    texto_link = a.get_text().strip()
+                    if ("piso m" in texto_link.lower() or "frete" in texto_link.lower()) and "diesel" in texto_link.lower():
+                        pai = a.find_parent(['article', 'li', 'div'])
+                        texto_completo = pai.get_text() if pai else texto_link
+                        links_candidatos.append((a['href'], texto_completo))
+
+            for link_href, texto_resumo in links_candidatos:
+                # 1. Tenta extrair direto do resumo da listagem se o preço já estiver ali
+                texto_limpo = re.sub(r'&nbsp;|\s+', ' ', texto_resumo)
+                preco_match = re.search(r'R\$\s*(\d+[\.,]\d{2})', texto_limpo)
+                vigencia_match = re.search(r'(?:vigor\s+em|vig[êe]ncia\s+a\s+partir\s+de)\s+(\d{1,2}\s+de\s+[a-zA-Zç]+\s+de\s+\d{4}|\d{1,2}\s+de\s+[a-zA-Zç]+|\d{2}/\d{2}/\d{4})', texto_limpo, re.IGNORECASE)
+
+                # Monta a URL completa caso venha link relativo
+                url_materia = link_href if link_href.startswith('http') else "https://www.gov.br" + (link_href if link_href.startswith('/') else '/' + link_href)
+
+                # 2. Entra na matéria para pegar os dados na íntegra (e o número exato da Portaria)
+                html_interno = ""
+                try:
+                    html_interno = obter_html(url_materia)
+                    texto_interno = re.sub(r'&nbsp;|\s+', ' ', html_interno)
+                except Exception:
+                    texto_interno = texto_limpo
+
+                # Busca portaria no texto interno ou no resumo
+                portaria_match = re.search(r'Portaria\s+SUROC\s+n[ºo°]?\s*(\d+)', texto_interno, re.IGNORECASE)
+                if not preco_match:
+                    preco_match = re.search(r'R\$\s*(\d+[\.,]\d{2})', texto_interno)
+                if not vigencia_match:
+                    vigencia_match = re.search(r'(?:vigor\s+em|vig[êe]ncia\s+a\s+partir\s+de)\s+(\d{1,2}\s+de\s+[a-zA-Zç]+\s+de\s+\d{4}|\d{1,2}\s+de\s+[a-zA-Zç]+|\d{2}/\d{2}/\d{4})', texto_interno, re.IGNORECASE)
+
+                if preco_match:
+                    valor_num = float(preco_match.group(1).replace(',', '.'))
+                    num_portaria = f"Portaria SUROC nº {portaria_match.group(1)}" if portaria_match else "Revisão Piso Mínimo ANTT"
+                    vig_texto = vigencia_match.group(1) if vigencia_match else "Publicada no DOU"
+
+                    dados_coletados = {
+                        "status": "sucesso",
+                        "valor": valor_num,
+                        "ato_oficial": num_portaria,
+                        "vigencia": vig_texto,
+                        "base_calculo_anp": "Pesquisa Oficial ANP Semanal",
+                        "fonte_noticia": url_materia
+                    }
+                    print(f"Sucesso! Encontrado na ANTT: {dados_coletados['ato_oficial']} - R$ {dados_coletados['valor']} (Vigência: {dados_coletados['vigencia']})")
+                    break
+
+            if dados_coletados:
                 break
+
         except Exception as e:
             print(f"Falha ao consultar listagem {url_listagem}: {e}")
             continue
 
-    if not link_noticia_alvo:
-        print("ERRO: Nenhum link de notícia sobre diesel/piso mínimo foi localizado na listagem da ANTT.")
-        return {
+    if not dados_coletados:
+        print("ERRO: Nenhuma publicação oficial da ANTT foi encontrada ou extraída.")
+        dados_coletados = {
             "status": "erro",
             "valor": None,
             "ato_oficial": "Não localizado",
@@ -74,56 +132,7 @@ def obter_referencia_antt():
             "base_calculo_anp": None
         }
 
-    # Acessa o link direto da notícia encontrada
-    try:
-        html_noticia = obter_html(link_noticia_alvo)
-        
-        # Limpa quebras e espaços não quebráveis do HTML
-        texto_limpo = re.sub(r'&nbsp;|\s+', ' ', html_noticia)
-
-        # 1. Busca valor em R$ (ex: R$ 7,33 ou R$ 7.33) associado ao diesel
-        preco_match = re.search(r'R\$\s*(\d+[\.,]\d{2})', texto_limpo)
-        
-        # 2. Busca número da Portaria SUROC
-        portaria_match = re.search(r'Portaria\s+SUROC\s+n[ºo°]?\s*(\d+)', texto_limpo, re.IGNORECASE)
-        
-        # 3. Busca data de vigência
-        vigencia_match = re.search(r'(?:vigor\s+em|vig[êe]ncia\s+a\s+partir\s+de)\s+(\d{1,2}\s+de\s+[a-zA-Zç]+\s+de\s+\d{4}|\d{2}/\d{2}/\d{4})', texto_limpo, re.IGNORECASE)
-
-        if preco_match and portaria_match:
-            valor_num = float(preco_match.group(1).replace(',', '.'))
-            num_portaria = portaria_match.group(1)
-            vig_texto = vigencia_match.group(1) if vigencia_match else "Não identificada"
-
-            resultado = {
-                "status": "sucesso",
-                "valor": valor_num,
-                "ato_oficial": f"Portaria SUROC nº {num_portaria}",
-                "vigencia": vig_texto,
-                "base_calculo_anp": "Pesquisa Oficial ANP Semanal",
-                "link_fonte": link_noticia_alvo
-            }
-            print(f"Sucesso na extração: {resultado['ato_oficial']} | R$ {resultado['valor']} | Vigência: {resultado['vigencia']}")
-            return resultado
-        else:
-            print(f"ERRO: A notícia foi aberta ({link_noticia_alvo}), mas o padrão de preço ou portaria não foi encontrado no texto.")
-            return {
-                "status": "erro",
-                "valor": None,
-                "ato_oficial": "Padrão não reconhecido",
-                "vigencia": None,
-                "base_calculo_anp": None
-            }
-
-    except Exception as e:
-        print(f"ERRO ao acessar o texto da notícia {link_noticia_alvo}: {e}")
-        return {
-            "status": "erro",
-            "valor": None,
-            "ato_oficial": "Erro de conexão",
-            "vigencia": None,
-            "base_calculo_anp": None
-        }
+    return dados_coletados
 
 def processar_base_revenda():
     """
@@ -148,6 +157,7 @@ def processar_base_revenda():
     df["DATA_FIM_DT"] = pd.to_datetime(df[col_data_fim], errors='coerce')
     df = df[df["DATA_INI_DT"] >= "2026-01-01"].copy()
 
+    # Competência atribuída pela Data Inicial da semana
     df["MES_ANO"] = df["DATA_INI_DT"].dt.strftime("%Y-%m")
     df["UF"] = df[col_estado].astype(str).str.strip().str.upper().map(MAPA_ESTADOS)
     df = df.dropna(subset=["UF"]).copy()
@@ -179,6 +189,7 @@ def processar_base_distribuicao():
     arquivo_distribuicao = "anp_distribuicao_temp.xlsx"
     urllib.request.urlretrieve(URL_DISTRIBUICAO_ESTADOS, arquivo_distribuicao)
 
+    # Dados começam na linha 9 (skiprows=8)
     df = pd.read_excel(arquivo_distribuicao, skiprows=8)
     df.columns = [str(c).strip().upper() for c in df.columns]
 
@@ -194,6 +205,7 @@ def processar_base_distribuicao():
     df["DATA_FIM_DT"] = pd.to_datetime(df[col_data_fim], errors='coerce')
     df = df[df["DATA_INI_DT"] >= "2026-01-01"].copy()
 
+    # Competência atribuída pela Data Inicial da semana
     df["MES_ANO"] = df["DATA_INI_DT"].dt.strftime("%Y-%m")
     df["UF"] = df[col_estado].astype(str).str.strip().str.upper().map(MAPA_ESTADOS)
     df = df.dropna(subset=["UF"]).copy()
@@ -232,7 +244,7 @@ def atualizar_base_anp():
     with open("anp_base.json", "w", encoding="utf-8") as f:
         json.dump(base_final, f, indent=2, ensure_ascii=False)
 
-    print("\nArquivo anp_base.json gerado.")
+    print("\nArquivo anp_base.json gerado com sucesso!")
 
 if __name__ == "__main__":
     atualizar_base_anp()
