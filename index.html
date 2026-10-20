@@ -3,743 +3,1598 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cargosoft - Torre de Gestão & Auditoria de Diesel S10</title>
+  <title>Cargosoft - Gestão & Auditoria de Diesel S10</title>
   
-  <!-- Bootstrap 5 & Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css">
   
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+  <!-- MÓDULOS EXTERNOS DE DADOS E INTELIGÊNCIA -->
+  <script src="cidades.js"></script>
+  <script src="matrizes.js"></script>
+
   <style>
     :root {
-      --cg-green-dark: #0a2f1d;
-      --cg-green-header: #0f3d26;
-      --cg-green-primary: #198754;
-      --cg-green-light: #e8f5e9;
-      --cg-border: #e2e8f0;
-      --cg-bg: #f8fafc;
+      --cargosoft-green: #1c483a;
+      --cargosoft-green-hover: #14352a;
+      --bg-page: #f8fafc;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
     }
 
     body {
-      background-color: var(--cg-bg);
+      background-color: var(--bg-page);
+      background-image: url('fundo.png');
+      background-repeat: no-repeat;
+      background-position: top right;
+      background-size: 500px auto;
+      color: var(--text-dark);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      color: #1e293b;
+      padding: 18px 22px;
+      margin: 0;
+      min-height: 100vh;
     }
 
-    /* BARRA SUPERIOR COCKPIT (VERDE ESCURA) */
-    .cockpit-bar {
-      background: linear-gradient(135deg, #062316 0%, #0f3d26 50%, #144e31 100%);
+    .header-bar {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
       border-radius: 12px;
-      padding: 10px 18px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+      padding: 12px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     }
+    .brand-logo-cargo { height: 40px; width: auto; object-fit: contain; }
+    .brand-logo-voctt { height: 40px; width: auto; border-radius: 50%; border: 2px solid var(--border-color); }
 
-    .cockpit-bar .form-select {
-      background-color: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      color: #ffffff;
-      font-size: 0.85rem;
-      font-weight: 500;
-    }
-    .cockpit-bar .form-select option {
-      color: #0f172a;
+    .control-bar {
       background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
     }
 
-    .nav-pill-btn {
-      background-color: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: #e2e8f0;
-      font-size: 0.82rem;
-      font-weight: 500;
-      padding: 6px 14px;
-      border-radius: 20px;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      text-decoration: none;
-    }
-    .nav-pill-btn:hover {
-      background-color: rgba(255, 255, 255, 0.18);
-      color: #ffffff;
-    }
-    .nav-pill-btn.active {
-      background-color: #22c55e !important;
-      border-color: #22c55e !important;
-      color: #052e16 !important;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
-    }
-
-    /* CARDS DE INDICADORES (KPIS) COM HIERARQUIA */
-    .kpi-card {
-      background: #ffffff;
-      border-radius: 10px;
-      border: 1px solid var(--cg-border);
-      padding: 12px 14px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .kpi-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
-    }
-    .kpi-card .kpi-label {
-      font-size: 0.70rem;
-      text-transform: uppercase;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      color: #64748b;
-    }
-    .kpi-card .kpi-val {
-      font-size: 1.35rem;
-      font-weight: 800;
-      color: #0f172a;
-      line-height: 1.2;
-    }
-    .kpi-card .kpi-sub {
-      font-size: 0.70rem;
-      color: #94a3b8;
-    }
-
-    /* CARD ESPECIAL ANP/ANTT */
-    .kpi-anp-antt {
-      border-left: 4px solid #0284c7 !important;
-      background: linear-gradient(to right, #f0f9ff 0%, #ffffff 100%);
-    }
-
-    /* MAPA DO BRASIL COMPLETO */
-    .map-container {
-      background: #ffffff;
-      border-radius: 10px;
-      border: 1px solid var(--cg-border);
-      padding: 12px;
-      position: relative;
-    }
-    .uf-path {
-      cursor: pointer;
-      stroke: #ffffff;
-      stroke-width: 1;
-      transition: all 0.2s ease;
-    }
-    .uf-path:hover {
-      filter: brightness(0.85);
-      stroke: #0f172a;
-      stroke-width: 1.5;
-    }
-    .uf-path.sem-op {
-      fill: #e2e8f0;
-    }
-    .uf-path.op-baixa {
-      fill: #86efac;
-    }
-    .uf-path.op-media {
-      fill: #22c55e;
-    }
-    .uf-path.op-alta {
-      fill: #15803d;
-    }
-    .uf-path.op-muito-alta {
-      fill: #052e16;
-    }
-    .uf-path.selecionado {
-      stroke: #f59e0b !important;
-      stroke-width: 2.5 !important;
-    }
-
-    /* CARD DE ITEM DA LISTA / TABELA */
-    .posto-card {
-      background: #ffffff;
-      border: 1px solid var(--cg-border);
-      border-radius: 8px;
-      margin-bottom: 8px;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: all 0.15s ease;
-    }
-    .posto-card:hover {
-      border-color: #cbd5e1;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-    }
-
-    /* 1. Lado Esquerdo: Identificação */
-    .posto-info {
-      width: 240px;
-      min-width: 240px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .uf-tag {
-      background: #0f172a;
-      color: #ffffff;
-      font-size: 0.72rem;
-      font-weight: 800;
-      padding: 4px 8px;
-      border-radius: 6px;
-      letter-spacing: 0.5px;
-    }
-
-    /* 2. Centro Livre: Gráfico de Linhas (100% visível) */
-    .sparkline-wrapper {
-      flex: 1 1 auto;
-      height: 48px;
-      position: relative;
-      margin: 0 8px;
-    }
-    .sparkline-wrapper svg {
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-    }
-
-    /* 3. Lado Direito: Bloco Financeiro Compacto */
-    .bloco-financeiro {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 6px 10px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      white-space: nowrap;
-    }
-    .item-metrica {
-      text-align: right;
-    }
-    .item-metrica .lbl {
-      font-size: 0.62rem;
-      text-transform: uppercase;
-      font-weight: 700;
-      color: #64748b;
-      display: block;
-      line-height: 1;
-      margin-bottom: 2px;
-    }
-    .item-metrica .val {
-      font-size: 0.82rem;
-      font-weight: 700;
-      line-height: 1;
-    }
-
-    .btn-tratativa {
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 5px;
+    .btn-toggle-tipo {
       border: 1px solid #cbd5e1;
       background: #ffffff;
       color: #334155;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
     }
-    .btn-tratativa:hover {
+    .btn-toggle-tipo.active {
+      background: var(--cargosoft-green);
+      color: #ffffff;
+      border-color: var(--cargosoft-green);
+      box-shadow: 0 2px 6px rgba(28, 72, 58, 0.25);
+    }
+    .btn-toggle-tipo:hover:not(.active) {
       background: #f1f5f9;
-      color: #0f172a;
+    }
+
+    .card-kpi {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+      border-left: 4px solid var(--cargosoft-green);
+    }
+    .kpi-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .kpi-val {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: var(--cargosoft-green);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .panel-box {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+      overflow: hidden;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .panel-header {
+      padding: 12px 18px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-posto-termometro {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    .card-posto-termometro:hover {
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      border-color: #cbd5e1;
+    }
+
+    .chart-background-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      opacity: 0.28;
+      pointer-events: none;
+    }
+
+    .posto-foreground {
+      position: relative;
+      z-index: 2;
+      padding: 10px 14px;
+    }
+
+    /* CARD TRANSLÚCIDO COM BLUR PARA OS VALORES NUMÉRICOS */
+    .valores-box-blur {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 8px;
+      padding: 6px 14px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    .clickable-posto {
+      cursor: pointer;
+      text-decoration: underline dotted #94a3b8;
+    }
+    .clickable-posto:hover {
+      color: #2563eb !important;
+    }
+
+    .badge-uf {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.75rem;
+      letter-spacing: 0.03em;
+    }
+
+    .badge-tipo {
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 3px 6px;
+      border-radius: 4px;
+    }
+    .tipo-rota { background: #ffedd5; color: #c2410c; }
+    .tipo-interno { background: #dcfce7; color: #15803d; }
+
+    .btn-sync {
+      background: var(--cargosoft-green);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.82rem;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+    }
+    .btn-sync:hover { background: var(--cargosoft-green-hover); color: #ffffff; }
+
+    .btn-tratativa {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      color: var(--cargosoft-green);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .btn-tratativa:hover { background: var(--cargosoft-green); color: #ffffff; }
+
+    .legend-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      margin-right: 4px;
+    }
+
+    /* MAPA SVG ESTADOS */
+    .map-container {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      height: 100%;
+    }
+    .svg-state {
+      fill: #cbd5e1;
+      stroke: #ffffff;
+      stroke-width: 1.2;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .svg-state.has-data {
+      fill: #94a3b8;
+    }
+    .svg-state.has-data:hover {
+      fill: #16a34a;
+    }
+    .svg-state.active {
+      fill: #1c483a !important;
+      stroke: #facc15;
+      stroke-width: 2.5;
+    }
+
+    #mapTooltip {
+      position: absolute;
+      display: none;
+      background: rgba(15, 23, 42, 0.94);
+      color: #ffffff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      pointer-events: none;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    /* TELA ROTEIRIZADOR LEAFLET */
+    #secaoRoteirizador, #secaoMatrizesGerenciais {
+      display: none;
+    }
+    #mapLeaflet {
+      height: 580px;
+      width: 100%;
+      border-radius: 8px;
+      z-index: 5;
+    }
+    
+    /* ESCONDE A CAIXINHA EM INGLÊS DO OSRM */
+    .leaflet-routing-container {
+      display: none !important;
+    }
+
+    .autocomplete-list {
+      z-index: 1060;
+      position: absolute;
+      width: 100%;
+      top: 100%;
+      left: 0;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      max-height: 190px;
+      overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .input-cidade-rota.foco-ativo {
+      border-color: #16a34a !important;
+      box-shadow: 0 0 0 0.2rem rgba(22, 163, 74, 0.25) !important;
+    }
+
+    /* ESTILO DE IMPRESSÃO */
+    @media print {
+      body { background: #ffffff !important; padding: 0 !important; }
+      .header-bar, .control-bar, .map-container, #secaoPainelPrincipal, #secaoMatrizesGerenciais, #btnSincronizar { display: none !important; }
+      #secaoRoteirizador { display: block !important; border: none !important; }
+      #areaImpressaoRoteiro { display: block !important; }
     }
   </style>
 </head>
-<body class="p-3">
+<body>
+  <div class="container-fluid px-0">
 
-  <div class="container-fluid px-3">
-
-    <!-- CABEÇALHO DA EMPRESA -->
-    <header class="d-flex justify-content-between align-items-center mb-3">
+    <!-- CABEÇALHO -->
+    <div class="header-bar d-flex justify-content-between align-items-center flex-wrap gap-3">
       <div class="d-flex align-items-center gap-3">
-        <div class="d-flex align-items-center">
-          <span style="font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; color: #0a2f1d;">CARG<span style="color: #f59e0b;">O</span>SOFT</span>
-        </div>
-        <div class="border-start ps-3">
-          <h6 class="fw-bold mb-0 text-dark">Torre de Gestão & Auditoria de Diesel S10</h6>
-          <span class="text-muted small" style="font-size: 0.75rem;">Controle Operacional e Confronto de Mercado com Referência Oficial ANP</span>
+        <img src="logo_cargo_verde.png" alt="Cargosoft" class="brand-logo-cargo">
+        <div style="border-left: 2px solid var(--border-color); height: 36px; margin: 0 4px;"></div>
+        <div>
+          <h1 class="h6 mb-0 fw-bold" style="color: var(--cargosoft-green);">Torre de Gestão & Auditoria de Diesel S10</h1>
+          <span class="small text-muted">Controle Contábil e Confronto de Mercado com Referência Oficial ANP</span>
         </div>
       </div>
-      <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold" id="btnSincronizar">
+      <div class="d-flex align-items-center gap-3">
+        <button id="btnSincronizar" class="btn btn-sync shadow-sm" onclick="carregarDados()">
           <i class="bi bi-arrow-repeat me-1"></i> Sincronizar Base KMM
         </button>
-        <span class="badge bg-dark rounded-pill px-3 py-2 fw-bold" style="font-size: 0.75rem;">VOCTT</span>
-      </div>
-    </header>
-
-    <!-- BARRA COCKPIT VERDE ESCURA (AÇÕES E VISÕES) -->
-    <div class="cockpit-bar mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
-      <div class="d-flex align-items-center gap-2">
-        <span class="text-white-50 text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-          <i class="bi bi-calendar3 me-1"></i> Competência:
-        </span>
-        <select class="form-select form-select-sm" id="filtroCompetencia" style="width: 210px;">
-          <option value="ANO_2026" selected>Ano Completo 2026 (Consolidado)</option>
-          <option value="2026-10">Outubro / 2026</option>
-          <option value="2026-09">Setembro / 2026</option>
-          <option value="2026-08">Agosto / 2026</option>
-          <option value="2026-07">Julho / 2026</option>
-          <option value="2026-06">Junho / 2026</option>
-          <option value="2026-05">Maio / 2026</option>
-          <option value="2026-04">Abril / 2026</option>
-          <option value="2026-03">Março / 2026</option>
-          <option value="2026-02">Fevereiro / 2026</option>
-          <option value="2026-01">Janeiro / 2026</option>
-        </select>
-      </div>
-
-      <div class="d-flex flex-wrap align-items-center gap-2" id="grupoBotoesVisao">
-        <a href="#" class="nav-pill-btn active" data-aba="consolidado">
-          <i class="bi bi-grid-fill"></i> Consolidado Geral
-        </a>
-        <a href="#" class="nav-pill-btn" data-aba="interno">
-          <i class="bi bi-fuel-pump-fill"></i> Tanques Próprios
-        </a>
-        <a href="#" class="nav-pill-btn" data-aba="externo">
-          <i class="bi bi-truck"></i> Rota Rodoviária
-        </a>
-        <a href="#" class="nav-pill-btn" data-aba="roteirizador">
-          <i class="bi bi-map"></i> Roteirizador
-        </a>
-        <a href="#" class="nav-pill-btn" data-aba="matrizes">
-          <i class="bi bi-table"></i> Matrizes Gerenciais
-        </a>
+        <img src="logo_voctt.png" alt="VOCTT" class="brand-logo-voctt" title="VOCTT Inteligência de Frotas">
       </div>
     </div>
 
-    <!-- SEÇÃO 1: FILTROS SECUNDÁRIOS, KPIS E MAPA DO BRASIL -->
+    <!-- CONTROLE CENTRAL & FILTROS -->
     <div class="row g-3 mb-3">
-      
-      <!-- LADO ESQUERDO: FILTROS + CARDS (8 COLUNAS) -->
-      <div class="col-12 col-xl-8 d-flex flex-column gap-3">
-        
-        <!-- LINHA DE FILTROS (REDES COM CONTAGEM + POSTOS + BUSCA) -->
-        <div class="card p-2 border-0 shadow-sm">
-          <div class="row g-2 align-items-center">
-            <div class="col-12 col-md-4">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text bg-light text-muted border-end-0 fw-semibold" style="font-size: 0.72rem;">REDE:</span>
-                <select class="form-select border-start-0" id="filtroRede">
-                  <option value="TODAS">Todas as Redes</option>
-                  <!-- Opções com contagem de postos populadas via JS -->
+      <div class="col-12 col-lg-8">
+        <div class="control-bar h-100 d-flex flex-column justify-content-between gap-3">
+          
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-2">
+              <label class="small fw-bold text-muted text-uppercase"><i class="bi bi-calendar3"></i> Competência:</label>
+              <select id="filtroMesAno" class="form-select form-select-sm fw-bold" style="width: 220px;" onchange="processarPainel()">
+              </select>
+            </div>
+
+            <!-- BOTÕES DE SELEÇÃO DE MODO (AGORA COM MATRIZES GERENCIAIS) -->
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <button class="btn-toggle-tipo active" id="btnModoGeral" onclick="alternarModoOperacao('TODOS')">
+                <i class="bi bi-pie-chart-fill me-1"></i> Consolidado Geral
+              </button>
+              <button class="btn-toggle-tipo" id="btnModoInterno" onclick="alternarModoOperacao('INTERNO')">
+                <i class="bi bi-fuel-pump-fill me-1"></i> Tanques Próprios
+              </button>
+              <button class="btn-toggle-tipo" id="btnModoExterno" onclick="alternarModoOperacao('EXTERNO')">
+                <i class="bi bi-truck me-1"></i> Rota Rodoviária
+              </button>
+              <button class="btn-toggle-tipo" id="btnModoRota" onclick="alternarModoOperacao('ROTEIRIZADOR')">
+                <i class="bi bi-map-fill me-1"></i> Roteirizador
+              </button>
+              <button class="btn-toggle-tipo" id="btnModoMatrizes" onclick="alternarModoOperacao('MATRIZES')">
+                <i class="bi bi-table me-1"></i> Matrizes Gerenciais
+              </button>
+            </div>
+          </div>
+
+          <!-- SEGUNDA LINHA: FILTRO DE REDE, POSTO E BUSCA -->
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pt-2 border-top">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              
+              <!-- FILTRO POR REDE DE POSTOS (MARAJO, HG, ETC) -->
+              <div class="d-flex align-items-center gap-1">
+                <label class="small fw-bold text-muted text-uppercase">Rede:</label>
+                <select id="filtroRede" class="form-select form-select-sm" style="width: 170px;" onchange="aplicarFiltroRede()">
+                  <option value="">Todas as Redes</option>
+                  <option value="MARAJO">Rede Marajó</option>
+                  <option value="HG">Rede HG</option>
+                  <option value="SIM">Rede SIM</option>
+                  <option value="GRAAL">Rede Graal</option>
+                  <option value="OUTROS">Outros / Avulsos</option>
                 </select>
               </div>
-            </div>
-            <div class="col-12 col-md-4">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text bg-light text-muted border-end-0 fw-semibold" style="font-size: 0.72rem;">POSTO:</span>
-                <select class="form-select border-start-0" id="filtroPosto">
-                  <option value="TODOS">Todos os Postos</option>
+
+              <!-- FILTRO POR POSTO ESPECÍFICO -->
+              <div class="d-flex align-items-center gap-1">
+                <label class="small fw-bold text-muted text-uppercase">Posto:</label>
+                <select id="filtroPosto" class="form-select form-select-sm" style="width: 210px;" onchange="aplicarFiltroPostoSelect()">
+                  <option value="">Todos os Postos</option>
                 </select>
               </div>
+
+              <span id="badgeFiltroUf" class="badge bg-dark text-white px-2 py-1" style="display: none;">
+                Estado: <span id="lblUfAtiva"></span>
+                <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroUf()"></i>
+              </span>
+
+              <span id="badgeFiltroPosto" class="badge bg-primary text-white px-2 py-1" style="display: none;">
+                Filtro: <span id="lblPostoAtivo"></span>
+                <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroPosto()"></i>
+              </span>
             </div>
-            <div class="col-12 col-md-4">
+
+            <div style="min-width: 200px; max-width: 280px; flex-grow: 1;">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control border-start-0" id="buscaTexto" placeholder="Buscar posto ou cidade...">
+                <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Buscar posto ou cidade..." oninput="filtrarTabelaTexto()">
               </div>
             </div>
           </div>
+
+          <!-- CARDS EXECUTIVOS CALCULADOS -->
+          <div class="row g-2 pt-1">
+            <div class="col-6 col-md-3">
+              <div class="card-kpi p-2">
+                <div class="kpi-label">VOLUME ENTREGUE</div>
+                <div class="kpi-val fs-5" id="cardVolume">-- L</div>
+                <div class="kpi-sub" style="font-size:0.65rem;">Litros na competência</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="card-kpi p-2">
+                <div class="kpi-label">GASTO TOTAL</div>
+                <div class="kpi-val fs-5" id="cardGasto">R$ --</div>
+                <div class="kpi-sub" style="font-size:0.65rem;">Custo total auditado</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="card-kpi p-2">
+                <div class="kpi-label" id="cardPrecoMedioLabel">PREÇO MÉDIO REAL</div>
+                <div class="kpi-val fs-5" id="cardPrecoMedio">R$ --</div>
+                <div class="kpi-sub" style="font-size:0.65rem;" id="cardPrecoMedioSub">Média ponderada</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="card-kpi p-2">
+                <div class="kpi-label">PONTOS COM VOLUME</div>
+                <div class="kpi-val fs-5" id="cardPontos">--</div>
+                <div class="kpi-sub" style="font-size:0.65rem;">Unidades ativas</div>
+              </div>
+            </div>
+          </div>
+
         </div>
-
-        <!-- 5 CARDS DE KPIS COM HIERARQUIA VISUAL -->
-        <div class="row g-2 flex-grow-1">
-          <!-- CARD 1: VOLUME -->
-          <div class="col-6 col-md-4 col-xl">
-            <div class="kpi-card" style="border-left: 4px solid #198754;">
-              <div>
-                <span class="kpi-label">Volume Entregue</span>
-                <div class="kpi-val text-dark" id="kpiVolume">1.737.403 L</div>
-              </div>
-              <span class="kpi-sub">Litros na competência</span>
-            </div>
-          </div>
-
-          <!-- CARD 2: GASTO TOTAL -->
-          <div class="col-6 col-md-4 col-xl">
-            <div class="kpi-card" style="border-left: 4px solid #0f172a;">
-              <div>
-                <span class="kpi-label">Gasto Total</span>
-                <div class="kpi-val text-dark" id="kpiGasto">R$ 11.085.827</div>
-              </div>
-              <span class="kpi-sub">Custo total auditado</span>
-            </div>
-          </div>
-
-          <!-- CARD 3: PREÇO MÉDIO REAL -->
-          <div class="col-6 col-md-4 col-xl">
-            <div class="kpi-card" style="border-left: 4px solid #f59e0b;">
-              <div>
-                <span class="kpi-label">Preço Médio Real</span>
-                <div class="kpi-val text-dark" id="kpiPrecoMedio">R$ 6,739</div>
-              </div>
-              <span class="kpi-sub">Média dos abastecimentos</span>
-            </div>
-          </div>
-
-          <!-- CARD 4: PONTOS COM VOLUME -->
-          <div class="col-6 col-md-6 col-xl">
-            <div class="kpi-card" style="border-left: 4px solid #64748b;">
-              <div>
-                <span class="kpi-label">Pontos Ativos</span>
-                <div class="kpi-val text-dark" id="kpiPontos">99</div>
-              </div>
-              <span class="kpi-sub">Unidades com consumo</span>
-            </div>
-          </div>
-
-          <!-- CARD 5: OFICIAL ANP / ANTT (NOVO) -->
-          <div class="col-12 col-md-6 col-xl">
-            <div class="kpi-card kpi-anp-antt">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="kpi-label text-primary">ANP / ANTT Brasil</span>
-                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.60rem;">OFICIAL</span>
-                </div>
-                <div class="kpi-val text-primary" id="kpiAnpBrasil">R$ 6,052</div>
-              </div>
-              <span class="kpi-sub" id="kpiDataAnp"><i class="bi bi-clock-history me-1"></i>Ref: Semanal ANP</span>
-            </div>
-          </div>
-        </div>
-
       </div>
 
-      <!-- LADO DIREITO: MAPA DO BRASIL COMPLETO COM HEATMAP (4 COLUNAS) -->
-      <div class="col-12 col-xl-4">
-        <div class="map-container h-100 d-flex flex-column justify-content-between">
+      <!-- MAPA SVG INTERATIVO DO BRASIL -->
+      <div class="col-12 col-lg-4">
+        <div class="map-container d-flex flex-column">
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="fw-bold text-dark" style="font-size: 0.78rem;">
-              <i class="bi bi-geo-alt-fill text-success me-1"></i> FILTRO INTERATIVO POR ESTADO
-            </span>
-            <span class="text-muted" style="font-size: 0.68rem;" id="infoEstadoHover">Passe o mouse ou clique</span>
+            <span class="small fw-bold text-dark text-uppercase"><i class="bi bi-geo-alt-fill me-1 text-success"></i> Filtro Interativo por Estado</span>
+            <span class="text-muted" style="font-size: 0.65rem;">Passe o mouse ou clique</span>
           </div>
-
-          <!-- SILHUETA COMPLETA DO BRASIL (TODOS OS 27 ESTADOS) -->
-          <div class="text-center" style="height: 175px;">
-            <svg viewBox="0 0 500 500" style="max-height: 100%; width: 100%;" id="svgMapaBrasil">
-              <g id="estadosBrasil">
-                <!-- NORTE -->
-                <path id="RR" class="uf-path sem-op" d="M165,25 L190,40 L180,75 L150,60 Z"><title>Roraima</title></path>
-                <path id="AP" class="uf-path sem-op" d="M275,55 L300,75 L285,100 L265,85 Z"><title>Amapá</title></path>
-                <path id="AM" class="uf-path sem-op" d="M60,75 L160,75 L165,150 L110,180 L50,130 Z"><title>Amazonas</title></path>
-                <path id="PA" class="uf-path op-media" d="M175,70 L265,85 L285,155 L215,185 L175,145 Z"><title>Pará</title></path>
-                <path id="AC" class="uf-path sem-op" d="M20,150 L65,155 L55,185 L15,175 Z"><title>Acre</title></path>
-                <path id="RO" class="uf-path sem-op" d="M105,185 L145,165 L160,210 L120,225 Z"><title>Rondônia</title></path>
-                <path id="TO" class="uf-path op-media" d="M255,175 L285,180 L275,255 L245,235 Z"><title>Tocantins</title></path>
-
-                <!-- NORDESTE -->
-                <path id="MA" class="uf-path op-baixa" d="M285,115 L335,135 L315,185 L285,160 Z"><title>Maranhão</title></path>
-                <path id="PI" class="uf-path sem-op" d="M330,145 L355,165 L335,215 L315,185 Z"><title>Piauí</title></path>
-                <path id="CE" class="uf-path op-media" d="M360,135 L395,145 L385,175 L355,165 Z"><title>Ceará</title></path>
-                <path id="RN" class="uf-path sem-op" d="M395,145 L425,150 L415,165 L390,165 Z"><title>Rio Grande do Norte</title></path>
-                <path id="PB" class="uf-path sem-op" d="M400,165 L430,165 L425,180 L395,175 Z"><title>Paraíba</title></path>
-                <path id="PE" class="uf-path op-baixa" d="M370,180 L430,180 L415,195 L360,195 Z"><title>Pernambuco</title></path>
-                <path id="AL" class="uf-path sem-op" d="M405,195 L425,195 L415,210 L395,205 Z"><title>Alagoas</title></path>
-                <path id="SE" class="uf-path sem-op" d="M395,210 L410,210 L400,225 L385,220 Z"><title>Sergipe</title></path>
-                <path id="BA" class="uf-path op-alta" d="M295,205 L375,195 L395,255 L325,295 L285,235 Z"><title>Bahia</title></path>
-
-                <!-- CENTRO-OESTE -->
-                <path id="MT" class="uf-path op-baixa" d="M165,195 L245,190 L240,285 L160,265 Z"><title>Mato Grosso</title></path>
-                <path id="GO" class="uf-path op-alta" d="M245,245 L295,245 L285,315 L235,305 Z"><title>Goiás</title></path>
-                <path id="DF" class="uf-path sem-op" d="M270,265 L280,265 L280,275 L270,275 Z"><title>Distrito Federal</title></path>
-                <path id="MS" class="uf-path op-baixa" d="M195,295 L245,295 L235,365 L185,355 Z"><title>Mato Grosso do Sul</title></path>
-
-                <!-- SUDESTE -->
-                <path id="MG" class="uf-path op-alta" d="M285,285 L355,275 L350,345 L275,340 Z"><title>Minas Gerais</title></path>
-                <path id="ES" class="uf-path op-baixa" d="M355,305 L375,310 L365,335 L350,330 Z"><title>Espírito Santo</title></path>
-                <path id="RJ" class="uf-path op-baixa" d="M335,345 L365,340 L355,360 L325,355 Z"><title>Rio de Janeiro</title></path>
-                <path id="SP" class="uf-path op-muito-alta" d="M245,330 L315,330 L305,380 L235,365 Z"><title>São Paulo</title></path>
-
-                <!-- SUL -->
-                <path id="PR" class="uf-path op-muito-alta" d="M225,370 L285,370 L275,410 L215,400 Z"><title>Paraná</title></path>
-                <path id="SC" class="uf-path op-baixa" d="M225,410 L275,410 L265,435 L220,430 Z"><title>Santa Catarina</title></path>
-                <path id="RS" class="uf-path op-baixa" d="M205,435 L265,435 L245,485 L185,475 Z"><title>Rio Grande do Sul</title></path>
-              </g>
-            </svg>
+          <div class="d-flex justify-content-center align-items-center flex-grow-1" style="min-height: 200px; position: relative;">
+            <svg id="brazilSvg" viewBox="0 0 500 500" style="width: 100%; max-height: 230px;"></svg>
           </div>
-
-          <!-- LEGENDA DA CONCENTRAÇÃO DE VOLUME -->
-          <div class="d-flex justify-content-between align-items-center pt-1 border-top" style="font-size: 0.65rem;">
-            <div class="d-flex align-items-center gap-1">
-              <span style="width: 10px; height: 10px; background: #e2e8f0; display: inline-block; border-radius: 2px;"></span>
-              <span class="text-muted">Sem base</span>
-            </div>
-            <div class="d-flex align-items-center gap-1">
-              <span class="text-muted">Concentração:</span>
-              <span style="width: 8px; height: 8px; background: #86efac; display: inline-block; border-radius: 2px;" title="Baixa"></span>
-              <span style="width: 8px; height: 8px; background: #22c55e; display: inline-block; border-radius: 2px;" title="Média"></span>
-              <span style="width: 8px; height: 8px; background: #15803d; display: inline-block; border-radius: 2px;" title="Alta"></span>
-              <span style="width: 8px; height: 8px; background: #052e16; display: inline-block; border-radius: 2px;" title="Muito Alta"></span>
-            </div>
+          <div class="d-flex justify-content-between align-items-center mt-1 pt-1 border-top" style="font-size: 0.68rem;">
+            <span class="text-muted"><span class="legend-indicator" style="background:#1c483a;"></span>Bases com Operação</span>
+            <span class="text-muted"><span class="legend-indicator" style="background:#cbd5e1;"></span>Sem Movimento</span>
           </div>
         </div>
       </div>
-
     </div>
 
-    <!-- SEÇÃO 2: VISÃO PRINCIPAL (CONSOLIDADO / LISTAGEM) -->
-    <div id="secaoListagemGeral">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="d-flex align-items-center gap-2">
-          <span class="fw-bold text-dark" style="font-size: 0.88rem;">
-            <i class="bi bi-pie-chart-fill text-success me-1"></i> Painel Consolidado • Visão Integrada da Frota
+    <!-- SEÇÃO 1: LISTAGEM ANALÍTICA DO TERMÔMETRO OPERACIONAL -->
+    <div id="secaoPainelPrincipal" class="panel-box">
+      <div class="panel-header">
+        <div>
+          <strong class="text-dark" id="lblTituloPainel"><i class="bi bi-speedometer2 me-1 text-success"></i> Painel Consolidado &bull; Visão Integrada da Frota</strong>
+          <div class="small text-muted" id="lblSubtituloTabela">Todas as garagens internas e postos de rodovia consolidados por ranking de litragem</div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <span class="small text-muted font-monospace" id="lblLegendaGrafico">
+            <span class="legend-indicator" style="background:#059669;"></span>Referência Oficial ANP
+            <span class="legend-indicator" style="background:#2563eb; margin-left: 8px;"></span>Custo Garagem KMM
+            <span class="legend-indicator" style="background:#c2410c; margin-left: 8px;"></span>Bomba Rota KMM
           </span>
-          <span class="badge bg-light text-muted border" id="badgeTotalPostos">A listar 99 postos</span>
-        </div>
-        <div class="d-flex align-items-center gap-3 small" style="font-size: 0.72rem;">
-          <div class="d-flex align-items-center gap-1">
-            <span style="width: 12px; height: 3px; background: #22c55e; display: inline-block; border-radius: 2px;"></span>
-            <span class="text-muted">Referência ANP</span>
-          </div>
-          <div class="d-flex align-items-center gap-1">
-            <span style="width: 12px; height: 3px; background: #0284c7; display: inline-block; border-radius: 2px;"></span>
-            <span class="text-muted">Garagem Interna</span>
-          </div>
-          <div class="d-flex align-items-center gap-1">
-            <span style="width: 12px; height: 3px; background: #ea580c; display: inline-block; border-radius: 2px;"></span>
-            <span class="text-muted">Rota Rodoviária</span>
-          </div>
+          <span class="badge bg-white text-dark border px-3 py-1 rounded-pill font-monospace" id="lblListando">Carregando...</span>
         </div>
       </div>
-
-      <!-- CONTAINER DOS CARDS DINÂMICOS -->
-      <div id="containerCardsPostos">
-        <!-- RENDERIZADO VIA JAVASCRIPT: ESTRUTURA COM GRÁFICO 100% LIVRE NO MEIO -->
+      
+      <div class="p-3" id="listaTermometroPostos">
+        <div class="text-center py-5 text-muted">
+          <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
+          Buscando histórico consolidado KMM e referências ANP...
+        </div>
       </div>
     </div>
 
-    <!-- SEÇÃO 3: CONTAINER DAS MATRIZES GERENCIAIS (QUANDO CLICAR NO BOTÃO DA BARRA SUPERIOR) -->
-    <div id="secaoMatrizesGerenciais" style="display: none;">
-      <!-- RENDERIZADO PELO MÓDULO matrizes.js -->
+    <!-- SEÇÃO 2: ROTEIRIZADOR LEAFLET (COM DUPLO RAIO 200KM / 600KM E IMPRESSÃO) -->
+    <div id="secaoRoteirizador" class="panel-box">
+      <div class="panel-header">
+        <div>
+          <strong class="text-dark"><i class="bi bi-map-fill me-1 text-primary"></i> Planejador & Roteirizador de Abastecimento</strong>
+          <div class="small text-muted">Trace a rota da viagem, filtre os postos no corredor logístico e gere o roteiro para o motorista</div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-outline-primary fw-bold" onclick="imprimirRoteiroViagem()">
+            <i class="bi bi-printer me-1"></i> Imprimir Roteiro de Abastecimento
+          </button>
+        </div>
+      </div>
+      <div class="p-3">
+        <div class="row g-3">
+          
+          <div class="col-12 col-md-4">
+            <div class="card p-3 border-0 bg-light position-relative">
+              
+              <div class="alert alert-info py-2 px-3 small mb-3">
+                <i class="bi bi-info-circle me-1"></i> Digite a cidade (busca instantânea) ou clique no campo e <strong>clique direto no mapa</strong>.
+              </div>
+
+              <div id="containerPontosRota">
+                <!-- ORIGEM -->
+                <div class="mb-2 position-relative ponto-rota-item" data-index="0">
+                  <label class="small fw-bold text-dark mb-1 d-flex justify-content-between">
+                    <span>1. Cidade de Origem:</span>
+                  </label>
+                  <input type="text" class="form-control form-control-sm input-cidade-rota" placeholder="Digite ou clique no mapa..." autocomplete="off">
+                  <input type="hidden" class="hidden-coord-rota">
+                  <div class="autocomplete-list shadow-sm" style="display: none;"></div>
+                </div>
+
+                <!-- DESTINO -->
+                <div class="mb-2 position-relative ponto-rota-item" data-index="1">
+                  <label class="small fw-bold text-dark mb-1 d-flex justify-content-between">
+                    <span>2. Cidade de Destino:</span>
+                  </label>
+                  <input type="text" class="form-control form-control-sm input-cidade-rota" placeholder="Digite ou clique no mapa..." autocomplete="off">
+                  <input type="hidden" class="hidden-coord-rota">
+                  <div class="autocomplete-list shadow-sm" style="display: none;"></div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <button type="button" id="btnAdicionarParada" class="btn btn-outline-dark btn-sm w-100 fw-semibold" onclick="adicionarCampoParada()">
+                  <i class="bi bi-plus-circle me-1"></i> Adicionar Parada Intermediária
+                </button>
+              </div>
+
+              <button class="btn btn-sm btn-success fw-bold w-100 py-2 shadow-sm mb-3" onclick="calcularRotaLeaflet()">
+                <i class="bi bi-signpost-2-fill me-1"></i> Traçar Rota & Mapear Postos
+              </button>
+
+              <div class="pt-2 border-top small text-muted">
+                <span class="fw-bold d-block text-dark mb-1">Legenda dos Postos no Mapa:</span>
+                <div><span class="legend-indicator" style="background:#16a34a;"></span>Corredor Direto (Menor Preço - até 200 km)</div>
+                <div><span class="legend-indicator" style="background:#eab308;"></span>Corredor Direto (Preço Aceitável - até 200 km)</div>
+                <div><span class="legend-indicator" style="background:#dc2626;"></span>Corredor Direto (Alerta de Preço Alto - até 200 km)</div>
+                <div><span class="legend-indicator" style="background:#94a3b8;"></span>Raio Expandido / Apoio (201 km a 600 km)</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-8">
+            <div id="mapLeaflet"></div>
+            
+            <!-- ÁREA DE RESUMO PARA IMPRESSÃO -->
+            <div id="areaImpressaoRoteiro" class="mt-3 p-3 bg-white border rounded" style="display: none;">
+              <h6 class="fw-bold text-dark border-bottom pb-2">📋 Roteiro Oficial de Abastecimento Sugerido - Cargosoft</h6>
+              <div id="conteudoRoteiroImpresso"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 3: MATRIZES GERENCIAIS & SPREADS (CARREGADAS VIA MATRIZES.JS) -->
+    <div id="secaoMatrizesGerenciais" class="panel-box p-3">
+      <!-- O conteúdo é injetado dinamicamente pela função renderizarAbaMatrizes() -->
+    </div>
+
+    <!-- RODAPÉ -->
+    <div class="d-flex justify-content-between align-items-center py-2 px-1 small text-muted">
+      <span>Cargosoft Transportes &copy; 2026</span>
+      <span class="d-flex align-items-center gap-2">
+        Desenvolvido por <strong>VOCTT Inteligência & Consultoria de Frotas</strong>
+        <img src="logo_voctt.png" alt="VOCTT" style="height: 18px; width: 18px; border-radius: 50%;">
+      </span>
     </div>
 
   </div>
 
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="matrizes.js"></script>
-  
+  <div id="mapTooltip"></div>
+
   <script>
-    // ESTADO GLOBAL DA APLICAÇÃO
+    const WORKER_URL = "https://api-abastecimentos.klapowsko.workers.dev";
     let baseRegistrosMensais = [];
-    let ufFiltroSelecionada = null;
+    let sparklineInstances = {};
+    let modoAtual = "TODOS";
+    let ufFiltrada = "";
+    let postoFiltrado = "";
+    let redeFiltrada = "";
+    let leafletMapInstance = null;
+    let routingControlInstance = null;
+    let markersPostosLeaflet = [];
+    let markersWaypoints = [];
+    let campoFocoAtivo = null;
+    let postosSugeridosUltimaRota = [];
 
-    // INICIALIZAÇÃO E NAVEGAÇÃO ENTRE ABAS
-    document.addEventListener('DOMContentLoaded', () => {
-      configurarAbas();
-      carregarBaseAbastecimentos();
-    });
+    const listaCidades = (typeof baseCidadesBrasil !== 'undefined' && Array.isArray(baseCidadesBrasil)) ? baseCidadesBrasil : [];
 
-    function configurarAbas() {
-      const botoes = document.querySelectorAll('#grupoBotoesVisao .nav-pill-btn');
-      botoes.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          botoes.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
+    const anpDistribuicao = {
+      "BA": { "2026-01": 5.44, "2026-02": 5.40, "2026-03": 6.28, "2026-04": 6.47, "2026-05": 6.34, "2026-06": 6.27, "2026-07": 6.12, "2026-08": 6.09, "2026-09": 6.239, "2026-10": 6.239 },
+      "CE": { "2026-01": 5.44, "2026-02": 5.40, "2026-03": 6.28, "2026-04": 6.47, "2026-05": 6.34, "2026-06": 6.27, "2026-07": 6.12, "2026-08": 6.09, "2026-09": 6.167, "2026-10": 6.167 },
+      "PR": { "2026-01": 5.44, "2026-02": 5.40, "2026-03": 6.28, "2026-04": 6.47, "2026-05": 6.34, "2026-06": 6.27, "2026-07": 6.12, "2026-08": 5.97, "2026-09": 6.000, "2026-10": 6.000 },
+      "SP": { "2026-01": 5.44, "2026-02": 5.40, "2026-03": 6.28, "2026-04": 6.47, "2026-05": 6.34, "2026-06": 6.27, "2026-07": 6.11, "2026-08": 6.09, "2026-09": 6.014, "2026-10": 6.014 },
+      "GO": { "2026-01": 5.40, "2026-02": 5.35, "2026-03": 6.15, "2026-04": 6.35, "2026-05": 6.20, "2026-06": 6.15, "2026-07": 6.02, "2026-08": 5.95, "2026-09": 5.868, "2026-10": 5.868 },
+      "MG": { "2026-01": 5.42, "2026-02": 5.38, "2026-03": 6.20, "2026-04": 6.40, "2026-05": 6.28, "2026-06": 6.20, "2026-07": 6.08, "2026-08": 6.02, "2026-09": 6.380, "2026-10": 6.380 },
+      "ES": { "2026-01": 5.45, "2026-02": 5.40, "2026-03": 6.25, "2026-04": 6.45, "2026-05": 6.30, "2026-06": 6.25, "2026-07": 6.10, "2026-08": 6.05, "2026-09": 6.390, "2026-10": 6.390 },
+      "MS": { "2026-01": 5.45, "2026-02": 5.40, "2026-03": 6.25, "2026-04": 6.45, "2026-05": 6.30, "2026-06": 6.25, "2026-07": 6.10, "2026-08": 6.05, "2026-09": 6.390, "2026-10": 6.390 }
+    };
 
-          const aba = btn.getAttribute('data-aba');
-          const secaoGeral = document.getElementById('secaoListagemGeral');
-          const secaoMatrizes = document.getElementById('secaoMatrizesGerenciais');
+    const anpRevenda = {
+      "BA": { "2026-01": 5.95, "2026-02": 5.92, "2026-03": 6.65, "2026-04": 6.82, "2026-05": 6.75, "2026-06": 6.70, "2026-07": 6.58, "2026-08": 6.55, "2026-09": 6.680, "2026-10": 6.680 },
+      "CE": { "2026-01": 5.88, "2026-02": 5.85, "2026-03": 6.60, "2026-04": 6.78, "2026-05": 6.70, "2026-06": 6.65, "2026-07": 6.52, "2026-08": 6.48, "2026-09": 6.550, "2026-10": 6.550 },
+      "PR": { "2026-01": 5.75, "2026-02": 5.70, "2026-03": 6.48, "2026-04": 6.65, "2026-05": 6.55, "2026-06": 6.50, "2026-07": 6.38, "2026-08": 6.32, "2026-09": 6.390, "2026-10": 6.390 },
+      "SP": { "2026-01": 5.80, "2026-02": 5.76, "2026-03": 6.52, "2026-04": 6.70, "2026-05": 6.60, "2026-06": 6.55, "2026-07": 6.42, "2026-08": 6.38, "2026-09": 6.450, "2026-10": 6.450 },
+      "GO": { "2026-01": 5.85, "2026-02": 5.80, "2026-03": 6.58, "2026-04": 6.75, "2026-05": 6.65, "2026-06": 6.60, "2026-07": 6.48, "2026-08": 6.42, "2026-09": 6.420, "2026-10": 6.420 },
+      "MG": { "2026-01": 5.82, "2026-02": 5.78, "2026-03": 6.55, "2026-04": 6.72, "2026-05": 6.62, "2026-06": 6.58, "2026-07": 6.45, "2026-08": 6.40, "2026-09": 6.480, "2026-10": 6.480 },
+      "ES": { "2026-01": 5.80, "2026-02": 5.75, "2026-03": 6.50, "2026-04": 6.68, "2026-05": 6.58, "2026-06": 6.52, "2026-07": 6.40, "2026-08": 6.35, "2026-09": 6.390, "2026-10": 6.390 },
+      "MS": { "2026-01": 5.80, "2026-02": 5.75, "2026-03": 6.50, "2026-04": 6.68, "2026-05": 6.58, "2026-06": 6.52, "2026-07": 6.40, "2026-08": 6.35, "2026-09": 6.390, "2026-10": 6.390 }
+    };
 
-          if (aba === 'matrizes') {
-            secaoGeral.style.display = 'none';
-            secaoMatrizes.style.display = 'block';
-            if (typeof renderizarAbaMatrizes === 'function') {
-              renderizarAbaMatrizes();
-            }
-          } else {
-            secaoMatrizes.style.display = 'none';
-            secaoGeral.style.display = 'block';
-            filtrarERenderizarCards();
-          }
-        });
-      });
+    function identificarNomePonto(posto, municipio, uf, tipo) {
+      if (tipo === 'INTERNO') {
+        const mun = (municipio || '').toUpperCase();
+        if (mun.includes('COLOMBO') || uf === 'PR') return "Filial Colombo (Matriz)";
+        if (mun.includes('EUSEBIO') || mun.includes('FORTALEZA') || uf === 'CE') return "Filial Eusébio";
+        if (mun.includes('BARUERI')) return "Filial Barueri";
+        if (mun.includes('RIBEIRAO')) return "Filial Ribeirão Preto";
+        if (mun.includes('SIMOES') || mun.includes('SALVADOR') || uf === 'BA') return "Filial Simões Filho";
+        if (mun.includes('GOIANIA') || mun.includes('APARECIDA') || uf === 'GO') return "Filial Goiânia";
+        return `Garagem ${municipio || 'Interna'}`;
+      }
+      return posto || 'NÃO IDENTIFICADO';
     }
 
-    // CARREGAMENTO DA BASE DO WORKER KMM
-    async function carregarBaseAbastecimentos() {
-      try {
-        const resp = await fetch('https://api-abastecimentos.klapowsko.workers.dev');
-        if (!resp.ok) throw new Error("Falha na API");
-        const json = await resp.json();
-        baseRegistrosMensais = json.dados || [];
+    async function carregarDados() {
+      const btn = document.getElementById('btnSincronizar');
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Buscando...`;
+      btn.disabled = true;
 
-        popularFiltroRedes();
-        atualizarKpisGerais();
-        filtrarERenderizarCards();
+      try {
+        const resp = await fetch(WORKER_URL);
+        const json = await resp.json();
+
+        if (json && json.status === "sucesso" && Array.isArray(json.dados)) {
+          baseRegistrosMensais = json.dados;
+          desenharMapaBrasil();
+          popularFiltrosDinamicos();
+          processarPainel();
+        } else {
+          document.getElementById('listaTermometroPostos').innerHTML = `
+            <div class="alert alert-danger">Erro no banco: ${json.mensagem || 'Dados inválidos'}</div>
+          `;
+        }
       } catch (err) {
-        console.error("Erro ao carregar dados:", err);
+        document.getElementById('listaTermometroPostos').innerHTML = `
+          <div class="alert alert-danger">Falha de conexão: ${err.message}</div>
+        `;
+      } finally {
+        btn.innerHTML = `<i class="bi bi-arrow-repeat me-1"></i> Sincronizar Base KMM`;
+        btn.disabled = false;
       }
     }
 
-    // POPULAR FILTRO DE REDES COM CONTAGEM DINÂMICA ENTRE PARÊNTESES: REDE (QTD)
-    function popularFiltroRedes() {
-      const selectRede = document.getElementById('filtroRede');
-      if (!selectRede) return;
+    function popularFiltrosDinamicos() {
+      const meses = [...new Set(baseRegistrosMensais.map(d => d.MES_ANO).filter(Boolean))].sort().reverse();
+      const selectMes = document.getElementById('filtroMesAno');
+      selectMes.innerHTML = '<option value="YTD">Ano Completo 2026 (Consolidado)</option>';
+      
+      const nomesMes = {
+        '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
+        '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
+        '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
+      };
 
-      const contagemRedes = {};
-      baseRegistrosMensais.forEach(r => {
-        const nomePosto = r.POSTO || '';
-        let rede = 'OUTROS';
-
-        if (nomePosto.includes('MARAJO') || nomePosto.includes('MARAJÓ')) rede = 'REDE MARAJÓ';
-        else if (nomePosto.includes('GRAAL')) rede = 'REDE GRAAL';
-        else if (nomePosto.includes('CARGOSOFT')) rede = 'BASES PRÓPRIAS';
-        else if (nomePosto.includes('IPIRANGA')) rede = 'REDE IPIRANGA';
-        else if (nomePosto.includes('SIM')) rede = 'REDE SIM';
-        else if (nomePosto.includes('DEBONI')) rede = 'REDE DEBONI';
-
-        if (!contagemRedes[rede]) contagemRedes[rede] = new Set();
-        contagemRedes[rede].add(r.POSTO);
+      meses.forEach(m => {
+        const [ano, mes] = m.split('-');
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.innerText = `${nomesMes[mes] || mes}/${ano} (Competência)`;
+        selectMes.appendChild(opt);
       });
 
-      selectRede.innerHTML = '<option value="TODAS">Todas as Redes</option>';
-      Object.keys(contagemRedes).sort().forEach(rede => {
-        const qtd = contagemRedes[rede].size;
-        selectRede.innerHTML += `<option value="${rede}">${rede} (${qtd})</option>`;
+      const postosUnicos = [...new Set(baseRegistrosMensais.map(d => d.POSTO).filter(Boolean))].sort();
+      const selectPosto = document.getElementById('filtroPosto');
+      selectPosto.innerHTML = '<option value="">Todos os Postos</option>';
+      postosUnicos.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.innerText = p;
+        selectPosto.appendChild(opt);
       });
     }
 
-    // ATUALIZAÇÃO DOS KPIS DE CABEÇALHO
-    function atualizarKpisGerais() {
-      let vol = 0;
-      let gasto = 0;
-      let postosUnicos = new Set();
+    function alternarModoOperacao(modo) {
+      modoAtual = modo;
+      document.querySelectorAll('.btn-toggle-tipo').forEach(b => b.classList.remove('active'));
 
-      baseRegistrosMensais.forEach(r => {
-        vol += parseFloat(r.LITROS_MES || 0);
-        gasto += parseFloat(r.VALOR_TOTAL_MES || 0);
-        postosUnicos.add(r.POSTO);
-      });
+      if (modo === 'TODOS') document.getElementById('btnModoGeral').classList.add('active');
+      if (modo === 'INTERNO') document.getElementById('btnModoInterno').classList.add('active');
+      if (modo === 'EXTERNO') document.getElementById('btnModoExterno').classList.add('active');
+      if (modo === 'ROTEIRIZADOR') document.getElementById('btnModoRota').classList.add('active');
+      if (modo === 'MATRIZES') document.getElementById('btnModoMatrizes').classList.add('active');
 
-      const precoMed = vol > 0 ? (gasto / vol) : 0;
+      document.getElementById('secaoPainelPrincipal').style.display = 'none';
+      document.getElementById('secaoRoteirizador').style.display = 'none';
+      document.getElementById('secaoMatrizesGerenciais').style.display = 'none';
 
-      document.getElementById('kpiVolume').innerText = vol.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + ' L';
-      document.getElementById('kpiGasto').innerText = 'R$ ' + gasto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      document.getElementById('kpiPrecoMedio').innerText = 'R$ ' + precoMed.toFixed(3).replace('.', ',');
-      document.getElementById('kpiPontos').innerText = postosUnicos.size;
+      if (modo === 'ROTEIRIZADOR') {
+        document.getElementById('secaoRoteirizador').style.display = 'block';
+        inicializarMapaLeaflet();
+      } else if (modo === 'MATRIZES') {
+        document.getElementById('secaoMatrizesGerenciais').style.display = 'block';
+        if (typeof renderizarAbaMatrizes === 'function') {
+          renderizarAbaMatrizes();
+        }
+      } else {
+        document.getElementById('secaoPainelPrincipal').style.display = 'block';
+        atualizarTextosHeaderPainel();
+        processarPainel();
+      }
     }
 
-    // RENDERIZAÇÃO DOS CARDS COM O GRÁFICO 100% LIVRE NO MEIO
-    function filtrarERenderizarCards() {
-      const container = document.getElementById('containerCardsPostos');
-      if (!container) return;
+    function atualizarTextosHeaderPainel() {
+      const lblTitulo = document.getElementById('lblTituloPainel');
+      const lblLegenda = document.getElementById('lblLegendaGrafico');
+      
+      if (modoAtual === 'INTERNO') {
+        lblTitulo.innerHTML = `<i class="bi bi-fuel-pump-fill me-1 text-success"></i> Termômetro de Garagens & Tanques Próprios`;
+        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#059669;"></span>Ref. ANP Distribuição <span class="legend-indicator" style="background:#2563eb; margin-left:8px;"></span>Custo Interno KMM`;
+      } else if (modoAtual === 'EXTERNO') {
+        lblTitulo.innerHTML = `<i class="bi bi-truck me-1 text-danger"></i> Painel de Negociação de Rota Rodoviária`;
+        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#059669;"></span>Ref. ANP Revenda <span class="legend-indicator" style="background:#c2410c; margin-left:8px;"></span>Preço Bomba KMM`;
+      } else {
+        lblTitulo.innerHTML = `<i class="bi bi-speedometer2 me-1 text-success"></i> Painel Consolidado &bull; Visão Integrada da Frota`;
+        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#059669;"></span>Referência ANP <span class="legend-indicator" style="background:#2563eb; margin-left:8px;"></span>Garagem <span class="legend-indicator" style="background:#c2410c; margin-left:8px;"></span>Rota`;
+      }
+    }
 
-      // Agrupa os registros por posto para gerar a série histórica e os totais
-      const postosMapa = {};
+    function aplicarFiltroRede() {
+      redeFiltrada = document.getElementById('filtroRede').value;
+      processarPainel();
+    }
 
-      baseRegistrosMensais.forEach(r => {
-        if (!postosMapa[r.POSTO]) {
-          postosMapa[r.POSTO] = {
-            nome: r.POSTO,
-            uf: r.UF_POSTO,
-            municipio: r.MUNICIPIO_POSTO,
-            tipo: r.TIPO_OPERACAO,
-            volumeTotal: 0,
-            gastoTotal: 0,
-            meses: {}
+    function filtrarPorPostoClique(nomePosto) {
+      postoFiltrado = nomePosto;
+      document.getElementById('filtroPosto').value = nomePosto;
+      document.getElementById('badgeFiltroPosto').style.display = 'inline-block';
+      document.getElementById('lblPostoAtivo').innerText = nomePosto;
+      processarPainel();
+    }
+
+    function aplicarFiltroPostoSelect() {
+      const val = document.getElementById('filtroPosto').value;
+      if (val) {
+        filtrarPorPostoClique(val);
+      } else {
+        limparFiltroPosto();
+      }
+    }
+
+    function limparFiltroPosto() {
+      postoFiltrado = "";
+      document.getElementById('filtroPosto').value = "";
+      document.getElementById('badgeFiltroPosto').style.display = 'none';
+      processarPainel();
+    }
+
+    function limparFiltroUf() {
+      ufFiltrada = "";
+      document.getElementById('badgeFiltroUf').style.display = 'none';
+      document.querySelectorAll('.svg-state').forEach(el => el.classList.remove('active'));
+      processarPainel();
+    }
+
+    function processarPainel() {
+      const mesSel = document.getElementById('filtroMesAno').value;
+
+      let registros = baseRegistrosMensais;
+
+      if (ufFiltrada) {
+        registros = registros.filter(d => d.UF_POSTO === ufFiltrada);
+      }
+      if (postoFiltrado) {
+        registros = registros.filter(d => d.POSTO === postoFiltrado);
+      }
+      if (redeFiltrada) {
+        if (redeFiltrada === 'OUTROS') {
+          registros = registros.filter(d => {
+            const p = (d.POSTO || '').toUpperCase();
+            return !p.includes('MARAJO') && !p.startsWith('HG ') && !p.includes('SIM ') && !p.includes('GRAAL');
+          });
+        } else {
+          registros = registros.filter(d => (d.POSTO || '').toUpperCase().includes(redeFiltrada));
+        }
+      }
+      if (modoAtual !== 'TODOS' && modoAtual !== 'ROTEIRIZADOR' && modoAtual !== 'MATRIZES') {
+        registros = registros.filter(d => d.TIPO_OPERACAO === modoAtual);
+      }
+
+      const mesesDisponiveis = [...new Set(baseRegistrosMensais.map(d => d.MES_ANO).filter(Boolean))].sort();
+      const mesMaisRecenteGeral = mesesDisponiveis[mesesDisponiveis.length - 1] || '2026-10';
+
+      const postosMap = {};
+      let somaLitrosCards = 0;
+      let somaGastoCards = 0;
+
+      let baseCalculo = registros;
+      if (mesSel !== 'YTD') {
+        baseCalculo = registros.filter(d => d.MES_ANO === mesSel);
+      }
+
+      baseCalculo.forEach(d => {
+        const chave = d.POSTO + "_" + d.UF_POSTO;
+        const litros = parseFloat(d.LITROS_MES || 0);
+        const valor = parseFloat(d.VALOR_TOTAL_MES || 0);
+
+        somaLitrosCards += litros;
+        somaGastoCards += valor;
+
+        if (!postosMap[chave]) {
+          postosMap[chave] = {
+            POSTO: d.POSTO,
+            UF_POSTO: d.UF_POSTO,
+            MUNICIPIO_POSTO: d.MUNICIPIO_POSTO,
+            TIPO_OPERACAO: d.TIPO_OPERACAO,
+            LITROS_TOTAL: 0,
+            VALOR_TOTAL: 0,
+            ULTIMO_PRECO: parseFloat(d.ULTIMO_PRECO_MES || 0),
+            DATA_MAIS_RECENTE: d.ULTIMA_DATA_MES,
+            MES_MAIS_RECENTE: d.MES_ANO
           };
         }
-        const v = parseFloat(r.LITROS_MES || 0);
-        const g = parseFloat(r.VALOR_TOTAL_MES || 0);
-        postosMapa[r.POSTO].volumeTotal += v;
-        postosMapa[r.POSTO].gastoTotal += g;
-        postosMapa[r.POSTO].meses[r.MES_ANO] = parseFloat(r.PRECO_MEDIO_MES || 0);
+
+        postosMap[chave].LITROS_TOTAL += litros;
+        postosMap[chave].VALOR_TOTAL += valor;
+
+        if (d.ULTIMA_DATA_MES > postosMap[chave].DATA_MAIS_RECENTE) {
+          postosMap[chave].DATA_MAIS_RECENTE = d.ULTIMA_DATA_MES;
+          postosMap[chave].ULTIMO_PRECO = parseFloat(d.ULTIMO_PRECO_MES || 0);
+          postosMap[chave].MES_MAIS_RECENTE = d.MES_ANO;
+        }
       });
 
-      const lista = Object.values(postosMapa).sort((a, b) => b.volumeTotal - a.volumeTotal);
-      document.getElementById('badgeTotalPostos').innerText = `A listar ${lista.length} postos`;
+      const listaPostos = Object.values(postosMap).map(p => {
+        let precoMedioExibicao = 0;
+        let variacaoMesAnt = null;
 
-      let html = '';
+        if (mesSel === 'YTD') {
+          const regVigente = baseRegistrosMensais.find(r => 
+            r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === p.MES_MAIS_RECENTE
+          );
+          precoMedioExibicao = regVigente ? parseFloat(regVigente.PRECO_MEDIO_MES || 0) : 0;
 
-      lista.slice(0, 30).forEach(p => {
-        const precoMed = p.volumeTotal > 0 ? (p.gastoTotal / p.volumeTotal) : 0;
-        const badgeTipo = p.tipo === 'INTERNO' 
-          ? '<span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:0.65rem;">GARAGEM</span>'
-          : '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:0.65rem;">ROTA</span>';
+          const [anoV, mesV] = p.MES_MAIS_RECENTE.split('-').map(Number);
+          const mesAntV = mesV === 1 ? 12 : mesV - 1;
+          const anoAntV = mesV === 1 ? anoV - 1 : anoV;
+          const chaveMesAntV = `${anoAntV}-${String(mesAntV).padStart(2, '0')}`;
 
-        // Gera o SVG Sparkline central livre sem tocar na barra branca
-        const svgSparkline = gerarSvgSparkline(p.meses);
+          const regAnt = baseRegistrosMensais.find(r => 
+            r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === chaveMesAntV
+          );
 
-        html += `
-          <div class="posto-card">
-            <!-- 1. IDENTIFICAÇÃO DO POSTO -->
-            <div class="posto-info">
-              <span class="uf-tag">${p.uf}</span>
-              <div class="text-truncate">
-                <div class="fw-bold text-dark text-truncate" style="font-size: 0.82rem;" title="${p.nome}">${p.nome}</div>
-                <div class="text-muted" style="font-size: 0.70rem;">
-                  ${p.municipio} • ${badgeTipo}
+          if (regAnt) {
+            const precoAnt = parseFloat(regAnt.PRECO_MEDIO_MES || 0);
+            if (precoAnt > 0 && precoMedioExibicao > 0) {
+              variacaoMesAnt = precoMedioExibicao - precoAnt;
+            }
+          }
+        } else {
+          precoMedioExibicao = p.LITROS_TOTAL > 0 ? (p.VALOR_TOTAL / p.LITROS_TOTAL) : 0;
+
+          const [anoS, mesS] = mesSel.split('-').map(Number);
+          const mesAntS = mesS === 1 ? 12 : mesS - 1;
+          const anoAntS = mesS === 1 ? anoS - 1 : anoS;
+          const chaveMesAntS = `${anoAntS}-${String(mesAntS).padStart(2, '0')}`;
+
+          const regAnt = baseRegistrosMensais.find(r => 
+            r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === chaveMesAntS
+          );
+
+          if (regAnt) {
+            const precoAnt = parseFloat(regAnt.PRECO_MEDIO_MES || 0);
+            if (precoAnt > 0 && precoMedioExibicao > 0) {
+              variacaoMesAnt = precoMedioExibicao - precoAnt;
+            }
+          }
+        }
+
+        const tabelaReferencia = (p.TIPO_OPERACAO === 'INTERNO') ? anpDistribuicao : anpRevenda;
+        const anpUf = tabelaReferencia[p.UF_POSTO] || tabelaReferencia["PR"];
+        const mesRefAnp = (mesSel === 'YTD') ? p.MES_MAIS_RECENTE : mesSel;
+        const refAnpValor = anpUf ? (anpUf[mesRefAnp] || anpUf['2026-10'] || 0) : 0;
+        const gapMercado = (precoMedioExibicao > 0 && refAnpValor > 0) ? (precoMedioExibicao - refAnpValor) : 0;
+        const gapPerc = refAnpValor > 0 ? ((gapMercado / refAnpValor) * 100) : 0;
+
+        return {
+          ...p,
+          NOME_EXIBICAO: identificarNomePonto(p.POSTO, p.MUNICIPIO_POSTO, p.UF_POSTO, p.TIPO_OPERACAO),
+          PRECO_MEDIO_EXIBICAO: precoMedioExibicao,
+          REF_ANP: refAnpValor,
+          GAP_MERCADO: gapMercado,
+          GAP_PERC: gapPerc,
+          VARIACAO_MES_ANT: variacaoMesAnt
+        };
+      });
+
+      listaPostos.sort((a, b) => b.LITROS_TOTAL - a.LITROS_TOTAL);
+
+      let precoMedioCard = 0;
+      if (mesSel === 'YTD') {
+        const regsMesRecente = registros.filter(d => d.MES_ANO === mesMaisRecenteGeral);
+        const litRec = regsMesRecente.reduce((acc, c) => acc + parseFloat(c.LITROS_MES || 0), 0);
+        const valRec = regsMesRecente.reduce((acc, c) => acc + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
+        precoMedioCard = litRec > 0 ? (valRec / litRec) : 0;
+      } else {
+        precoMedioCard = somaLitrosCards > 0 ? (somaGastoCards / somaLitrosCards) : 0;
+      }
+
+      document.getElementById('cardVolume').innerText = somaLitrosCards.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + " L";
+      document.getElementById('cardGasto').innerText = "R$ " + somaGastoCards.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('cardPrecoMedio').innerText = precoMedioCard > 0
+        ? "R$ " + precoMedioCard.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })
+        : "R$ 0,000";
+      document.getElementById('cardPontos').innerText = listaPostos.length.toString();
+
+      renderizarTermometroPostos(listaPostos, mesesDisponiveis);
+      atualizarCoresMapa();
+    }
+
+    function renderizarTermometroPostos(postos, mesesDisponiveis) {
+      const container = document.getElementById('listaTermometroPostos');
+      container.innerHTML = "";
+      document.getElementById('lblListando').innerText = `A listar ${postos.length} postos`;
+
+      if (postos.length === 0) {
+        container.innerHTML = `<div class="text-center py-5 text-muted">Nenhum posto com movimentação no filtro atual.</div>`;
+        return;
+      }
+
+      Object.values(sparklineInstances).forEach(chart => {
+        try { chart.destroy(); } catch(e){}
+      });
+      sparklineInstances = {};
+
+      postos.forEach((p, idx) => {
+        const chartDomId = `chart-bg-${idx}`;
+        const ehInterno = (p.TIPO_OPERACAO === 'INTERNO');
+        const badgeTipo = ehInterno 
+          ? `<span class="badge-tipo tipo-interno">GARAGEM</span>`
+          : `<span class="badge-tipo tipo-rota">ROTA</span>`;
+
+        let variacaoHtml = `<span class="text-muted small">Estável</span>`;
+        if (p.VARIACAO_MES_ANT !== null) {
+          const diff = p.VARIACAO_MES_ANT;
+          if (diff > 0.005) {
+            variacaoHtml = `<span class="text-danger fw-bold small"><i class="bi bi-caret-up-fill me-1"></i>+R$ ${diff.toFixed(2)}</span>`;
+          } else if (diff < -0.005) {
+            variacaoHtml = `<span class="text-success fw-bold small"><i class="bi bi-caret-down-fill me-1"></i>-R$ ${Math.abs(diff).toFixed(2)}</span>`;
+          }
+        }
+
+        let gapHtml = `<span class="text-muted small">--</span>`;
+        if (p.REF_ANP > 0) {
+          const sinal = p.GAP_MERCADO >= 0 ? "+" : "-";
+          const corGap = p.GAP_MERCADO > 0.05 ? "text-danger" : "text-success";
+          gapHtml = `<span class="${corGap} fw-bold small">${sinal}R$ ${Math.abs(p.GAP_MERCADO).toFixed(3)} (${sinal}${Math.abs(p.GAP_PERC).toFixed(1)}%)</span>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = "card-posto-termometro";
+        card.innerHTML = `
+          <!-- GRÁFICO AO FUNDO -->
+          <div id="${chartDomId}" class="chart-background-container"></div>
+
+          <div class="posto-foreground d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3" style="min-width: 280px; flex-grow: 1;">
+              <span class="badge-uf">${p.UF_POSTO || '--'}</span>
+              <div>
+                <div class="fw-bold fs-6 text-dark clickable-posto" onclick="filtrarPorPostoClique('${p.POSTO.replace(/'/g, "\\'")}')" title="Clique para filtrar este posto">
+                  ${p.NOME_EXIBICAO}
+                </div>
+                <div class="small text-muted">${p.MUNICIPIO_POSTO || 'ND'} &bull; ${badgeTipo}</div>
+              </div>
+            </div>
+
+            <!-- QUADRO TRANSLÚCIDO COM BLUR PARA OS VALORES NUMÉRICOS -->
+            <div class="valores-box-blur d-flex align-items-center gap-4 text-end">
+              <div>
+                <div class="small text-muted text-uppercase" style="font-size: 0.65rem; font-weight: 800;">Volume</div>
+                <div class="font-monospace fw-bold fs-6">${Math.round(p.LITROS_TOTAL).toLocaleString('pt-BR')} L</div>
+              </div>
+
+              <div>
+                <div class="small text-muted text-uppercase" style="font-size: 0.65rem; font-weight: 800;">Preço Médio</div>
+                <div class="font-monospace fw-bold fs-6" style="color: ${ehInterno ? '#2563eb' : '#c2410c'};">
+                  R$ ${p.PRECO_MEDIO_EXIBICAO.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
                 </div>
               </div>
-            </div>
 
-            <!-- 2. GRÁFICO CENTRAL 100% LIVRE E VISÍVEL -->
-            <div class="sparkline-wrapper">
-              ${svgSparkline}
-            </div>
+              <div>
+                <div class="small text-muted text-uppercase" style="font-size: 0.65rem; font-weight: 800;">Ref. ANP</div>
+                <div class="font-monospace text-success fw-semibold fs-6">
+                  ${p.REF_ANP > 0 ? "R$ " + p.REF_ANP.toFixed(3) : "--"}
+                </div>
+              </div>
 
-            <!-- 3. BLOCO BRANCO FINANCEIRO COMPACTADO À DIREITA -->
-            <div class="bloco-financeiro">
-              <div class="item-metrica">
-                <span class="lbl">Volume</span>
-                <span class="val text-dark">${p.volumeTotal.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} L</span>
+              <div style="min-width: 100px;">
+                <div class="small text-muted text-uppercase" style="font-size: 0.65rem; font-weight: 800;">GAP Mercado</div>
+                <div class="font-monospace">${gapHtml}</div>
               </div>
-              <div class="item-metrica">
-                <span class="lbl">Preço Médio</span>
-                <span class="val text-primary">R$ ${precoMed.toFixed(3).replace('.', ',')}</span>
+
+              <div>
+                <div class="small text-muted text-uppercase" style="font-size: 0.65rem; font-weight: 800;">Último Pago</div>
+                <div class="font-monospace fs-6">R$ ${p.ULTIMO_PRECO.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</div>
               </div>
-              <div class="item-metrica">
-                <span class="lbl">Ref. ANP</span>
-                <span class="val text-success">R$ 6,052</span>
+
+              <div style="min-width: 90px;">
+                <div class="small text-muted text-uppercase" style="font-size: 0.65rem; font-weight: 800;">Var. Mês</div>
+                <div class="font-monospace">${variacaoHtml}</div>
               </div>
-              <div class="item-metrica">
-                <span class="lbl">Gap Mercado</span>
-                <span class="val text-danger">+R$ 0,404</span>
+
+              <div>
+                <button class="btn-tratativa" onclick="alert('Registro de tratativa comercial para: ${p.NOME_EXIBICAO}')">
+                  <i class="bi bi-journal-check"></i> Tratativa
+                </button>
               </div>
-              <button class="btn btn-tratativa ms-1">
-                <i class="bi bi-card-checklist me-1"></i>Tratativa
-              </button>
             </div>
           </div>
         `;
-      });
 
-      container.innerHTML = html;
+        container.appendChild(card);
+
+        const dadosKmmMes = [];
+        const dadosAnpMes = [];
+
+        mesesDisponiveis.forEach(m => {
+          const reg = baseRegistrosMensais.find(r => r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === m);
+          const precoKmm = reg ? parseFloat(reg.PRECO_MEDIO_MES || 0) : null;
+          dadosKmmMes.push(precoKmm > 0 ? parseFloat(precoKmm.toFixed(2)) : null);
+
+          const tabelaRef = ehInterno ? anpDistribuicao : anpRevenda;
+          const anpUf = tabelaRef[p.UF_POSTO] || tabelaRef["PR"];
+          dadosAnpMes.push(anpUf[m] || null);
+        });
+
+        // ANP FIXO EM VERDE (#059669) | INTERNO AZUL (#2563eb) | EXTERNO LARANJA COBRE (#c2410c)
+        const seriesColors = ehInterno ? ['#2563eb', '#059669'] : ['#c2410c', '#059669'];
+
+        const optionsSpark = {
+          series: [
+            { name: ehInterno ? "Custo Interno" : "Preço Bomba", data: dadosKmmMes },
+            { name: "Referência ANP", data: dadosAnpMes }
+          ],
+          chart: {
+            type: 'area',
+            height: '100%',
+            sparkline: { enabled: true },
+            animations: { enabled: false }
+          },
+          colors: seriesColors,
+          stroke: { curve: 'smooth', width: 2.2 },
+          fill: {
+            type: 'solid',
+            opacity: 0.28
+          },
+          tooltip: { enabled: false }
+        };
+
+        const sparkChart = new ApexCharts(document.getElementById(chartDomId), optionsSpark);
+        sparkChart.render();
+        sparklineInstances[chartDomId] = sparkChart;
+      });
     }
 
-    // GERADOR DE LINHA TEMPORAL SPARKLINE EM SVG NATIVO
-    function gerarSvgSparkline(mesesObj) {
-      const meses = ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08', '2026-09', '2026-10'];
-      const pontos = [];
-      
-      meses.forEach((m, idx) => {
-        const val = mesesObj[m];
-        if (val) {
-          pontos.push({ x: (idx / (meses.length - 1)) * 300, y: val });
+    /* MAPA SVG DO BRASIL */
+    const estadosSvg = [
+      { uf: "PR", d: "M 270 340 L 310 340 L 305 365 L 265 360 Z" },
+      { uf: "SP", d: "M 285 305 L 340 300 L 330 335 L 275 335 Z" },
+      { uf: "MG", d: "M 315 250 L 375 240 L 365 300 L 305 300 Z" },
+      { uf: "BA", d: "M 345 180 L 415 170 L 395 245 L 335 245 Z" },
+      { uf: "GO", d: "M 255 240 L 315 240 L 305 295 L 245 285 Z" },
+      { uf: "CE", d: "M 375 110 L 415 110 L 410 145 L 370 140 Z" },
+      { uf: "RS", d: "M 250 395 L 295 390 L 285 435 L 240 430 Z" },
+      { uf: "SC", d: "M 265 365 L 305 365 L 295 390 L 255 390 Z" },
+      { uf: "RJ", d: "M 345 300 L 375 295 L 370 315 L 340 315 Z" },
+      { uf: "ES", d: "M 375 265 L 395 260 L 390 295 L 370 295 Z" },
+      { uf: "MS", d: "M 215 285 L 265 285 L 255 345 L 205 340 Z" },
+      { uf: "MT", d: "M 195 200 L 265 200 L 255 275 L 185 270 Z" },
+      { uf: "TO", d: "M 290 170 L 335 170 L 325 235 L 280 235 Z" },
+      { uf: "PA", d: "M 225 90 L 325 90 L 305 170 L 210 165 Z" },
+      { uf: "MA", d: "M 325 105 L 370 105 L 355 170 L 315 165 Z" },
+      { uf: "PI", d: "M 355 130 L 390 130 L 375 180 L 340 175 Z" },
+      { uf: "PE", d: "M 395 140 L 445 135 L 440 160 L 390 160 Z" },
+      { uf: "PB", d: "M 415 125 L 450 120 L 445 135 L 410 140 Z" },
+      { uf: "RN", d: "M 415 110 L 450 110 L 445 125 L 410 125 Z" },
+      { uf: "AL", d: "M 420 160 L 445 155 L 440 175 L 415 175 Z" },
+      { uf: "SE", d: "M 410 175 L 435 170 L 430 190 L 405 190 Z" },
+      { uf: "AM", d: "M 100 100 L 220 90 L 200 190 L 90 180 Z" },
+      { uf: "RO", d: "M 130 195 L 190 190 L 180 250 L 120 245 Z" },
+      { uf: "AC", d: "M 50 180 L 105 175 L 95 215 L 40 210 Z" }
+    ];
+
+    function desenharMapaBrasil() {
+      const svg = document.getElementById('brazilSvg');
+      svg.innerHTML = "";
+
+      estadosSvg.forEach(est => {
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", est.d);
+        path.setAttribute("id", `estado-${est.uf}`);
+        path.setAttribute("class", "svg-state");
+        path.setAttribute("data-uf", est.uf);
+
+        path.addEventListener("click", () => {
+          if (ufFiltrada === est.uf) {
+            limparFiltroUf();
+          } else {
+            ufFiltrada = est.uf;
+            document.querySelectorAll('.svg-state').forEach(el => el.classList.remove('active'));
+            path.classList.add('active');
+            document.getElementById('badgeFiltroUf').style.display = 'inline-block';
+            document.getElementById('lblUfAtiva').innerText = est.uf;
+            processarPainel();
+          }
+        });
+
+        path.addEventListener("mousemove", (e) => mostrarTooltipMapa(e, est.uf));
+        path.addEventListener("mouseleave", esconderTooltipMapa);
+
+        svg.appendChild(path);
+      });
+
+      atualizarCoresMapa();
+    }
+
+    function atualizarCoresMapa() {
+      const ufsComDados = [...new Set(baseRegistrosMensais.map(d => d.UF_POSTO).filter(Boolean))];
+      estadosSvg.forEach(est => {
+        const el = document.getElementById(`estado-${est.uf}`);
+        if (!el) return;
+        if (ufsComDados.includes(est.uf)) {
+          el.classList.add("has-data");
+        } else {
+          el.classList.remove("has-data");
+        }
+        if (ufFiltrada === est.uf) {
+          el.classList.add("active");
+        } else {
+          el.classList.remove("active");
+        }
+      });
+    }
+
+    function mostrarTooltipMapa(e, uf) {
+      const tooltip = document.getElementById('mapTooltip');
+      const mesSel = document.getElementById('filtroMesAno').value;
+
+      let regs = baseRegistrosMensais.filter(d => d.UF_POSTO === uf);
+      if (mesSel !== 'YTD') {
+        regs = regs.filter(d => d.MES_ANO === mesSel);
+      }
+
+      const litInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
+      const valInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
+      const medInterno = litInterno > 0 ? (valInterno / litInterno) : 0;
+
+      const litExterno = regs.filter(d => d.TIPO_OPERACAO === 'EXTERNO').reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
+      const valExterno = regs.filter(d => d.TIPO_OPERACAO === 'EXTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
+      const medExterno = litExterno > 0 ? (valExterno / litExterno) : 0;
+
+      const totalL = litInterno + litExterno;
+
+      if (totalL === 0) {
+        tooltip.innerHTML = `<strong>${uf}</strong><br><span class="text-muted">Sem movimento no período</span>`;
+      } else {
+        tooltip.innerHTML = `
+          <strong>${uf} &bull; Resumo Operacional</strong><br>
+          <div style="font-size:0.7rem; margin-top:4px;">
+            Total: <b>${Math.round(totalL).toLocaleString('pt-BR')} L</b><br>
+            Garagens: ${Math.round(litInterno).toLocaleString('pt-BR')} L ${medInterno > 0 ? '(R$ ' + medInterno.toFixed(3) + ')' : ''}<br>
+            Rota Rodovia: ${Math.round(litExterno).toLocaleString('pt-BR')} L ${medExterno > 0 ? '(R$ ' + medExterno.toFixed(3) + ')' : ''}
+          </div>
+        `;
+      }
+
+      tooltip.style.left = (e.pageX + 15) + "px";
+      tooltip.style.top = (e.pageY + 10) + "px";
+      tooltip.style.display = "block";
+    }
+
+    function esconderTooltipMapa() {
+      document.getElementById('mapTooltip').style.display = "none";
+    }
+
+    /* ROTEIRIZADOR LEAFLET */
+    function normalizarTexto(txt) {
+      return (txt || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    }
+
+    function configurarAutocompletarItem(itemEl) {
+      const input = itemEl.querySelector('.input-cidade-rota');
+      const hiddenCoord = itemEl.querySelector('.hidden-coord-rota');
+      const lista = itemEl.querySelector('.autocomplete-list');
+
+      input.addEventListener('focus', () => {
+        document.querySelectorAll('.input-cidade-rota').forEach(el => el.classList.remove('foco-ativo'));
+        input.classList.add('foco-ativo');
+        campoFocoAtivo = itemEl;
+      });
+
+      input.addEventListener('input', () => {
+        const termo = normalizarTexto(input.value);
+
+        if (termo.length < 2) {
+          lista.style.display = "none";
+          lista.innerHTML = "";
+          hiddenCoord.value = "";
+          return;
+        }
+
+        const filtradas = listaCidades.filter(c => normalizarTexto(c.nome).includes(termo)).slice(0, 8);
+
+        lista.innerHTML = "";
+        if (filtradas.length === 0) {
+          lista.style.display = "none";
+          return;
+        }
+
+        filtradas.forEach(cidade => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "list-group-item list-group-item-action small py-2 text-start";
+          btn.style.fontSize = "0.75rem";
+          btn.innerText = cidade.nome;
+
+          btn.onclick = () => {
+            input.value = cidade.nome;
+            hiddenCoord.value = `${cidade.lat},${cidade.lon}`;
+            lista.style.display = "none";
+            lista.innerHTML = "";
+            atualizarMarcadoresWaypoints();
+          };
+
+          lista.appendChild(btn);
+        });
+
+        lista.style.display = "block";
+      });
+    }
+
+    function adicionarCampoParada() {
+      const container = document.getElementById('containerPontosRota');
+      const itens = container.querySelectorAll('.ponto-rota-item');
+
+      if (itens.length >= 5) {
+        alert("Limite máximo de 5 pontos na rota atingido.");
+        return;
+      }
+
+      const novoIndex = itens.length;
+      const novoItem = document.createElement('div');
+      novoItem.className = 'mb-2 position-relative ponto-rota-item';
+      novoItem.setAttribute('data-index', novoIndex);
+      novoItem.innerHTML = `
+        <label class="small fw-bold text-dark mb-1 d-flex justify-content-between">
+          <span>Parada Intermediária:</span>
+          <span class="text-danger cursor-pointer" onclick="removerCampoParada(this)" title="Remover"><i class="bi bi-trash"></i></span>
+        </label>
+        <input type="text" class="form-control form-control-sm input-cidade-rota" placeholder="Digite ou clique no mapa..." autocomplete="off">
+        <input type="hidden" class="hidden-coord-rota">
+        <div class="autocomplete-list shadow-sm" style="display: none;"></div>
+      `;
+
+      container.insertBefore(novoItem, itens[itens.length - 1]);
+      configurarAutocompletarItem(novoItem);
+      renumerarRotulos();
+    }
+
+    function removerCampoParada(btnEl) {
+      const item = btnEl.closest('.ponto-rota-item');
+      item.remove();
+      renumerarRotulos();
+      atualizarMarcadoresWaypoints();
+    }
+
+    function renumerarRotulos() {
+      const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
+      itens.forEach((el, idx) => {
+        const label = el.querySelector('label span');
+        if (idx === 0) {
+          label.innerText = "1. Cidade de Origem:";
+        } else if (idx === itens.length - 1) {
+          label.innerText = `${idx + 1}. Cidade de Destino:`;
+        } else {
+          label.innerText = `${idx + 1}. Parada Intermediária:`;
+        }
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      document.querySelectorAll('.autocomplete-list').forEach(list => {
+        if (!list.closest('.ponto-rota-item').contains(e.target)) {
+          list.style.display = "none";
+        }
+      });
+    });
+
+    function inicializarMapaLeaflet() {
+      if (!leafletMapInstance) {
+        leafletMapInstance = L.map('mapLeaflet').setView([-20.0, -48.0], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(leafletMapInstance);
+
+        document.querySelectorAll('.ponto-rota-item').forEach(configurarAutocompletarItem);
+
+        const primeiro = document.querySelector('.ponto-rota-item');
+        if (primeiro) {
+          primeiro.querySelector('.input-cidade-rota').classList.add('foco-ativo');
+          campoFocoAtivo = primeiro;
+        }
+
+        leafletMapInstance.on('click', function(e) {
+          if (!campoFocoAtivo) return;
+
+          const lat = parseFloat(e.latlng.lat.toFixed(4));
+          const lon = parseFloat(e.latlng.lng.toFixed(4));
+
+          let cidadeMaisProxima = "Ponto no Mapa";
+          let menorDist = Infinity;
+          listaCidades.forEach(c => {
+            const d = calcularDistanciaKm(lat, lon, c.lat, c.lon);
+            if (d < menorDist && d < 60) {
+              menorDist = d;
+              cidadeMaisProxima = c.nome;
+            }
+          });
+
+          const input = campoFocoAtivo.querySelector('.input-cidade-rota');
+          const hidden = campoFocoAtivo.querySelector('.hidden-coord-rota');
+          input.value = cidadeMaisProxima !== "Ponto no Mapa" ? cidadeMaisProxima : `Coord: ${lat}, ${lon}`;
+          hidden.value = `${lat},${lon}`;
+
+          atualizarMarcadoresWaypoints();
+          avancarParaProximoCampo();
+        });
+      }
+      setTimeout(() => {
+        leafletMapInstance.invalidateSize();
+      }, 250);
+    }
+
+    function avancarParaProximoCampo() {
+      const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
+      for (const it of itens) {
+        const h = it.querySelector('.hidden-coord-rota');
+        if (!h.value) {
+          document.querySelectorAll('.input-cidade-rota').forEach(el => el.classList.remove('foco-ativo'));
+          it.querySelector('.input-cidade-rota').classList.add('foco-ativo');
+          campoFocoAtivo = it;
+          return;
+        }
+      }
+    }
+
+    function atualizarMarcadoresWaypoints() {
+      markersWaypoints.forEach(m => leafletMapInstance.removeLayer(m));
+      markersWaypoints = [];
+
+      const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
+      itens.forEach((it, idx) => {
+        const hidden = it.querySelector('.hidden-coord-rota');
+        const input = it.querySelector('.input-cidade-rota');
+        if (hidden.value) {
+          const [lat, lon] = hidden.value.split(',').map(Number);
+          const cor = idx === 0 ? "#16a34a" : (idx === itens.length - 1 ? "#dc2626" : "#2563eb");
+          const m = L.circleMarker([lat, lon], {
+            radius: 8,
+            fillColor: cor,
+            color: "#ffffff",
+            weight: 2,
+            fillOpacity: 1
+          }).addTo(leafletMapInstance);
+          m.bindPopup(`<b>${idx + 1}. ${input.value}</b>`);
+          markersWaypoints.push(m);
+        }
+      });
+    }
+
+    function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    function obterCoordenadasItem(itemEl) {
+      const hidden = itemEl.querySelector('.hidden-coord-rota');
+      const input = itemEl.querySelector('.input-cidade-rota');
+
+      if (hidden.value) {
+        return hidden.value.split(',').map(Number);
+      }
+
+      if (input.value.trim()) {
+        const termo = normalizarTexto(input.value);
+        const achada = listaCidades.find(c => normalizarTexto(c.nome).includes(termo));
+        if (achada) {
+          hidden.value = `${achada.lat},${achada.lon}`;
+          return [achada.lat, achada.lon];
+        }
+      }
+      return null;
+    }
+
+    function calcularRotaLeaflet() {
+      if (!leafletMapInstance) return;
+
+      const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
+      const waypoints = [];
+
+      itens.forEach(it => {
+        const coords = obterCoordenadasItem(it);
+        if (coords) {
+          waypoints.push(L.latLng(coords[0], coords[1]));
         }
       });
 
-      if (pontos.length < 2) {
-        return `<svg viewBox="0 0 300 40"><line x1="0" y1="20" x2="300" y2="20" stroke="#cbd5e1" stroke-dasharray="4"/></svg>`;
+      if (waypoints.length < 2) {
+        alert("Preencha ao menos uma Cidade de Origem e uma Cidade de Destino válidas.");
+        return;
       }
 
-      const ys = pontos.map(p => p.y);
-      const min = Math.min(...ys) * 0.98;
-      const max = Math.max(...ys) * 1.02;
-      const range = (max - min) || 1;
+      if (routingControlInstance) {
+        leafletMapInstance.removeControl(routingControlInstance);
+      }
 
-      const coords = pontos.map(p => {
-        const yNorm = 35 - ((p.y - min) / range) * 30;
-        return `${p.x.toFixed(1)},${yNorm.toFixed(1)}`;
-      }).join(' ');
+      routingControlInstance = L.Routing.control({
+        waypoints: waypoints,
+        routeWhileDragging: false,
+        addWaypoints: false,
+        showAlternatives: false,
+        lineOptions: {
+          styles: [{ color: '#1c483a', weight: 5, opacity: 0.85 }]
+        }
+      }).addTo(leafletMapInstance);
 
-      return `
-        <svg viewBox="0 0 300 40" preserveAspectRatio="none">
-          <polyline fill="none" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${coords}"/>
-        </svg>
-      `;
+      routingControlInstance.on('routesfound', function(e) {
+        const routeCoords = e.routes[0].coordinates;
+        plotarPostosComDuploRaio(routeCoords);
+      });
     }
+
+    function plotarPostosComDuploRaio(routeCoords) {
+      markersPostosLeaflet.forEach(m => leafletMapInstance.removeLayer(m));
+      markersPostosLeaflet = [];
+      postosSugeridosUltimaRota = [];
+
+      const postos = [...new Set(baseRegistrosMensais.map(d => ({
+        posto: d.POSTO,
+        municipio: (d.MUNICIPIO_POSTO || '').toUpperCase(),
+        uf: d.UF_POSTO,
+        preco: parseFloat(d.ULTIMO_PRECO_MES || 0),
+        tipo: d.TIPO_OPERACAO
+      })))];
+
+      const amostraRota = [];
+      const passo = Math.max(1, Math.floor(routeCoords.length / 80));
+      for (let i = 0; i < routeCoords.length; i += passo) {
+        amostraRota.push(routeCoords[i]);
+      }
+
+      postos.forEach(p => {
+        if (!p.municipio || p.municipio === 'ND') return;
+
+        const achada = listaCidades.find(c => 
+          normalizarTexto(c.nome).includes(normalizarTexto(p.municipio))
+        );
+        if (!achada) return;
+
+        let menorDist = Infinity;
+        for (const pt of amostraRota) {
+          const d = calcularDistanciaKm(achada.lat, achada.lon, pt.lat, pt.lng);
+          if (d < menorDist) menorDist = d;
+          if (menorDist <= 200) break;
+        }
+
+        // FAIXA 1 (ATÉ 200 KM): COLORIDO POR PREÇO
+        // FAIXA 2 (201 KM ATÉ 600 KM): CINZA NEUTRO
+        if (menorDist <= 600) {
+          let corPin = "#94a3b8"; // Cinza
+          let statusTexto = "Posto em Raio Expandido de Apoio";
+
+          if (menorDist <= 200) {
+            corPin = p.preco < 6.40 ? "#16a34a" : (p.preco < 6.75 ? "#eab308" : "#dc2626");
+            statusTexto = p.preco < 6.40 ? "Recomendado (Melhor Preço)" : (p.preco < 6.75 ? "Preço Aceitável" : "Alerta de Preço Alto");
+          }
+
+          const marker = L.circleMarker([achada.lat, achada.lon], {
+            radius: 8,
+            fillColor: corPin,
+            color: "#ffffff",
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.95
+          }).addTo(leafletMapInstance);
+
+          marker.bindPopup(`
+            <strong style="color:#1c483a;">${p.posto}</strong><br>
+            Cidade: ${p.municipio}/${p.uf}<br>
+            Último Preço: <b>R$ ${p.preco.toFixed(3)}</b><br>
+            Tipo: ${p.tipo}<br>
+            Status: <b>${statusTexto}</b><br>
+            <span class="small text-muted">Aprox. ${Math.round(menorDist)} km da rota</span>
+          `);
+
+          markersPostosLeaflet.push(marker);
+
+          if (menorDist <= 200) {
+            postosSugeridosUltimaRota.push({
+              posto: p.posto,
+              cidade: `${p.municipio}/${p.uf}`,
+              preco: p.preco,
+              distancia: Math.round(menorDist),
+              tipo: p.tipo
+            });
+          }
+        }
+      });
+
+      // Ordena postos sugeridos da rota por menor preço
+      postosSugeridosUltimaRota.sort((a, b) => a.preco - b.preco);
+    }
+
+    function imprimirRoteiroViagem() {
+      if (postosSugeridosUltimaRota.length === 0) {
+        alert("Trace uma rota primeiro para mapear os postos antes de imprimir.");
+        return;
+      }
+
+      const container = document.getElementById('conteudoRoteiroImpresso');
+      const area = document.getElementById('areaImpressaoRoteiro');
+      
+      let htmlTabela = `
+        <table class="table table-sm table-bordered mt-2 small">
+          <thead class="table-dark">
+            <tr>
+              <th>Posto / Bandeira</th>
+              <th>Cidade / UF</th>
+              <th>Preço Base Registrado</th>
+              <th>Desvio da Rota</th>
+              <th>Operação</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      postosSugeridosUltimaRota.forEach(p => {
+        htmlTabela += `
+          <tr>
+            <td><b>${p.posto}</b></td>
+            <td>${p.cidade}</td>
+            <td class="text-success fw-bold">R$ ${p.preco.toFixed(3)}</td>
+            <td>${p.distancia} km</td>
+            <td>${p.tipo}</td>
+          </tr>
+        `;
+      });
+
+      htmlTabela += `</tbody></table>`;
+      container.innerHTML = htmlTabela;
+      area.style.display = "block";
+      window.print();
+    }
+
+    function filtrarTabelaTexto() {
+      const busca = document.getElementById('campoBusca').value.trim().toLowerCase();
+      document.querySelectorAll('.card-posto-termometro').forEach(card => {
+        const texto = card.innerText.toLowerCase();
+        card.style.display = texto.includes(busca) ? "block" : "none";
+      });
+    }
+
+    carregarDados();
   </script>
 </body>
 </html>
