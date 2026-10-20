@@ -1,0 +1,630 @@
+/**
+ * CARGOSOFT | Data Analytics Diesel
+ * Módulo de Inteligência Geográfica: Mini Mapa do Brasil & Roteirizador de Postos
+ * Arquivo: mapa.js
+ */
+
+// URL da malha GeoJSON oficial dos 27 estados do Brasil
+const GEOJSON_BR_URL = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson";
+
+// Variáveis de controle do Mini Mapa do Brasil
+let miniMapaLeaflet = null;
+let camadaGeoJsonBrasil = null;
+let dadosGeoJsonBr = null;
+
+// Variáveis de controle do Roteirizador de Postos
+let leafletMapInstance = null;
+let routingControlInstance = null;
+let markersPostosLeaflet = [];
+let markersWaypoints = [];
+let campoFocoAtivo = null;
+let postosSugeridosUltimaRota = [];
+
+// =========================================================================
+// 1. MINI MAPA LEAFLET: MALHA OFICIAL DOS 27 ESTADOS (FILTRO POR UF)
+// =========================================================================
+
+/**
+ * Inicializa a instância do Mini Mapa Leaflet do Brasil.
+ */
+async function inicializarMiniMapaBrasil() {
+  const mapContainer = document.getElementById('miniMapaBrasil');
+  if (!mapContainer || miniMapaLeaflet) return;
+
+  miniMapaLeaflet = L.map('miniMapaBrasil', {
+    zoomControl: false,
+    attributionControl: false,
+    dragging: false,
+    scrollWheelZoom: false,
+    doubleClickZoom: false,
+    boxZoom: false,
+    touchZoom: false
+  }).setView([-14.235, -51.925], 3);
+
+  try {
+    const resp = await fetch(GEOJSON_BR_URL);
+    if (!resp.ok) throw new Error("Falha na resposta do servidor GeoJSON");
+    dadosGeoJsonBr = await resp.json();
+    atualizarCoresMiniMapa();
+  } catch (err) {
+    console.error("Erro ao carregar a malha GeoJSON oficial dos estados:", err);
+  }
+}
+
+/**
+ * Retorna a tonalidade institucional de verde proporcional ao volume consumido.
+ */
+function obterCorPorVolume(vol) {
+  if (!vol || vol === 0) return '#e2e8f0';
+  if (vol < 50000) return '#4ade80';
+  if (vol < 200000) return '#16a34a';
+  if (vol < 500000) return '#15803d';
+  return '#052e16';
+}
+
+/**
+ * Atualiza os polígonos, contornos e cores do Mini Mapa do Brasil conforme o filtro atual.
+ */
+function atualizarCoresMiniMapa() {
+  if (!miniMapaLeaflet || !dadosGeoJsonBr) return;
+
+  if (camadaGeoJsonBrasil) {
+    miniMapaLeaflet.removeLayer(camadaGeoJsonBrasil);
+  }
+
+  const mesSel = document.getElementById('filtroMesAno') ? document.getElementById('filtroMesAno').value : 'YTD';
+  let regs = (typeof baseRegistrosMensais !== 'undefined' && Array.isArray(baseRegistrosMensais)) ? baseRegistrosMensais : [];
+
+  if (mesSel !== 'YTD') {
+    regs = regs.filter(d => d.MES_ANO === mesSel);
+  }
+
+  const volPorUf = {};
+  regs.forEach(d => {
+    if (!d.UF_POSTO) return;
+    volPorUf[d.UF_POSTO] = (volPorUf[d.UF_POSTO] || 0) + parseFloat(d.LITROS_MES || 0);
+  });
+
+  camadaGeoJsonBrasil = L.geoJSON(dadosGeoJsonBr, {
+    style: function(feature) {
+      const sigla = (feature.properties.sigla || feature.properties.name || '').toUpperCase();
+      const vol = volPorUf[sigla] || 0;
+      const selecionado = (typeof ufFiltrada !== 'undefined' && ufFiltrada === sigla);
+
+      return {
+        fillColor: obterCorPorVolume(vol),
+        weight: selecionado ? 2.5 : 0.8,
+        opacity: 1,
+        color: selecionado ? '#f59e0b' : '#ffffff',
+        fillOpacity: 0.95
+      };
+    },
+    onEachFeature: function(feature, layer) {
+      const sigla = (feature.properties.sigla || feature.properties.name || '').toUpperCase();
+
+      layer.on('mouseover', function(e) {
+        const l = e.target;
+        l.setStyle({
+          weight: 2,
+          color: '#0f172a'
+        });
+        mostrarTooltipMiniMapa(e.originalEvent, sigla);
+      });
+
+      layer.on('mouseout', function(e) {
+        camadaGeoJsonBrasil.resetStyle(e.target);
+        if (typeof ufFiltrada !== 'undefined' && ufFiltrada === sigla) {
+          e.target.setStyle({ weight: 2.5, color: '#f59e0b' });
+        }
+        esconderTooltipMiniMapa();
+      });
+
+      layer.on('click', function() {
+        if (typeof ufFiltrada !== 'undefined' && ufFiltrada === sigla) {
+          if (typeof limparFiltroUf === 'function') limparFiltroUf();
+        } else {
+          ufFiltrada = sigla;
+          const badgeUf = document.getElementById('badgeFiltroUf');
+          const lblUf = document.getElementById('lblUfAtiva');
+          if (badgeUf) badgeUf.style.display = 'inline-block';
+          if (lblUf) lblUf.innerText = sigla;
+          atualizarCoresMiniMapa();
+          if (typeof processarPainel === 'function') processarPainel();
+        }
+      });
+    }
+  }).addTo(miniMapaLeaflet);
+
+  miniMapaLeaflet.fitBounds(camadaGeoJsonBrasil.getBounds(), { padding: [4, 4] });
+}
+
+/**
+ * Exibe o tooltip flutuante do estado com dados reais de litragem e preços.
+ */
+function mostrarTooltipMiniMapa(e, uf) {
+  const tooltip = document.getElementById('mapTooltip');
+  if (!tooltip) return;
+
+  const mesSel = document.getElementById('filtroMesAno') ? document.getElementById('filtroMesAno').value : 'YTD';
+  const lblHover = document.getElementById('lblHoverEstado');
+  if (lblHover) lblHover.innerText = `Estado: ${uf}`;
+
+  let regs = (typeof baseRegistrosMensais !== 'undefined' && Array.isArray(baseRegistrosMensais)) ? baseRegistrosMensais : [];
+  regs = regs.filter(d => d.UF_POSTO === uf);
+
+  if (mesSel !== 'YTD') {
+    regs = regs.filter(d => d.MES_ANO === mesSel);
+  }
+
+  const litInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
+  const valInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
+  const medInterno = litInterno > 0 ? (valInterno / litInterno) : 0;
+
+  const litExterno = regs.filter(d => d.TIPO_OPERACAO === 'EXTERNO').reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
+  const valExterno = regs.filter(d => d.TIPO_OPERACAO === 'EXTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
+  const medExterno = litExterno > 0 ? (valExterno / litExterno) : 0;
+
+  const totalL = litInterno + litExterno;
+
+  if (totalL === 0) {
+    tooltip.innerHTML = `<strong>${uf}</strong><br><span class="text-muted">Sem movimento no período</span>`;
+  } else {
+    tooltip.innerHTML = `
+      <strong>${uf} &bull; Resumo Operacional</strong><br>
+      <div style="font-size:0.68rem; margin-top:2px;">
+        Total: <b>${Math.round(totalL).toLocaleString('pt-BR')} L</b><br>
+        Tanques Próprios: ${Math.round(litInterno).toLocaleString('pt-BR')} L ${medInterno > 0 ? '(R$ ' + medInterno.toFixed(3) + ')' : ''}<br>
+        Rota Rodoviária: ${Math.round(litExterno).toLocaleString('pt-BR')} L ${medExterno > 0 ? '(R$ ' + medExterno.toFixed(3) + ')' : ''}
+      </div>
+    `;
+  }
+
+  tooltip.style.left = (e.pageX + 15) + "px";
+  tooltip.style.top = (e.pageY + 10) + "px";
+  tooltip.style.display = "block";
+}
+
+/**
+ * Esconde o tooltip flutuante do mapa.
+ */
+function esconderTooltipMiniMapa() {
+  const tooltip = document.getElementById('mapTooltip');
+  if (tooltip) tooltip.style.display = "none";
+  const lblHover = document.getElementById('lblHoverEstado');
+  if (lblHover) {
+    lblHover.innerText = (typeof ufFiltrada !== 'undefined' && ufFiltrada) ? `Filtrando por ${ufFiltrada}` : 'Passe o mouse ou clique';
+  }
+}
+
+// =========================================================================
+// 2. ROTEIRIZADOR DE POSTOS (LEAFLET + AUTOCOMPLETE + CORREDORES DE ABASTECIMENTO)
+// =========================================================================
+
+/**
+ * Normaliza textos para comparação e buscas sem acento.
+ */
+function normalizarTextoBusca(txt) {
+  return (txt || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
+/**
+ * Calcula distância geográfica aproximada em linha reta (fórmula de Haversine).
+ */
+function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+/**
+ * Configura o comportamento de autocompletar e foco dos campos de cidades na rota.
+ */
+function configurarAutocompletarItem(itemEl) {
+  const input = itemEl.querySelector('.input-cidade-rota');
+  const hiddenCoord = itemEl.querySelector('.hidden-coord-rota');
+  const lista = itemEl.querySelector('.autocomplete-list');
+  const listaCidadesRef = (typeof listaCidades !== 'undefined' && Array.isArray(listaCidades)) ? listaCidades : [];
+
+  input.addEventListener('focus', () => {
+    document.querySelectorAll('.input-cidade-rota').forEach(el => el.classList.remove('foco-ativo'));
+    input.classList.add('foco-ativo');
+    campoFocoAtivo = itemEl;
+  });
+
+  input.addEventListener('input', () => {
+    const termo = normalizarTextoBusca(input.value);
+
+    if (termo.length < 2) {
+      lista.style.display = "none";
+      lista.innerHTML = "";
+      hiddenCoord.value = "";
+      return;
+    }
+
+    const filtradas = listaCidadesRef.filter(c => normalizarTextoBusca(c.nome).includes(termo)).slice(0, 8);
+
+    lista.innerHTML = "";
+    if (filtradas.length === 0) {
+      lista.style.display = "none";
+      return;
+    }
+
+    filtradas.forEach(cidade => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "list-group-item list-group-item-action small py-2 text-start";
+      btn.style.fontSize = "0.75rem";
+      btn.innerText = cidade.nome;
+
+      btn.onclick = () => {
+        input.value = cidade.nome;
+        hiddenCoord.value = `${cidade.lat},${cidade.lon}`;
+        lista.style.display = "none";
+        lista.innerHTML = "";
+        atualizarMarcadoresWaypoints();
+      };
+
+      lista.appendChild(btn);
+    });
+
+    lista.style.display = "block";
+  });
+}
+
+/**
+ * Adiciona um ponto intermediário de parada na rota.
+ */
+function adicionarCampoParada() {
+  const container = document.getElementById('containerPontosRota');
+  const itens = container.querySelectorAll('.ponto-rota-item');
+
+  if (itens.length >= 5) {
+    alert("Limite máximo de 5 pontos na rota atingido.");
+    return;
+  }
+
+  const novoIndex = itens.length;
+  const novoItem = document.createElement('div');
+  novoItem.className = 'mb-2 position-relative ponto-rota-item';
+  novoItem.setAttribute('data-index', novoIndex);
+  novoItem.innerHTML = `
+    <label class="small fw-bold text-dark mb-1 d-flex justify-content-between">
+      <span>Parada Intermediária:</span>
+      <span class="text-danger cursor-pointer" onclick="removerCampoParada(this)" title="Remover"><i class="bi bi-trash"></i></span>
+    </label>
+    <input type="text" class="form-control form-control-sm input-cidade-rota" placeholder="Digite ou clique no mapa..." autocomplete="off">
+    <input type="hidden" class="hidden-coord-rota">
+    <div class="autocomplete-list shadow-sm" style="display: none;"></div>
+  `;
+
+  container.insertBefore(novoItem, itens[itens.length - 1]);
+  configurarAutocompletarItem(novoItem);
+  renumerarRotulos();
+}
+
+/**
+ * Remove um ponto intermediário de parada da rota.
+ */
+function removerCampoParada(btnEl) {
+  const item = btnEl.closest('.ponto-rota-item');
+  item.remove();
+  renumerarRotulos();
+  atualizarMarcadoresWaypoints();
+}
+
+/**
+ * Atualiza os rótulos ordinais dos campos de rota.
+ */
+function renumerarRotulos() {
+  const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
+  itens.forEach((el, idx) => {
+    const label = el.querySelector('label span');
+    if (idx === 0) {
+      label.innerText = "1. Cidade de Origem:";
+    } else if (idx === itens.length - 1) {
+      label.innerText = `${idx + 1}. Cidade de Destino:`;
+    } else {
+      label.innerText = `${idx + 1}. Parada Intermediária:`;
+    }
+  });
+}
+
+// Fecha autocompletes ao clicar fora
+document.addEventListener("click", (e) => {
+  document.querySelectorAll('.autocomplete-list').forEach(list => {
+    if (!list.closest('.ponto-rota-item').contains(e.target)) {
+      list.style.display = "none";
+    }
+  });
+});
+
+/**
+ * Inicializa a instância do mapa Leaflet principal para roteirização.
+ */
+function inicializarMapaLeaflet() {
+  if (!leafletMapInstance) {
+    leafletMapInstance = L.map('mapLeaflet').setView([-20.0, -48.0], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(leafletMapInstance);
+
+    document.querySelectorAll('.ponto-rota-item').forEach(configurarAutocompletarItem);
+
+    const primeiro = document.querySelector('.ponto-rota-item');
+    if (primeiro) {
+      primeiro.querySelector('.input-cidade-rota').classList.add('foco-ativo');
+      campoFocoAtivo = primeiro;
+    }
+
+    leafletMapInstance.on('click', function(e) {
+      if (!campoFocoAtivo) return;
+
+      const lat = parseFloat(e.latlng.lat.toFixed(4));
+      const lon = parseFloat(e.latlng.lng.toFixed(4));
+      const listaCidadesRef = (typeof listaCidades !== 'undefined' && Array.isArray(listaCidades)) ? listaCidades : [];
+
+      let cidadeMaisProxima = "Ponto no Mapa";
+      let menorDist = Infinity;
+      listaCidadesRef.forEach(c => {
+        const d = calcularDistanciaKm(lat, lon, c.lat, c.lon);
+        if (d < menorDist && d < 60) {
+          menorDist = d;
+          cidadeMaisProxima = c.nome;
+        }
+      });
+
+      const input = campoFocoAtivo.querySelector('.input-cidade-rota');
+      const hidden = campoFocoAtivo.querySelector('.hidden-coord-rota');
+      input.value = cidadeMaisProxima !== "Ponto no Mapa" ? cidadeMaisProxima : `Coord: ${lat}, ${lon}`;
+      hidden.value = `${lat},${lon}`;
+
+      atualizarMarcadoresWaypoints();
+      avancarParaProximoCampo();
+    });
+  }
+  setTimeout(() => {
+    if (leafletMapInstance) leafletMapInstance.invalidateSize();
+  }, 250);
+}
+
+/**
+ * Move o foco automaticamente para o próximo campo de parada vazio.
+ */
+function avancarParaProximoCampo() {
+  const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
+  for (const it of itens) {
+    const h = it.querySelector('.hidden-coord-rota');
+    if (!h.value) {
+      document.querySelectorAll('.input-cidade-rota').forEach(el => el.classList.remove('foco-ativo'));
+      it.querySelector('.input-cidade-rota').classList.add('foco-ativo');
+      campoFocoAtivo = it;
+      return;
+    }
+  }
+}
+
+/**
+ * Atualiza os marcadores de cidades selecionadas na tela do mapa.
+ */
+function atualizarMarcadoresWaypoints() {
+  if (!leafletMapInstance) return;
+  markersWaypoints.forEach(m => leafletMapInstance.removeLayer(m));
+  markersWaypoints = [];
+
+  const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
+  itens.forEach((it, idx) => {
+    const hidden = it.querySelector('.hidden-coord-rota');
+    const input = it.querySelector('.input-cidade-rota');
+    if (hidden.value) {
+      const [lat, lon] = hidden.value.split(',').map(Number);
+      const cor = idx === 0 ? "#16a34a" : (idx === itens.length - 1 ? "#dc2626" : "#2563eb");
+      const m = L.circleMarker([lat, lon], {
+        radius: 8,
+        fillColor: cor,
+        color: "#ffffff",
+        weight: 2,
+        fillOpacity: 1
+      }).addTo(leafletMapInstance);
+      m.bindPopup(`<b>${idx + 1}. ${input.value}</b>`);
+      markersWaypoints.push(m);
+    }
+  });
+}
+
+/**
+ * Obtém coordenadas geográficas a partir de campo oculto ou do cadastro de cidades.
+ */
+function obterCoordenadasItem(itemEl) {
+  const hidden = itemEl.querySelector('.hidden-coord-rota');
+  const input = itemEl.querySelector('.input-cidade-rota');
+
+  if (hidden.value) {
+    return hidden.value.split(',').map(Number);
+  }
+
+  if (input.value.trim()) {
+    const termo = normalizarTextoBusca(input.value);
+    const listaCidadesRef = (typeof listaCidades !== 'undefined' && Array.isArray(listaCidades)) ? listaCidades : [];
+    const achada = listaCidadesRef.find(c => normalizarTextoBusca(c.nome).includes(termo));
+    if (achada) {
+      hidden.value = `${achada.lat},${achada.lon}`;
+      return [achada.lat, achada.lon];
+    }
+  }
+  return null;
+}
+
+/**
+ * Calcula e desenha o traçado da rota no Leaflet e chama o mapeamento dos postos.
+ */
+function calcularRotaLeaflet() {
+  if (!leafletMapInstance) return;
+
+  const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
+  const waypoints = [];
+
+  itens.forEach(it => {
+    const coords = obterCoordenadasItem(it);
+    if (coords) {
+      waypoints.push(L.latLng(coords[0], coords[1]));
+    }
+  });
+
+  if (waypoints.length < 2) {
+    alert("Preencha ao menos uma Cidade de Origem e uma Cidade de Destino válidas.");
+    return;
+  }
+
+  if (routingControlInstance) {
+    leafletMapInstance.removeControl(routingControlInstance);
+  }
+
+  routingControlInstance = L.Routing.control({
+    waypoints: waypoints,
+    routeWhileDragging: false,
+    addWaypoints: false,
+    showAlternatives: false,
+    lineOptions: {
+      styles: [{ color: '#1c483a', weight: 5, opacity: 0.85 }]
+    }
+  }).addTo(leafletMapInstance);
+
+  routingControlInstance.on('routesfound', function(e) {
+    const routeCoords = e.routes[0].coordinates;
+    plotarPostosComDuploRaio(routeCoords);
+  });
+}
+
+/**
+ * Mapeia os postos de combustível da base ao longo da rota em duplo raio (200 km direto / 600 km apoio).
+ */
+function plotarPostosComDuploRaio(routeCoords) {
+  if (!leafletMapInstance) return;
+  markersPostosLeaflet.forEach(m => leafletMapInstance.removeLayer(m));
+  markersPostosLeaflet = [];
+  postosSugeridosUltimaRota = [];
+
+  const registrosRef = (typeof baseRegistrosMensais !== 'undefined' && Array.isArray(baseRegistrosMensais)) ? baseRegistrosMensais : [];
+  const listaCidadesRef = (typeof listaCidades !== 'undefined' && Array.isArray(listaCidades)) ? listaCidades : [];
+
+  const postos = [...new Set(registrosRef.map(d => ({
+    posto: d.POSTO,
+    municipio: (d.MUNICIPIO_POSTO || '').toUpperCase(),
+    uf: d.UF_POSTO,
+    preco: parseFloat(d.ULTIMO_PRECO_MES || 0),
+    tipo: d.TIPO_OPERACAO
+  })))];
+
+  const amostraRota = [];
+  const passo = Math.max(1, Math.floor(routeCoords.length / 80));
+  for (let i = 0; i < routeCoords.length; i += passo) {
+    amostraRota.push(routeCoords[i]);
+  }
+
+  postos.forEach(p => {
+    if (!p.municipio || p.municipio === 'ND') return;
+
+    const achada = listaCidadesRef.find(c =>
+      normalizarTextoBusca(c.nome).includes(normalizarTextoBusca(p.municipio))
+    );
+    if (!achada) return;
+
+    let menorDist = Infinity;
+    for (const pt of amostraRota) {
+      const d = calcularDistanciaKm(achada.lat, achada.lon, pt.lat, pt.lng);
+      if (d < menorDist) menorDist = d;
+      if (menorDist <= 200) break;
+    }
+
+    if (menorDist <= 600) {
+      let corPin = "#94a3b8";
+      let statusTexto = "Posto em Raio Expandido de Apoio";
+
+      if (menorDist <= 200) {
+        corPin = p.preco < 6.40 ? "#16a34a" : (p.preco < 6.75 ? "#eab308" : "#dc2626");
+        statusTexto = p.preco < 6.40 ? "Recomendado (Melhor Preço)" : (p.preco < 6.75 ? "Preço Aceitável" : "Alerta de Preço Alto");
+      }
+
+      const marker = L.circleMarker([achada.lat, achada.lon], {
+        radius: 8,
+        fillColor: corPin,
+        color: "#ffffff",
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.95
+      }).addTo(leafletMapInstance);
+
+      marker.bindPopup(`
+        <strong style="color:#1c483a;">${p.posto}</strong><br>
+        Cidade: ${p.municipio}/${p.uf}<br>
+        Último Preço: <b>R$ ${p.preco.toFixed(3)}</b><br>
+        Tipo: ${p.tipo}<br>
+        Status: <b>${statusTexto}</b><br>
+        <span class="small text-muted">Aprox. ${Math.round(menorDist)} km da rota</span>
+      `);
+
+      markersPostosLeaflet.push(marker);
+
+      if (menorDist <= 200) {
+        postosSugeridosUltimaRota.push({
+          posto: p.posto,
+          cidade: `${p.municipio}/${p.uf}`,
+          preco: p.preco,
+          distancia: Math.round(menorDist),
+          tipo: p.tipo
+        });
+      }
+    }
+  });
+
+  postosSugeridosUltimaRota.sort((a, b) => a.preco - b.preco);
+}
+
+/**
+ * Prepara e aciona a impressão do roteiro gerado para a viagem.
+ */
+function imprimirRoteiroViagem() {
+  if (postosSugeridosUltimaRota.length === 0) {
+    alert("Trace uma rota primeiro para mapear os postos antes de imprimir.");
+    return;
+  }
+
+  const container = document.getElementById('conteudoRoteiroImpresso');
+  const area = document.getElementById('areaImpressaoRoteiro');
+  if (!container || !area) return;
+
+  let htmlTabela = `
+    <table class="table table-sm table-bordered mt-2 small">
+      <thead class="table-dark">
+        <tr>
+          <th>Posto / Bandeira</th>
+          <th>Cidade / UF</th>
+          <th>Preço Base Registrado</th>
+          <th>Desvio da Rota</th>
+          <th>Operação</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  postosSugeridosUltimaRota.forEach(p => {
+    htmlTabela += `
+      <tr>
+        <td><b>${p.posto}</b></td>
+        <td>${p.cidade}</td>
+        <td class="text-success fw-bold">R$ ${p.preco.toFixed(3)}</td>
+        <td>${p.distancia} km</td>
+        <td>${p.tipo}</td>
+      </tr>
+    `;
+  });
+
+  htmlTabela += `</tbody></table>`;
+  container.innerHTML = htmlTabela;
+  area.style.display = "block";
+  window.print();
+}
