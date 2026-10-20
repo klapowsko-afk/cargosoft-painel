@@ -246,7 +246,7 @@
       stroke-width: 2.5;
     }
 
-    /* TOOLTIP DO MAPA */
+    /* TOOLTIP DO MAPA SVG */
     #mapTooltip {
       position: absolute;
       display: none;
@@ -327,7 +327,7 @@
             </div>
           </div>
 
-          <!-- SEGUNDA LINHA DE CONTROLES: FILTRO DE POSTO ESPECÍFICO E BUSCA -->
+          <!-- SEGUNDA LINHA DE CONTROLES: FILTRO DE POSTO E BUSCA -->
           <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pt-2 border-top">
             <div class="d-flex flex-wrap align-items-center gap-2">
               <div class="d-flex align-items-center gap-1">
@@ -433,7 +433,7 @@
       </div>
     </div>
 
-    <!-- SEÇÃO 2: ROTEIRIZADOR LEAFLET.JS (INICIALMENTE OCULTO) -->
+    <!-- SEÇÃO 2: ROTEIRIZADOR LEAFLET.JS COM AUTOCOMPLETAR -->
     <div id="secaoRoteirizador" class="panel-box">
       <div class="panel-header">
         <div>
@@ -444,18 +444,36 @@
       </div>
       <div class="p-3">
         <div class="row g-3">
+          
+          <!-- COLUNA ESQUERDA: CAMPOS COM AUTOCOMPLETE REAL -->
           <div class="col-12 col-md-4">
-            <div class="card p-3 border-0 bg-light">
+            <div class="card p-3 border-0 bg-light position-relative">
+              
+              <!-- ORIGEM -->
               <label class="small fw-bold text-dark mb-1">1. Cidade de Origem:</label>
-              <input type="text" id="rotaOrigem" class="form-control form-control-sm mb-2" value="Colombo, PR">
+              <div class="position-relative mb-2">
+                <input type="text" id="rotaOrigem" class="form-control form-control-sm" value="Colombo, PR" autocomplete="off" oninput="buscarSugestoesCidades(this, 'sugestoesOrigem', 'coordOrigem')">
+                <input type="hidden" id="coordOrigem" value="-25.2917,-49.2242">
+                <div id="sugestoesOrigem" class="list-group position-absolute w-100 shadow-sm" style="z-index: 1050; display: none; max-height: 180px; overflow-y: auto;"></div>
+              </div>
 
+              <!-- PARADA INTERMEDIÁRIA -->
               <label class="small fw-bold text-dark mb-1">2. Parada Intermediária (Opcional):</label>
-              <input type="text" id="rotaVia" class="form-control form-control-sm mb-2" placeholder="Ex: Betim, MG">
+              <div class="position-relative mb-2">
+                <input type="text" id="rotaVia" class="form-control form-control-sm" placeholder="Ex: Araucária, PR ou Betim, MG" autocomplete="off" oninput="buscarSugestoesCidades(this, 'sugestoesVia', 'coordVia')">
+                <input type="hidden" id="coordVia" value="">
+                <div id="sugestoesVia" class="list-group position-absolute w-100 shadow-sm" style="z-index: 1050; display: none; max-height: 180px; overflow-y: auto;"></div>
+              </div>
 
+              <!-- DESTINO -->
               <label class="small fw-bold text-dark mb-1">3. Cidade de Destino:</label>
-              <input type="text" id="rotaDestino" class="form-control form-control-sm mb-3" value="Goiânia, GO">
+              <div class="position-relative mb-3">
+                <input type="text" id="rotaDestino" class="form-control form-control-sm" value="Primavera do Leste, MT" autocomplete="off" oninput="buscarSugestoesCidades(this, 'sugestoesDestino', 'coordDestino')">
+                <input type="hidden" id="coordDestino" value="-15.5583,-54.2986">
+                <div id="sugestoesDestino" class="list-group position-absolute w-100 shadow-sm" style="z-index: 1050; display: none; max-height: 180px; overflow-y: auto;"></div>
+              </div>
 
-              <button class="btn btn-sm btn-success fw-bold w-100 py-2" onclick="calcularRotaLeaflet()">
+              <button class="btn btn-sm btn-success fw-bold w-100 py-2 shadow-sm" onclick="calcularRotaLeaflet()">
                 <i class="bi bi-signpost-2-fill me-1"></i> Traçar Rota & Mapear Postos
               </button>
 
@@ -467,6 +485,8 @@
               </div>
             </div>
           </div>
+
+          <!-- COLUNA DIREITA: MAPA LEAFLET -->
           <div class="col-12 col-md-8">
             <div id="mapLeaflet"></div>
           </div>
@@ -496,29 +516,7 @@
     let postoFiltrado = "";
     let leafletMapInstance = null;
     let routingControlInstance = null;
-
-    // Coordenadas aproximadas dos municípios frequentes para plotagem de rota no Leaflet
-    const coordenadasCidades = {
-      "COLOMBO": [-25.2917, -49.2242],
-      "CURITIBA": [-25.4284, -49.2733],
-      "BARUERI": [-23.5113, -46.8765],
-      "SAO PAULO": [-23.5505, -46.6333],
-      "RIBEIRAO PRETO": [-21.1767, -47.8208],
-      "BETIM": [-19.9678, -44.1983],
-      "BELO HORIZONTE": [-19.9167, -43.9345],
-      "FRUTAL": [-20.0247, -48.9406],
-      "ARAPORA": [-18.1436, -49.1828],
-      "CENTRALINA": [-18.5836, -49.4994],
-      "CAMPOS ALTOS": [-19.6961, -46.1728],
-      "MONTE CARMELO": [-18.7275, -47.4981],
-      "DELTA": [-19.9753, -47.7711],
-      "APARECIDA DE GOIANIA": [-16.8228, -49.2481],
-      "GOIANIA": [-16.6869, -49.2648],
-      "EUSEBIO": [-3.8906, -38.4597],
-      "FORTALEZA": [-3.7172, -38.5433],
-      "SIMOES FILHO": [-12.7878, -38.4028],
-      "SALVADOR": [-12.9777, -38.5016]
-    };
+    let debounceTimerGeo = null;
 
     // Histórico de Distribuição ANP 2026 oficial (Tanques Internos)
     const anpDistribuicao = {
@@ -602,7 +600,7 @@
         selectMes.appendChild(opt);
       });
 
-      // Popular Seletor Suspenso de Postos
+      // Popular Seletor de Postos
       const postosUnicos = [...new Set(baseRegistrosMensais.map(d => d.POSTO).filter(Boolean))].sort();
       const selectPosto = document.getElementById('filtroPosto');
       selectPosto.innerHTML = '<option value="">Todos os Postos Cadastrados</option>';
@@ -786,7 +784,6 @@
           }
         }
 
-        // Referência ANP do período
         const tabelaReferencia = (p.TIPO_OPERACAO === 'INTERNO') ? anpDistribuicao : anpRevenda;
         const anpUf = tabelaReferencia[p.UF_POSTO] || tabelaReferencia["PR"];
         const mesRefAnp = (mesSel === 'YTD') ? p.MES_MAIS_RECENTE : mesSel;
@@ -805,10 +802,8 @@
         };
       });
 
-      // Ordenar por maior volume (zerados são omitidos automaticamente)
       listaPostos.sort((a, b) => b.LITROS_TOTAL - a.LITROS_TOTAL);
 
-      // Atualizar Cards
       let precoMedioCard = 0;
       if (mesSel === 'YTD') {
         const regsMesRecente = registros.filter(d => d.MES_ANO === mesMaisRecenteGeral);
@@ -852,7 +847,6 @@
           ? `<span class="badge-tipo tipo-interno">GARAGEM</span>`
           : `<span class="badge-tipo tipo-rota">ROTA</span>`;
 
-        // Regra Estrita: Preço Subiu = Vermelho (Alerta) | Preço Caiu = Verde (Economia)
         let variacaoHtml = `<span class="text-muted small">Estável</span>`;
         if (p.VARIACAO_MES_ANT !== null) {
           const diff = p.VARIACAO_MES_ANT;
@@ -863,7 +857,6 @@
           }
         }
 
-        // GAP contra ANP
         let gapHtml = `<span class="text-muted small">--</span>`;
         if (p.REF_ANP > 0) {
           const sinal = p.GAP_MERCADO >= 0 ? "+" : "-";
@@ -874,7 +867,6 @@
         const card = document.createElement('div');
         card.className = "card-posto-termometro";
         card.innerHTML = `
-          <!-- GRÁFICO DE FUNDO (AZUL PARA INTERNO / AMARELINHO PARA EXTERNO) -->
           <div id="${chartDomId}" class="chart-background-container"></div>
 
           <div class="posto-foreground d-flex flex-wrap align-items-center justify-content-between gap-3">
@@ -934,7 +926,6 @@
 
         container.appendChild(card);
 
-        // Prepara dados de série para o gráfico ao fundo
         const dadosKmmMes = [];
         const dadosAnpMes = [];
 
@@ -948,7 +939,6 @@
           dadosAnpMes.push(anpUf[m] || null);
         });
 
-        // Configuração de cores: Azul para Interno, Amarelinho para Externo
         const seriesColors = ehInterno ? ['#2563eb', '#0d9488'] : ['#d97706', '#f59e0b'];
 
         const optionsSpark = {
@@ -977,7 +967,7 @@
       });
     }
 
-    /* MAPA SVG DO BRASIL INTERATIVO */
+    /* MAPA SVG DO BRASIL */
     const estadosSvg = [
       { uf: "PR", d: "M 270 340 L 310 340 L 305 365 L 265 360 Z" },
       { uf: "SP", d: "M 285 305 L 340 300 L 330 335 L 275 335 Z" },
@@ -1097,10 +1087,66 @@
       document.getElementById('mapTooltip').style.display = "none";
     }
 
-    /* MÓDULO ROTEIRIZADOR LEAFLET */
+    /* MÓDULO ROTEIRIZADOR LEAFLET COM AUTOCOMPLETAR */
+    function buscarSugestoesCidades(inputEl, listaId, hiddenCoordId) {
+      clearTimeout(debounceTimerGeo);
+      const termo = inputEl.value.trim();
+      const listaEl = document.getElementById(listaId);
+
+      if (termo.length < 3) {
+        listaEl.style.display = "none";
+        listaEl.innerHTML = "";
+        return;
+      }
+
+      debounceTimerGeo = setTimeout(async () => {
+        try {
+          const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=br&limit=5&q=${encodeURIComponent(termo)}`;
+          const res = await fetch(url, { headers: { 'Accept-Language': 'pt-BR' } });
+          const cidades = await res.json();
+
+          listaEl.innerHTML = "";
+          if (!cidades || cidades.length === 0) {
+            listaEl.style.display = "none";
+            return;
+          }
+
+          cidades.forEach(item => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "list-group-item list-group-item-action small py-2";
+            btn.style.fontSize = "0.75rem";
+            btn.innerText = item.display_name;
+
+            btn.onclick = () => {
+              inputEl.value = item.display_name.split(',').slice(0, 3).join(', ');
+              document.getElementById(hiddenCoordId).value = `${item.lat},${item.lon}`;
+              listaEl.style.display = "none";
+              listaEl.innerHTML = "";
+            };
+
+            listaEl.appendChild(btn);
+          });
+
+          listaEl.style.display = "block";
+        } catch (e) {
+          console.warn("Erro ao buscar cidades:", e);
+        }
+      }, 350);
+    }
+
+    document.addEventListener("click", (e) => {
+      ['sugestoesOrigem', 'sugestoesVia', 'sugestoesDestino'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && !el.contains(e.target)) {
+          el.style.display = "none";
+        }
+      });
+    });
+
     function inicializarMapaLeaflet() {
       if (!leafletMapInstance) {
-        leafletMapInstance = L.map('mapLeaflet').setView([-23.5505, -46.6333], 6);
+        leafletMapInstance = L.map('mapLeaflet').setView([-23.5505, -46.6333], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; OpenStreetMap'
         }).addTo(leafletMapInstance);
@@ -1108,25 +1154,49 @@
       setTimeout(() => {
         leafletMapInstance.invalidateSize();
         calcularRotaLeaflet();
-      }, 200);
+      }, 250);
     }
 
-    function calcularRotaLeaflet() {
+    async function obterCoordenadasTexto(texto) {
+      if (!texto) return null;
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=br&limit=1&q=${encodeURIComponent(texto)}`;
+        const res = await fetch(url, { headers: { 'Accept-Language': 'pt-BR' } });
+        const data = await res.json();
+        if (data && data.length > 0) {
+          return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    async function calcularRotaLeaflet() {
       if (!leafletMapInstance) return;
 
-      const origemTexto = document.getElementById('rotaOrigem').value.toUpperCase();
-      const destinoTexto = document.getElementById('rotaDestino').value.toUpperCase();
-      const viaTexto = document.getElementById('rotaVia').value.toUpperCase();
+      const origemTexto = document.getElementById('rotaOrigem').value.trim();
+      const destinoTexto = document.getElementById('rotaDestino').value.trim();
+      const viaTexto = document.getElementById('rotaVia').value.trim();
 
-      const coordOrigem = coordenadasCidades["COLOMBO"];
-      const coordDestino = coordenadasCidades["GOIANIA"];
-      const waypoints = [L.latLng(coordOrigem[0], coordOrigem[1])];
+      let coordOrigem = document.getElementById('coordOrigem').value;
+      let coordDestino = document.getElementById('coordDestino').value;
+      let coordVia = document.getElementById('coordVia').value;
 
-      if (viaTexto.includes("BETIM") || viaTexto.includes("MG")) {
-        waypoints.push(L.latLng(coordenadasCidades["BETIM"][0], coordenadasCidades["BETIM"][1]));
+      let latLngOrigem = coordOrigem ? coordOrigem.split(',').map(Number) : await obterCoordenadasTexto(origemTexto);
+      let latLngDestino = coordDestino ? coordDestino.split(',').map(Number) : await obterCoordenadasTexto(destinoTexto);
+      let latLngVia = coordVia ? coordVia.split(',').map(Number) : (viaTexto ? await obterCoordenadasTexto(viaTexto) : null);
+
+      if (!latLngOrigem || !latLngDestino) {
+        alert("Não foi possível localizar a Origem ou o Destino digitado. Por favor, clique na sugestão de cidade.");
+        return;
       }
 
-      waypoints.push(L.latLng(coordDestino[0], coordDestino[1]));
+      const waypoints = [L.latLng(latLngOrigem[0], latLngOrigem[1])];
+
+      if (latLngVia) {
+        waypoints.push(L.latLng(latLngVia[0], latLngVia[1]));
+      }
+
+      waypoints.push(L.latLng(latLngDestino[0], latLngDestino[1]));
 
       if (routingControlInstance) {
         leafletMapInstance.removeControl(routingControlInstance);
@@ -1142,12 +1212,11 @@
         }
       }).addTo(leafletMapInstance);
 
-      // Plotar alfinetes dos postos cadastrados da Cargosoft no Leaflet
       plotarPostosCadastradosNoMapa();
     }
 
-    function plotarPostosCadastradosNoMapa() {
-      // Coleta municípios únicos dos postos
+    async function plotarPostosCadastradosNoMapa() {
+      // Coleta municípios dos postos cadastrados
       const postos = [...new Set(baseRegistrosMensais.map(d => ({
         posto: d.POSTO,
         municipio: (d.MUNICIPIO_POSTO || '').toUpperCase(),
@@ -1156,11 +1225,13 @@
         tipo: d.TIPO_OPERACAO
       })))];
 
-      postos.forEach(p => {
-        const coord = coordenadasCidades[p.municipio];
-        if (coord) {
-          const corPin = p.preco < 6.50 ? "#16a34a" : (p.preco < 6.80 ? "#eab308" : "#dc2626");
-          const marker = L.circleMarker(coord, {
+      // Geocodificação rápida para as cidades dos postos cadastrados
+      for (const p of postos.slice(0, 25)) {
+        if (!p.municipio || p.municipio === 'ND') continue;
+        const coords = await obterCoordenadasTexto(`${p.municipio}, ${p.uf}, Brasil`);
+        if (coords) {
+          const corPin = p.preco < 6.40 ? "#16a34a" : (p.preco < 6.75 ? "#eab308" : "#dc2626");
+          const marker = L.circleMarker(coords, {
             radius: 8,
             fillColor: corPin,
             color: "#ffffff",
@@ -1170,13 +1241,13 @@
           }).addTo(leafletMapInstance);
 
           marker.bindPopup(`
-            <strong>${p.posto}</strong><br>
+            <strong style="color:#1c483a;">${p.posto}</strong><br>
             Cidade: ${p.municipio}/${p.uf}<br>
             Último Preço: <b>R$ ${p.preco.toFixed(3)}</b><br>
             Tipo: ${p.tipo}
           `);
         }
-      });
+      }
     }
 
     function filtrarTabelaTexto() {
