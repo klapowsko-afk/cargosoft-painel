@@ -14,6 +14,7 @@ URL_DISTRIBUICAO_ESTADOS = "https://www.gov.br/anp/pt-br/assuntos/precos-e-defes
 URLS_ANTT_BUSCA = [
     "https://www.gov.br/antt/pt-br/assuntos/noticias-defeso-eleitoral/antt-atualiza-coeficientes-do-piso-minimo-do-frete-e-divulga-novo-preco-de-referencia-do-diesel",
     "https://www.gov.br/antt/pt-br/assuntos/noticias-defeso-eleitoral"
+    "https://sindipesa.org.br/"
 ]
 
 MAPA_ESTADOS = {
