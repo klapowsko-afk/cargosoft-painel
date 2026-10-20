@@ -14,8 +14,9 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
-  <!-- MOTOR EXTERNO DE CIDADES EXPANDIDO -->
+  <!-- MÓDULOS EXTERNOS DE DADOS E INTELIGÊNCIA -->
   <script src="cidades.js"></script>
+  <script src="matrizes.js"></script>
 
   <style>
     :root {
@@ -150,14 +151,25 @@
       right: 0;
       bottom: 0;
       z-index: 1;
-      opacity: 0.22;
+      opacity: 0.28;
       pointer-events: none;
     }
 
     .posto-foreground {
       position: relative;
       z-index: 2;
-      padding: 12px 16px;
+      padding: 10px 14px;
+    }
+
+    /* CARD TRANSLÚCIDO COM BLUR PARA OS VALORES NUMÉRICOS */
+    .valores-box-blur {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 8px;
+      padding: 6px 14px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
     }
 
     .clickable-posto {
@@ -198,7 +210,7 @@
     }
     .btn-sync:hover { background: var(--cargosoft-green-hover); color: #ffffff; }
 
-    .btn-tratar {
+    .btn-tratativa {
       display: inline-flex;
       align-items: center;
       gap: 5px;
@@ -207,11 +219,11 @@
       color: var(--cargosoft-green);
       font-size: 0.75rem;
       font-weight: 700;
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: 6px;
       white-space: nowrap;
     }
-    .btn-tratar:hover { background: var(--cargosoft-green); color: #ffffff; }
+    .btn-tratativa:hover { background: var(--cargosoft-green); color: #ffffff; }
 
     .legend-indicator {
       display: inline-block;
@@ -263,20 +275,21 @@
     }
 
     /* TELA ROTEIRIZADOR LEAFLET */
-    #secaoRoteirizador {
+    #secaoRoteirizador, #secaoMatrizesGerenciais {
       display: none;
     }
     #mapLeaflet {
-      height: 560px;
+      height: 580px;
       width: 100%;
       border-radius: 8px;
       z-index: 5;
     }
+    
+    /* ESCONDE A CAIXINHA EM INGLÊS DO OSRM */
     .leaflet-routing-container {
-      font-size: 0.75rem !important;
-      max-height: 250px;
-      overflow-y: auto;
+      display: none !important;
     }
+
     .autocomplete-list {
       z-index: 1060;
       position: absolute;
@@ -294,6 +307,14 @@
     .input-cidade-rota.foco-ativo {
       border-color: #16a34a !important;
       box-shadow: 0 0 0 0.2rem rgba(22, 163, 74, 0.25) !important;
+    }
+
+    /* ESTILO DE IMPRESSÃO */
+    @media print {
+      body { background: #ffffff !important; padding: 0 !important; }
+      .header-bar, .control-bar, .map-container, #secaoPainelPrincipal, #secaoMatrizesGerenciais, #btnSincronizar { display: none !important; }
+      #secaoRoteirizador { display: block !important; border: none !important; }
+      #areaImpressaoRoteiro { display: block !important; }
     }
   </style>
 </head>
@@ -330,8 +351,8 @@
               </select>
             </div>
 
-            <!-- BOTÕES DE SELEÇÃO DE MODO -->
-            <div class="d-flex align-items-center gap-2">
+            <!-- BOTÕES DE SELEÇÃO DE MODO (AGORA COM MATRIZES GERENCIAIS) -->
+            <div class="d-flex flex-wrap align-items-center gap-2">
               <button class="btn-toggle-tipo active" id="btnModoGeral" onclick="alternarModoOperacao('TODOS')">
                 <i class="bi bi-pie-chart-fill me-1"></i> Consolidado Geral
               </button>
@@ -344,16 +365,34 @@
               <button class="btn-toggle-tipo" id="btnModoRota" onclick="alternarModoOperacao('ROTEIRIZADOR')">
                 <i class="bi bi-map-fill me-1"></i> Roteirizador
               </button>
+              <button class="btn-toggle-tipo" id="btnModoMatrizes" onclick="alternarModoOperacao('MATRIZES')">
+                <i class="bi bi-table me-1"></i> Matrizes Gerenciais
+              </button>
             </div>
           </div>
 
-          <!-- SEGUNDA LINHA DE CONTROLES: FILTRO DE POSTO E BUSCA -->
+          <!-- SEGUNDA LINHA: FILTRO DE REDE, POSTO E BUSCA -->
           <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pt-2 border-top">
             <div class="d-flex flex-wrap align-items-center gap-2">
+              
+              <!-- FILTRO POR REDE DE POSTOS (MARAJO, HG, ETC) -->
               <div class="d-flex align-items-center gap-1">
-                <label class="small fw-bold text-muted text-uppercase">Posto / Unidade:</label>
-                <select id="filtroPosto" class="form-select form-select-sm" style="width: 260px;" onchange="aplicarFiltroPostoSelect()">
-                  <option value="">Todos os Postos Cadastrados</option>
+                <label class="small fw-bold text-muted text-uppercase">Rede:</label>
+                <select id="filtroRede" class="form-select form-select-sm" style="width: 170px;" onchange="aplicarFiltroRede()">
+                  <option value="">Todas as Redes</option>
+                  <option value="MARAJO">Rede Marajó</option>
+                  <option value="HG">Rede HG</option>
+                  <option value="SIM">Rede SIM</option>
+                  <option value="GRAAL">Rede Graal</option>
+                  <option value="OUTROS">Outros / Avulsos</option>
+                </select>
+              </div>
+
+              <!-- FILTRO POR POSTO ESPECÍFICO -->
+              <div class="d-flex align-items-center gap-1">
+                <label class="small fw-bold text-muted text-uppercase">Posto:</label>
+                <select id="filtroPosto" class="form-select form-select-sm" style="width: 210px;" onchange="aplicarFiltroPostoSelect()">
+                  <option value="">Todos os Postos</option>
                 </select>
               </div>
 
@@ -368,10 +407,10 @@
               </span>
             </div>
 
-            <div style="min-width: 220px; max-width: 320px; flex-grow: 1;">
+            <div style="min-width: 200px; max-width: 280px; flex-grow: 1;">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Buscar filial, posto, cidade..." oninput="filtrarTabelaTexto()">
+                <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Buscar posto ou cidade..." oninput="filtrarTabelaTexto()">
               </div>
             </div>
           </div>
@@ -438,8 +477,9 @@
         </div>
         <div class="d-flex align-items-center gap-3">
           <span class="small text-muted font-monospace" id="lblLegendaGrafico">
-            <span class="legend-indicator" style="background:#2563eb;"></span>Custo Interno KMM
-            <span class="legend-indicator" style="background:#0d9488; margin-left: 8px;"></span>Referência ANP Distribuição
+            <span class="legend-indicator" style="background:#059669;"></span>Referência Oficial ANP
+            <span class="legend-indicator" style="background:#2563eb; margin-left: 8px;"></span>Custo Garagem KMM
+            <span class="legend-indicator" style="background:#c2410c; margin-left: 8px;"></span>Bomba Rota KMM
           </span>
           <span class="badge bg-white text-dark border px-3 py-1 rounded-pill font-monospace" id="lblListando">Carregando...</span>
         </div>
@@ -453,24 +493,27 @@
       </div>
     </div>
 
-    <!-- SEÇÃO 2: ROTEIRIZADOR LEAFLET.JS COM BASE CIDADES EXTERNA -->
+    <!-- SEÇÃO 2: ROTEIRIZADOR LEAFLET (COM DUPLO RAIO 200KM / 600KM E IMPRESSÃO) -->
     <div id="secaoRoteirizador" class="panel-box">
       <div class="panel-header">
         <div>
           <strong class="text-dark"><i class="bi bi-map-fill me-1 text-primary"></i> Planejador & Roteirizador de Abastecimento</strong>
-          <div class="small text-muted">Digite a cidade ou clique no campo e aponte direto no mapa para marcar origem e destino</div>
+          <div class="small text-muted">Trace a rota da viagem, filtre os postos no corredor logístico e gere o roteiro para o motorista</div>
         </div>
-        <span class="badge bg-primary text-white px-3 py-1 rounded-pill font-monospace">Motor OSRM &bull; Leaflet</span>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-outline-primary fw-bold" onclick="imprimirRoteiroViagem()">
+            <i class="bi bi-printer me-1"></i> Imprimir Roteiro de Abastecimento
+          </button>
+        </div>
       </div>
       <div class="p-3">
         <div class="row g-3">
           
-          <!-- COLUNA ESQUERDA: PONTOS DE ROTA -->
           <div class="col-12 col-md-4">
             <div class="card p-3 border-0 bg-light position-relative">
               
               <div class="alert alert-info py-2 px-3 small mb-3">
-                <i class="bi bi-info-circle me-1"></i> <strong>Como usar:</strong> Digite a cidade (busca instantânea) ou clique no campo desejado e depois <strong>clique direto no mapa</strong>.
+                <i class="bi bi-info-circle me-1"></i> Digite a cidade (busca instantânea) ou clique no campo e <strong>clique direto no mapa</strong>.
               </div>
 
               <div id="containerPontosRota">
@@ -495,7 +538,6 @@
                 </div>
               </div>
 
-              <!-- BOTÃO ADICIONAR PARADA (ATÉ 5) -->
               <div class="mb-3">
                 <button type="button" id="btnAdicionarParada" class="btn btn-outline-dark btn-sm w-100 fw-semibold" onclick="adicionarCampoParada()">
                   <i class="bi bi-plus-circle me-1"></i> Adicionar Parada Intermediária
@@ -507,20 +549,31 @@
               </button>
 
               <div class="pt-2 border-top small text-muted">
-                <span class="fw-bold d-block text-dark mb-1">Postos Filtrados (Raio de até 200 km da Rota):</span>
-                <div><span class="legend-indicator" style="background:#16a34a;"></span>Posto Recomendado (Menor Preço)</div>
-                <div><span class="legend-indicator" style="background:#eab308;"></span>Preço de Mercado Aceitável</div>
-                <div><span class="legend-indicator" style="background:#dc2626;"></span>Alerta de Custo Elevado</div>
+                <span class="fw-bold d-block text-dark mb-1">Legenda dos Postos no Mapa:</span>
+                <div><span class="legend-indicator" style="background:#16a34a;"></span>Corredor Direto (Menor Preço - até 200 km)</div>
+                <div><span class="legend-indicator" style="background:#eab308;"></span>Corredor Direto (Preço Aceitável - até 200 km)</div>
+                <div><span class="legend-indicator" style="background:#dc2626;"></span>Corredor Direto (Alerta de Preço Alto - até 200 km)</div>
+                <div><span class="legend-indicator" style="background:#94a3b8;"></span>Raio Expandido / Apoio (201 km a 600 km)</div>
               </div>
             </div>
           </div>
 
-          <!-- COLUNA DIREITA: MAPA LEAFLET -->
           <div class="col-12 col-md-8">
             <div id="mapLeaflet"></div>
+            
+            <!-- ÁREA DE RESUMO PARA IMPRESSÃO -->
+            <div id="areaImpressaoRoteiro" class="mt-3 p-3 bg-white border rounded" style="display: none;">
+              <h6 class="fw-bold text-dark border-bottom pb-2">📋 Roteiro Oficial de Abastecimento Sugerido - Cargosoft</h6>
+              <div id="conteudoRoteiroImpresso"></div>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- SEÇÃO 3: MATRIZES GERENCIAIS & SPREADS (CARREGADAS VIA MATRIZES.JS) -->
+    <div id="secaoMatrizesGerenciais" class="panel-box p-3">
+      <!-- O conteúdo é injetado dinamicamente pela função renderizarAbaMatrizes() -->
     </div>
 
     <!-- RODAPÉ -->
@@ -543,13 +596,14 @@
     let modoAtual = "TODOS";
     let ufFiltrada = "";
     let postoFiltrado = "";
+    let redeFiltrada = "";
     let leafletMapInstance = null;
     let routingControlInstance = null;
     let markersPostosLeaflet = [];
     let markersWaypoints = [];
     let campoFocoAtivo = null;
+    let postosSugeridosUltimaRota = [];
 
-    // Garantia de fallback caso o cidades.js demore a responder
     const listaCidades = (typeof baseCidadesBrasil !== 'undefined' && Array.isArray(baseCidadesBrasil)) ? baseCidadesBrasil : [];
 
     const anpDistribuicao = {
@@ -638,7 +692,7 @@
 
       const postosUnicos = [...new Set(baseRegistrosMensais.map(d => d.POSTO).filter(Boolean))].sort();
       const selectPosto = document.getElementById('filtroPosto');
-      selectPosto.innerHTML = '<option value="">Todos os Postos Cadastrados</option>';
+      selectPosto.innerHTML = '<option value="">Todos os Postos</option>';
       postosUnicos.forEach(p => {
         const opt = document.createElement('option');
         opt.value = p;
@@ -655,14 +709,22 @@
       if (modo === 'INTERNO') document.getElementById('btnModoInterno').classList.add('active');
       if (modo === 'EXTERNO') document.getElementById('btnModoExterno').classList.add('active');
       if (modo === 'ROTEIRIZADOR') document.getElementById('btnModoRota').classList.add('active');
+      if (modo === 'MATRIZES') document.getElementById('btnModoMatrizes').classList.add('active');
+
+      document.getElementById('secaoPainelPrincipal').style.display = 'none';
+      document.getElementById('secaoRoteirizador').style.display = 'none';
+      document.getElementById('secaoMatrizesGerenciais').style.display = 'none';
 
       if (modo === 'ROTEIRIZADOR') {
-        document.getElementById('secaoPainelPrincipal').style.display = 'none';
         document.getElementById('secaoRoteirizador').style.display = 'block';
         inicializarMapaLeaflet();
+      } else if (modo === 'MATRIZES') {
+        document.getElementById('secaoMatrizesGerenciais').style.display = 'block';
+        if (typeof renderizarAbaMatrizes === 'function') {
+          renderizarAbaMatrizes();
+        }
       } else {
         document.getElementById('secaoPainelPrincipal').style.display = 'block';
-        document.getElementById('secaoRoteirizador').style.display = 'none';
         atualizarTextosHeaderPainel();
         processarPainel();
       }
@@ -674,14 +736,19 @@
       
       if (modoAtual === 'INTERNO') {
         lblTitulo.innerHTML = `<i class="bi bi-fuel-pump-fill me-1 text-success"></i> Termômetro de Garagens & Tanques Próprios`;
-        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#2563eb;"></span>Custo Interno KMM <span class="legend-indicator" style="background:#0d9488; margin-left:8px;"></span>ANP Distribuição`;
+        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#059669;"></span>Ref. ANP Distribuição <span class="legend-indicator" style="background:#2563eb; margin-left:8px;"></span>Custo Interno KMM`;
       } else if (modoAtual === 'EXTERNO') {
         lblTitulo.innerHTML = `<i class="bi bi-truck me-1 text-danger"></i> Painel de Negociação de Rota Rodoviária`;
-        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#c2410c;"></span>Preço Bomba KMM <span class="legend-indicator" style="background:#059669; margin-left:8px;"></span>ANP Revenda`;
+        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#059669;"></span>Ref. ANP Revenda <span class="legend-indicator" style="background:#c2410c; margin-left:8px;"></span>Preço Bomba KMM`;
       } else {
         lblTitulo.innerHTML = `<i class="bi bi-speedometer2 me-1 text-success"></i> Painel Consolidado &bull; Visão Integrada da Frota`;
-        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#2563eb;"></span>Custo Interno KMM <span class="legend-indicator" style="background:#c2410c; margin-left:8px;"></span>Rota Externa`;
+        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#059669;"></span>Referência ANP <span class="legend-indicator" style="background:#2563eb; margin-left:8px;"></span>Garagem <span class="legend-indicator" style="background:#c2410c; margin-left:8px;"></span>Rota`;
       }
+    }
+
+    function aplicarFiltroRede() {
+      redeFiltrada = document.getElementById('filtroRede').value;
+      processarPainel();
     }
 
     function filtrarPorPostoClique(nomePosto) {
@@ -726,7 +793,17 @@
       if (postoFiltrado) {
         registros = registros.filter(d => d.POSTO === postoFiltrado);
       }
-      if (modoAtual !== 'TODOS') {
+      if (redeFiltrada) {
+        if (redeFiltrada === 'OUTROS') {
+          registros = registros.filter(d => {
+            const p = (d.POSTO || '').toUpperCase();
+            return !p.includes('MARAJO') && !p.startsWith('HG ') && !p.includes('SIM ') && !p.includes('GRAAL');
+          });
+        } else {
+          registros = registros.filter(d => (d.POSTO || '').toUpperCase().includes(redeFiltrada));
+        }
+      }
+      if (modoAtual !== 'TODOS' && modoAtual !== 'ROTEIRIZADOR' && modoAtual !== 'MATRIZES') {
         registros = registros.filter(d => d.TIPO_OPERACAO === modoAtual);
       }
 
@@ -902,7 +979,7 @@
         const card = document.createElement('div');
         card.className = "card-posto-termometro";
         card.innerHTML = `
-          <!-- GRÁFICO DE CONTRASTE AO FUNDO -->
+          <!-- GRÁFICO AO FUNDO -->
           <div id="${chartDomId}" class="chart-background-container"></div>
 
           <div class="posto-foreground d-flex flex-wrap align-items-center justify-content-between gap-3">
@@ -916,7 +993,8 @@
               </div>
             </div>
 
-            <div class="d-flex align-items-center gap-4 text-end">
+            <!-- QUADRO TRANSLÚCIDO COM BLUR PARA OS VALORES NUMÉRICOS -->
+            <div class="valores-box-blur d-flex align-items-center gap-4 text-end">
               <div>
                 <div class="small text-muted text-uppercase" style="font-size: 0.65rem; font-weight: 800;">Volume</div>
                 <div class="font-monospace fw-bold fs-6">${Math.round(p.LITROS_TOTAL).toLocaleString('pt-BR')} L</div>
@@ -952,8 +1030,8 @@
               </div>
 
               <div>
-                <button class="btn-tratar" onclick="alert('Tratamento de negociação para: ${p.NOME_EXIBICAO}')">
-                  <i class="bi bi-pencil-square"></i> Tratar
+                <button class="btn-tratativa" onclick="alert('Registro de tratativa comercial para: ${p.NOME_EXIBICAO}')">
+                  <i class="bi bi-journal-check"></i> Tratativa
                 </button>
               </div>
             </div>
@@ -975,15 +1053,13 @@
           dadosAnpMes.push(anpUf[m] || null);
         });
 
-        // PALETA COM CONTRASTE: 
-        // Interno: Azul (#2563eb) vs Verde-Água (#0d9488)
-        // Externo: Laranja Cobre (#c2410c) vs Verde Esmeralda (#059669)
-        const seriesColors = ehInterno ? ['#2563eb', '#0d9488'] : ['#c2410c', '#059669'];
+        // ANP FIXO EM VERDE (#059669) | INTERNO AZUL (#2563eb) | EXTERNO LARANJA COBRE (#c2410c)
+        const seriesColors = ehInterno ? ['#2563eb', '#059669'] : ['#c2410c', '#059669'];
 
         const optionsSpark = {
           series: [
             { name: ehInterno ? "Custo Interno" : "Preço Bomba", data: dadosKmmMes },
-            { name: ehInterno ? "ANP Distribuição" : "ANP Revenda", data: dadosAnpMes }
+            { name: "Referência ANP", data: dadosAnpMes }
           ],
           chart: {
             type: 'area',
@@ -995,7 +1071,7 @@
           stroke: { curve: 'smooth', width: 2.2 },
           fill: {
             type: 'solid',
-            opacity: 0.25
+            opacity: 0.28
           },
           tooltip: { enabled: false }
         };
@@ -1126,7 +1202,7 @@
       document.getElementById('mapTooltip').style.display = "none";
     }
 
-    /* MÓDULO ROTEIRIZADOR LEAFLET (USANDO O CIDADES.JS) */
+    /* ROTEIRIZADOR LEAFLET */
     function normalizarTexto(txt) {
       return (txt || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
     }
@@ -1384,13 +1460,14 @@
 
       routingControlInstance.on('routesfound', function(e) {
         const routeCoords = e.routes[0].coordinates;
-        plotarPostosNoRaioDaRota(routeCoords, 200);
+        plotarPostosComDuploRaio(routeCoords);
       });
     }
 
-    function plotarPostosNoRaioDaRota(routeCoords, maxDistKm) {
+    function plotarPostosComDuploRaio(routeCoords) {
       markersPostosLeaflet.forEach(m => leafletMapInstance.removeLayer(m));
       markersPostosLeaflet = [];
+      postosSugeridosUltimaRota = [];
 
       const postos = [...new Set(baseRegistrosMensais.map(d => ({
         posto: d.POSTO,
@@ -1418,18 +1495,27 @@
         for (const pt of amostraRota) {
           const d = calcularDistanciaKm(achada.lat, achada.lon, pt.lat, pt.lng);
           if (d < menorDist) menorDist = d;
-          if (menorDist <= maxDistKm) break;
+          if (menorDist <= 200) break;
         }
 
-        if (menorDist <= maxDistKm) {
-          const corPin = p.preco < 6.40 ? "#16a34a" : (p.preco < 6.75 ? "#eab308" : "#dc2626");
+        // FAIXA 1 (ATÉ 200 KM): COLORIDO POR PREÇO
+        // FAIXA 2 (201 KM ATÉ 600 KM): CINZA NEUTRO
+        if (menorDist <= 600) {
+          let corPin = "#94a3b8"; // Cinza
+          let statusTexto = "Posto em Raio Expandido de Apoio";
+
+          if (menorDist <= 200) {
+            corPin = p.preco < 6.40 ? "#16a34a" : (p.preco < 6.75 ? "#eab308" : "#dc2626");
+            statusTexto = p.preco < 6.40 ? "Recomendado (Melhor Preço)" : (p.preco < 6.75 ? "Preço Aceitável" : "Alerta de Preço Alto");
+          }
+
           const marker = L.circleMarker([achada.lat, achada.lon], {
             radius: 8,
             fillColor: corPin,
             color: "#ffffff",
             weight: 2,
             opacity: 1,
-            fillOpacity: 0.9
+            fillOpacity: 0.95
           }).addTo(leafletMapInstance);
 
           marker.bindPopup(`
@@ -1437,12 +1523,67 @@
             Cidade: ${p.municipio}/${p.uf}<br>
             Último Preço: <b>R$ ${p.preco.toFixed(3)}</b><br>
             Tipo: ${p.tipo}<br>
+            Status: <b>${statusTexto}</b><br>
             <span class="small text-muted">Aprox. ${Math.round(menorDist)} km da rota</span>
           `);
 
           markersPostosLeaflet.push(marker);
+
+          if (menorDist <= 200) {
+            postosSugeridosUltimaRota.push({
+              posto: p.posto,
+              cidade: `${p.municipio}/${p.uf}`,
+              preco: p.preco,
+              distancia: Math.round(menorDist),
+              tipo: p.tipo
+            });
+          }
         }
       });
+
+      // Ordena postos sugeridos da rota por menor preço
+      postosSugeridosUltimaRota.sort((a, b) => a.preco - b.preco);
+    }
+
+    function imprimirRoteiroViagem() {
+      if (postosSugeridosUltimaRota.length === 0) {
+        alert("Trace uma rota primeiro para mapear os postos antes de imprimir.");
+        return;
+      }
+
+      const container = document.getElementById('conteudoRoteiroImpresso');
+      const area = document.getElementById('areaImpressaoRoteiro');
+      
+      let htmlTabela = `
+        <table class="table table-sm table-bordered mt-2 small">
+          <thead class="table-dark">
+            <tr>
+              <th>Posto / Bandeira</th>
+              <th>Cidade / UF</th>
+              <th>Preço Base Registrado</th>
+              <th>Desvio da Rota</th>
+              <th>Operação</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      postosSugeridosUltimaRota.forEach(p => {
+        htmlTabela += `
+          <tr>
+            <td><b>${p.posto}</b></td>
+            <td>${p.cidade}</td>
+            <td class="text-success fw-bold">R$ ${p.preco.toFixed(3)}</td>
+            <td>${p.distancia} km</td>
+            <td>${p.tipo}</td>
+          </tr>
+        `;
+      });
+
+      htmlTabela += `</tbody></table>`;
+      container.innerHTML = htmlTabela;
+      area.style.display = "block";
+      window.print();
     }
 
     function filtrarTabelaTexto() {
