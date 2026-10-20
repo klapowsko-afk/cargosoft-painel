@@ -14,6 +14,10 @@ URL_DISTRIBUICAO_ESTADOS = "https://www.gov.br/anp/pt-br/assuntos/precos-e-defes
 # Páginas de notícias da ANTT onde os comunicados de reajuste do piso e diesel são listados
 URLS_ANTT_LISTAGEM = [
     "https://www.gov.br/antt/pt-br/assuntos/noticias-defeso-eleitoral",
+    "https://www.gov.br/antt/pt-br/assuntos/noticias-defeso-eleitoral?b_start:int=30",
+    "https://www.gov.br/antt/pt-br/assuntos/noticias-defeso-eleitoral?b_start:int=60",
+    "https://www.gov.br/antt/pt-br/assuntos/noticias-defeso-eleitoral?b_start:int=90",
+    "https://www.gov.br/antt/pt-br/assuntos/noticias-defeso-eleitoral?b_start:int=120",
     "https://www.gov.br/antt/pt-br/assuntos/ultimas-noticias"
 ]
 
