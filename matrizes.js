@@ -24,7 +24,7 @@ function alternarPainelAuditoria() {
   if (painel.style.display === 'none' || painel.classList.contains('d-none')) {
     painel.style.display = 'block';
     painel.classList.remove('d-none');
-    btn.innerHTML = `<i class="bi bi-eye-slash-fill me-1"></i> Ocultar Tabelas de Auditoria Bruta`;
+    btn.innerHTML = `<i class="bi bi-eye-slash-fill me-1"></i> Ocultar Tabelas de Auditoria Bruta (4)`;
     btn.classList.replace('btn-outline-secondary', 'btn-secondary');
   } else {
     painel.style.display = 'none';
@@ -34,25 +34,66 @@ function alternarPainelAuditoria() {
   }
 }
 
-function imprimirRelatorioExecutivo() {
-  window.print();
+function emitirRelatorioMatrizes() {
+  const secao = document.getElementById('secaoMatrizesGerenciais');
+  if (!secao) return;
+
+  // Clona o conteúdo excluindo botões e o painel bruto retrátil se fechado
+  const conteudo = secao.cloneNode(true);
+  const botoes = conteudo.querySelectorAll('button, #btnToggleAuditoria, #btnEmitirRelatorio');
+  botoes.forEach(b => b.remove());
+
+  const janela = window.open('', '_blank', 'width=1100,height=850');
+  janela.document.write(`
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <title>Relatório Executivo - Matrizes Gerenciais de Combustível</title>
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+      <style>
+        @page { size: A4 landscape; margin: 10mm; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #fff; color: #1e293b; padding: 10px; }
+        .table { font-size: 0.68rem !important; }
+        .table th, .table td { padding: 4px 5px !important; }
+        .card { border: 1px solid #e2e8f0 !important; box-shadow: none !important; margin-bottom: 15px !important; }
+        .no-print { display: none !important; }
+      </style>
+    </head>
+    <body onload="window.print(); window.close();">
+      <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+        <div>
+          <h4 class="fw-bold mb-0 text-dark">Cargosoft - Relatório Executivo de Auditoria de Combustível</h4>
+          <span class="text-muted small">Confronto de Compras em Rota e Tanques Próprios vs. Indicadores Oficiais ANP</span>
+        </div>
+        <div class="text-end text-muted small">
+          Data de Emissão: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}<br>
+          Base Homologada KMM & ANP/ANTT
+        </div>
+      </div>
+      ${conteudo.innerHTML}
+    </body>
+    </html>
+  `);
+  janela.document.close();
 }
 
 function gerarInsightsInteligentes(analiseExterna, analiseInterna, analiseSpread) {
   const cards = [];
 
-  // 1. Melhor performance de compra em rota (Externo)
+  // 1. Melhor performance de compra em rota (Externo - Filtrado por Volume Significativo)
   if (analiseExterna.melhorUf) {
     cards.push(`
       <div class="col-12 col-md-4">
         <div class="border-start border-4 border-success bg-white p-3 rounded shadow-sm h-100">
           <div class="d-flex align-items-center mb-1">
             <i class="bi bi-trophy-fill text-success fs-5 me-2"></i>
-            <span class="fw-bold text-dark small">Maior Eficiência em Rota</span>
+            <span class="fw-bold text-dark small">Maior Eficiência em Rota (Volume Relevante)</span>
           </div>
           <p class="mb-0 text-muted" style="font-size: 0.78rem;">
-            O estado do <strong>${analiseExterna.melhorUf}</strong> registrou o melhor poder de compra acumulado com 
-            <strong class="text-success">${analiseExterna.melhorVar.toFixed(2).replace('.', ',')}%</strong> abaixo da média ANP Revenda.
+            O estado do <strong>${analiseExterna.melhorUf}</strong> lidera o poder de compra da frota com 
+            <strong class="text-success">${analiseExterna.melhorVar.toFixed(2).replace('.', ',')}%</strong> abaixo da ANP Revenda 
+            (${analiseExterna.melhorQtd.toLocaleString('pt-BR')} abastecimentos no período).
           </p>
         </div>
       </div>
@@ -69,8 +110,9 @@ function gerarInsightsInteligentes(analiseExterna, analiseInterna, analiseSpread
             <span class="fw-bold text-dark small">Atenção Prioritária: Ágio em Rota</span>
           </div>
           <p class="mb-0 text-muted" style="font-size: 0.78rem;">
-            A praça da <strong>${analiseExterna.piorUf}</strong> encerrou o acumulado pagando 
-            <strong class="text-danger">+${analiseExterna.piorVar.toFixed(2).replace('.', ',')}%</strong> acima da ANP. Foco imediato para renegociação de rede conveniada.
+            A praça da <strong>${analiseExterna.piorUf}</strong> encerrou o período acumulando 
+            <strong class="text-danger">+${analiseExterna.piorVar.toFixed(2).replace('.', ',')}%</strong> acima da ANP 
+            (${analiseExterna.piorQtd.toLocaleString('pt-BR')} abastecimentos). Ponto crítico para revisão imediata de acordos e postos homologados.
           </p>
         </div>
       </div>
@@ -84,7 +126,7 @@ function gerarInsightsInteligentes(analiseExterna, analiseInterna, analiseSpread
             <span class="fw-bold text-dark small">Controle de Rede Externa</span>
           </div>
           <p class="mb-0 text-muted" style="font-size: 0.78rem;">
-            Nenhum estado apresenta desvio acumulado crítico em relação à média oficial de revenda, indicando aderência positiva aos limites de rota.
+            Nenhum estado com volume expressivo operou com ágio fora dos limites acordados, mantendo aderência ao teto de negociação de rota.
           </p>
         </div>
       </div>
@@ -107,8 +149,8 @@ function gerarInsightsInteligentes(analiseExterna, analiseInterna, analiseSpread
           </div>
           <p class="mb-0 text-muted" style="font-size: 0.78rem;">
             ${spreadAbaixo 
-              ? `Alerta na praça <strong>${analiseSpread.ufMenorSpread}</strong>: Spread de apenas <strong class="${corTexto}">R$ ${analiseSpread.menorSpreadVal.toFixed(2).replace('.', ',')}/L</strong>, abaixo do limite operacional de viabilidade.` 
-              : `A praça de menor margem é <strong>${analiseSpread.ufMenorSpread}</strong> (Spread de <strong>R$ ${analiseSpread.menorSpreadVal.toFixed(2).replace('.', ',')}/L</strong>). O pátio do <strong>${analiseSpread.ufMaiorSpread}</strong> lidera a vantagem com <strong>R$ ${analiseSpread.maiorSpreadVal.toFixed(2).replace('.', ',')}/L</strong>.`}
+              ? `Atenção na praça <strong>${analiseSpread.ufMenorSpread}</strong>: Spread de apenas <strong class="${corTexto}">R$ ${analiseSpread.menorSpreadVal.toFixed(2).replace('.', ',')}/L</strong>, operando abaixo da margem mínima recomendada de R$ 0,15/L.` 
+              : `A praça com menor margem é <strong>${analiseSpread.ufMenorSpread}</strong> (Spread de <strong>R$ ${analiseSpread.menorSpreadVal.toFixed(2).replace('.', ',')}/L</strong>). A garagem do <strong>${analiseSpread.ufMaiorSpread}</strong> gera a maior vantagem: <strong>R$ ${analiseSpread.maiorSpreadVal.toFixed(2).replace('.', ',')}/L</strong>.`}
           </p>
         </div>
       </div>
@@ -116,13 +158,13 @@ function gerarInsightsInteligentes(analiseExterna, analiseInterna, analiseSpread
   }
 
   return `
-    <div class="card border-0 shadow-sm p-3 mb-4 bg-light">
+    <div class="card border-0 shadow-sm p-3 mb-3 bg-light">
       <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
         <div class="d-flex align-items-center">
           <i class="bi bi-cpu text-primary fs-5 me-2"></i>
           <h6 class="fw-bold mb-0 text-dark">Diagnóstico e Recomendações Estratégicas</h6>
         </div>
-        <span class="badge bg-white text-secondary border small">Análise de Dados Automatizada</span>
+        <span class="badge bg-white text-secondary border small">Volume Significativo (> 30 abastecimentos)</span>
       </div>
       <div class="row g-2">
         ${cards.join('')}
@@ -193,6 +235,15 @@ async function calcularMatrizesGerenciais(registros) {
     return qtdTotal > 0 ? (somaTotal / qtdTotal) : null;
   }
 
+  function getQtdTotalUf(uf, tipo) {
+    let qtdTotal = 0;
+    mesesColunas.forEach(m => {
+      const d = dadosAgrupados[`${uf}_${m.id}_${tipo}`];
+      if (d) qtdTotal += d.totalAbastecimentos;
+    });
+    return qtdTotal;
+  }
+
   // 1. MATRIZ EXECUTIVA EXTERNA (Var % vs ANP Revenda)
   let htmlExterna = `
     <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.72rem;">
@@ -200,7 +251,7 @@ async function calcularMatrizesGerenciais(registros) {
         <tr>
           <th style="width: 48px; background-color: #f8fafc;">UF</th>
           ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
-          <th style="background-color: #0f172a; color: #ffffff; border-left: 2px solid #64748b; width: 65px;">Total</th>
+          <th style="background-color: #f1f5f9; color: #334155; border-left: 2px solid #cbd5e1; width: 68px; font-weight: 700;">Total</th>
         </tr>
       </thead>
       <tbody>
@@ -208,8 +259,11 @@ async function calcularMatrizesGerenciais(registros) {
 
   let melhorUfExt = null;
   let melhorVarExt = 999;
+  let melhorQtdExt = 0;
+
   let piorUfExt = null;
   let piorVarExt = -999;
+  let piorQtdExt = 0;
 
   ufsExterno.forEach(uf => {
     let tds = `<td class="fw-bold bg-light">${uf}</td>`;
@@ -222,33 +276,45 @@ async function calcularMatrizesGerenciais(registros) {
       if (precoPago && refAnp) {
         precosAnpAno.push(refAnp);
         const varPerc = ((precoPago - refAnp) / refAnp) * 100;
-        const bgCor = varPerc <= 0 ? 'rgba(34, 197, 94, 0.22)' : 'rgba(239, 68, 68, 0.25)';
+        
+        // Fundo pastel suave com letra contrastante
+        const bgCor = varPerc <= 0 ? '#ecfdf5' : '#fef2f2';
+        const txtCor = varPerc <= 0 ? '#047857' : '#b91c1c';
         const textoSinal = (varPerc > 0 ? '+' : '') + varPerc.toFixed(2).replace('.', ',') + '%';
-        tds += `<td style="background-color: ${bgCor}; font-weight: 500;">${textoSinal}</td>`;
+        tds += `<td style="background-color: ${bgCor}; color: ${txtCor}; font-weight: 600;">${textoSinal}</td>`;
       } else {
         tds += `<td class="text-muted" style="background:#fafafa;">-</td>`;
       }
     });
 
     const totalPago = getTotalUfSimples(uf, 'EXTERNO');
+    const qtdTotal = getQtdTotalUf(uf, 'EXTERNO');
+
     if (totalPago && precosAnpAno.length > 0) {
       const mediaAnpAno = precosAnpAno.reduce((a, b) => a + b, 0) / precosAnpAno.length;
       const varTotal = ((totalPago - mediaAnpAno) / mediaAnpAno) * 100;
 
-      if (varTotal < melhorVarExt) {
-        melhorVarExt = varTotal;
-        melhorUfExt = uf;
-      }
-      if (varTotal > piorVarExt) {
-        piorVarExt = varTotal;
-        piorUfExt = uf;
+      // Filtra estados relevantes (> 30 abastecimentos) para a análise estratégica
+      if (qtdTotal >= 30) {
+        if (varTotal < melhorVarExt) {
+          melhorVarExt = varTotal;
+          melhorUfExt = uf;
+          melhorQtdExt = qtdTotal;
+        }
+        if (varTotal > piorVarExt) {
+          piorVarExt = varTotal;
+          piorUfExt = uf;
+          piorQtdExt = qtdTotal;
+        }
       }
 
-      const bgTotal = varTotal <= 0 ? '#047857' : '#b91c1c';
+      // Estilo elegante para o Total: Fundo pastel reforçado com letra acentuada
+      const bgTotal = varTotal <= 0 ? '#d1fae5' : '#fee2e2';
+      const textCorTotal = varTotal <= 0 ? '#065f46' : '#991b1b';
       const textTotal = (varTotal > 0 ? '+' : '') + varTotal.toFixed(2).replace('.', ',') + '%';
-      tds += `<td style="background-color: ${bgTotal}; color: #ffffff; font-weight: 800; font-size: 0.78rem; border-left: 2px solid #64748b;">${textTotal}</td>`;
+      tds += `<td style="background-color: ${bgTotal}; color: ${textCorTotal}; font-weight: 700; font-size: 0.74rem; border-left: 2px solid #cbd5e1;">${textTotal}</td>`;
     } else {
-      tds += `<td class="text-muted" style="border-left: 2px solid #64748b;">-</td>`;
+      tds += `<td class="text-muted" style="border-left: 2px solid #cbd5e1;">-</td>`;
     }
 
     htmlExterna += `<tr>${tds}</tr>`;
@@ -262,7 +328,7 @@ async function calcularMatrizesGerenciais(registros) {
         <tr>
           <th style="width: 48px; background-color: #f8fafc;">UF</th>
           ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
-          <th style="background-color: #0f172a; color: #ffffff; border-left: 2px solid #64748b; width: 65px;">Total</th>
+          <th style="background-color: #f1f5f9; color: #334155; border-left: 2px solid #cbd5e1; width: 68px; font-weight: 700;">Total</th>
         </tr>
       </thead>
       <tbody>
@@ -279,9 +345,10 @@ async function calcularMatrizesGerenciais(registros) {
       if (precoPago && refAnp) {
         precosAnpAno.push(refAnp);
         const varPerc = ((precoPago - refAnp) / refAnp) * 100;
-        const bgCor = varPerc <= 0 ? 'rgba(34, 197, 94, 0.22)' : 'rgba(239, 68, 68, 0.25)';
+        const bgCor = varPerc <= 0 ? '#ecfdf5' : '#fef2f2';
+        const txtCor = varPerc <= 0 ? '#047857' : '#b91c1c';
         const textoSinal = (varPerc > 0 ? '+' : '') + varPerc.toFixed(2).replace('.', ',') + '%';
-        tds += `<td style="background-color: ${bgCor}; font-weight: 500;">${textoSinal}</td>`;
+        tds += `<td style="background-color: ${bgCor}; color: ${txtCor}; font-weight: 600;">${textoSinal}</td>`;
       } else {
         tds += `<td class="text-muted" style="background:#fafafa;">-</td>`;
       }
@@ -291,11 +358,12 @@ async function calcularMatrizesGerenciais(registros) {
     if (totalPago && precosAnpAno.length > 0) {
       const mediaAnpAno = precosAnpAno.reduce((a, b) => a + b, 0) / precosAnpAno.length;
       const varTotal = ((totalPago - mediaAnpAno) / mediaAnpAno) * 100;
-      const bgTotal = varTotal <= 0 ? '#047857' : '#b91c1c';
+      const bgTotal = varTotal <= 0 ? '#d1fae5' : '#fee2e2';
+      const textCorTotal = varTotal <= 0 ? '#065f46' : '#991b1b';
       const textTotal = (varTotal > 0 ? '+' : '') + varTotal.toFixed(2).replace('.', ',') + '%';
-      tds += `<td style="background-color: ${bgTotal}; color: #ffffff; font-weight: 800; font-size: 0.78rem; border-left: 2px solid #64748b;">${textTotal}</td>`;
+      tds += `<td style="background-color: ${bgTotal}; color: ${textCorTotal}; font-weight: 700; font-size: 0.74rem; border-left: 2px solid #cbd5e1;">${textTotal}</td>`;
     } else {
-      tds += `<td class="text-muted" style="border-left: 2px solid #64748b;">-</td>`;
+      tds += `<td class="text-muted" style="border-left: 2px solid #cbd5e1;">-</td>`;
     }
 
     htmlInterna += `<tr>${tds}</tr>`;
@@ -309,7 +377,7 @@ async function calcularMatrizesGerenciais(registros) {
         <tr>
           <th style="width: 48px; background-color: #f8fafc;">UF</th>
           ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
-          <th style="background-color: #0f172a; color: #ffffff; border-left: 2px solid #64748b; width: 70px;">Total</th>
+          <th style="background-color: #f1f5f9; color: #334155; border-left: 2px solid #cbd5e1; width: 72px; font-weight: 700;">Total</th>
         </tr>
       </thead>
       <tbody>
@@ -331,11 +399,18 @@ async function calcularMatrizesGerenciais(registros) {
 
       if (pInt && pExt) {
         const spread = pExt - pInt;
-        let bgCor = 'rgba(245, 158, 11, 0.22)';
-        if (spread >= 0.50) bgCor = 'rgba(34, 197, 94, 0.28)';
-        if (spread < 0.15) bgCor = 'rgba(239, 68, 68, 0.28)';
+        let bgCor = '#fffbeb';
+        let txtCor = '#b45309';
 
-        tds += `<td style="background-color: ${bgCor}; font-weight: 600;">R$ ${spread.toFixed(2).replace('.', ',')}</td>`;
+        if (spread >= 0.50) {
+          bgCor = '#ecfdf5';
+          txtCor = '#047857';
+        } else if (spread < 0.15) {
+          bgCor = '#fef2f2';
+          txtCor = '#b91c1c';
+        }
+
+        tds += `<td style="background-color: ${bgCor}; color: ${txtCor}; font-weight: 600;">R$ ${spread.toFixed(2).replace('.', ',')}</td>`;
       } else {
         tds += `<td class="text-muted" style="background:#fafafa;">-</td>`;
       }
@@ -352,13 +427,19 @@ async function calcularMatrizesGerenciais(registros) {
         ufMaiorSpread = uf;
       }
 
-      let bgTotal = '#b45309';
-      if (spreadTot >= 0.50) bgTotal = '#047857';
-      if (spreadTot < 0.15) bgTotal = '#b91c1c';
+      let bgTotal = '#fef3c7';
+      let txtTotal = '#92400e';
+      if (spreadTot >= 0.50) {
+        bgTotal = '#d1fae5';
+        txtTotal = '#065f46';
+      } else if (spreadTot < 0.15) {
+        bgTotal = '#fee2e2';
+        txtTotal = '#991b1b';
+      }
 
-      tds += `<td style="background-color: ${bgTotal}; color: #ffffff; font-weight: 800; font-size: 0.78rem; border-left: 2px solid #64748b;">R$ ${spreadTot.toFixed(2).replace('.', ',')}</td>`;
+      tds += `<td style="background-color: ${bgTotal}; color: ${txtTotal}; font-weight: 700; font-size: 0.74rem; border-left: 2px solid #cbd5e1;">R$ ${spreadTot.toFixed(2).replace('.', ',')}</td>`;
     } else {
-      tds += `<td class="text-muted" style="border-left: 2px solid #64748b;">-</td>`;
+      tds += `<td class="text-muted" style="border-left: 2px solid #cbd5e1;">-</td>`;
     }
 
     htmlSpread += `<tr>${tds}</tr>`;
@@ -476,7 +557,7 @@ async function calcularMatrizesGerenciais(registros) {
   htmlCheckAnpDist += `</tbody></table>`;
 
   const htmlInsights = gerarInsightsInteligentes(
-    { melhorUf: melhorUfExt, melhorVar: melhorVarExt, piorUf: piorUfExt, piorVar: piorVarExt },
+    { melhorUf: melhorUfExt, melhorVar: melhorVarExt, melhorQtd: melhorQtdExt, piorUf: piorUfExt, piorVar: piorVarExt, piorQtd: piorQtdExt },
     {},
     { ufMenorSpread, menorSpreadVal, ufMaiorSpread, maiorSpreadVal }
   );
@@ -512,23 +593,20 @@ async function renderizarAbaMatrizes() {
   const matrizes = await calcularMatrizesGerenciais(baseRegistrosMensais);
 
   container.innerHTML = `
-    <!-- CABEÇALHO DE AÇÕES EXECUTIVAS -->
+    <!-- CABEÇALHO DA SEÇÃO DE MATRIZES -->
     <div class="d-flex justify-content-between align-items-center mb-3">
       <div>
         <h5 class="fw-bold mb-0 text-dark">Matrizes Gerenciais de Combustível</h5>
         <span class="small text-muted">Auditoria de Preços de Bomba de Rua e Tanques Próprios vs. ANP Oficial</span>
       </div>
-      <div class="d-flex gap-2">
-        <button id="btnToggleAuditoria" class="btn btn-sm btn-outline-secondary" onclick="alternarPainelAuditoria()">
-          <i class="bi bi-shield-check me-1"></i> Exibir Tabelas de Auditoria Bruta (4)
-        </button>
-        <button class="btn btn-sm btn-primary shadow-sm" onclick="imprimirRelatorioExecutivo()">
+      <div>
+        <button id="btnEmitirRelatorio" class="btn btn-sm btn-primary shadow-sm px-3" onclick="emitirRelatorioMatrizes()">
           <i class="bi bi-printer-fill me-1"></i> Emitir Relatório Executivo
         </button>
       </div>
     </div>
 
-    <!-- BLOCO 1: MATRIZES EXECUTIVAS COLORIDAS -->
+    <!-- BLOCO 1: MATRIZES EXECUTIVAS COLORIDAS (ESTILO PASTEL CORPORATIVO) -->
     <div class="row g-3 mb-3">
       <!-- AUDITORIA EXTERNA -->
       <div class="col-12 col-xl-7">
@@ -544,7 +622,7 @@ async function renderizarAbaMatrizes() {
             ${matrizes.htmlExterna}
           </div>
           <div class="alert alert-light border mt-auto py-2 px-3 small text-muted" style="font-size: 0.72rem;">
-            <em>💡 <strong>Como interpretar:</strong> Mede o poder de compra da frota na estrada contra a bomba oficial da ANP. Células em <strong>verde (valores negativos)</strong> indicam compra abaixo da média estadual. Células em <strong>vermelho (valores positivos)</strong> alertam para ágio ou postos caros. A coluna <strong>Total</strong> em cor sólida consolida a média anual ponderada.</em>
+            <em>💡 <strong>Como interpretar:</strong> Mede o poder de compra da frota na estrada contra a bomba oficial da ANP. Números em <strong>verde (valores negativos)</strong> indicam compra abaixo da média estadual. Números em <strong>vermelho (valores positivos)</strong> alertam para ágio ou postos caros. A coluna <strong>Total</strong> consolida a média anual ponderada.</em>
           </div>
         </div>
       </div>
@@ -579,7 +657,7 @@ async function renderizarAbaMatrizes() {
             ${matrizes.htmlSpread}
           </div>
           <div class="alert alert-light border mt-1 py-1 px-2 text-muted" style="font-size: 0.69rem;">
-            <em>💡 <strong>Como interpretar:</strong> Ganho unitário líquido por abastecer na garagem em vez da rua. Células em <strong>vermelho (abaixo de R$ 0,15/L)</strong> alertam para margem insuficiente.</em>
+            <em>💡 <strong>Como interpretar:</strong> Ganho unitário líquido por abastecer na garagem em vez da rua. Números em <strong>vermelho (abaixo de R$ 0,15/L)</strong> alertam para margem insuficiente.</em>
           </div>
         </div>
       </div>
@@ -587,6 +665,13 @@ async function renderizarAbaMatrizes() {
 
     <!-- BLOCO DE TEXTOS INTELIGENTES / DIAGNÓSTICO ESTRATÉGICO -->
     ${matrizes.htmlInsights}
+
+    <!-- BARRA INFERIOR DE AUDITORIA BRUTA (LOCALIZADA ABAIXO DOS INSIGHTS) -->
+    <div class="d-flex justify-content-center my-3">
+      <button id="btnToggleAuditoria" class="btn btn-sm btn-outline-secondary px-4 shadow-sm" onclick="alternarPainelAuditoria()">
+        <i class="bi bi-shield-check me-1"></i> Exibir Tabelas de Auditoria Bruta (4)
+      </button>
+    </div>
 
     <!-- BLOCO 2: MODO DE CHECAGEM BRUTO (OCULTO POR PADRÃO VIA TOGGLE) -->
     <div id="painelChecagemBruta" class="card p-3 shadow-sm border-0 bg-light d-none" style="display: none;">
