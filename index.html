@@ -277,3 +277,469 @@
           <option value="2026-09">Setembro / 2026</option>
           <option value="2026-08">Agosto / 2026</option>
           <option value="2026-07">Julho / 2026</option>
+          <option value="2026-06">Junho / 2026</option>
+          <option value="2026-05">Maio / 2026</option>
+          <option value="2026-04">Abril / 2026</option>
+          <option value="2026-03">Março / 2026</option>
+          <option value="2026-02">Fevereiro / 2026</option>
+          <option value="2026-01">Janeiro / 2026</option>
+        </select>
+      </div>
+
+      <div class="d-flex flex-wrap align-items-center gap-2" id="grupoBotoesVisao">
+        <a href="#" class="nav-pill-btn active" data-aba="consolidado">
+          <i class="bi bi-grid-fill"></i> Consolidado Geral
+        </a>
+        <a href="#" class="nav-pill-btn" data-aba="interno">
+          <i class="bi bi-fuel-pump-fill"></i> Tanques Próprios
+        </a>
+        <a href="#" class="nav-pill-btn" data-aba="externo">
+          <i class="bi bi-truck"></i> Rota Rodoviária
+        </a>
+        <a href="#" class="nav-pill-btn" data-aba="roteirizador">
+          <i class="bi bi-map"></i> Roteirizador
+        </a>
+        <a href="#" class="nav-pill-btn" data-aba="matrizes">
+          <i class="bi bi-table"></i> Matrizes Gerenciais
+        </a>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 1: FILTROS SECUNDÁRIOS, KPIS E MAPA DO BRASIL -->
+    <div class="row g-3 mb-3">
+      
+      <!-- LADO ESQUERDO: FILTROS + CARDS (8 COLUNAS) -->
+      <div class="col-12 col-xl-8 d-flex flex-column gap-3">
+        
+        <!-- LINHA DE FILTROS (REDES COM CONTAGEM + POSTOS + BUSCA) -->
+        <div class="card p-2 border-0 shadow-sm">
+          <div class="row g-2 align-items-center">
+            <div class="col-12 col-md-4">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light text-muted border-end-0 fw-semibold" style="font-size: 0.72rem;">REDE:</span>
+                <select class="form-select border-start-0" id="filtroRede">
+                  <option value="TODAS">Todas as Redes</option>
+                  <!-- Opções com contagem de postos populadas via JS -->
+                </select>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light text-muted border-end-0 fw-semibold" style="font-size: 0.72rem;">POSTO:</span>
+                <select class="form-select border-start-0" id="filtroPosto">
+                  <option value="TODOS">Todos os Postos</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control border-start-0" id="buscaTexto" placeholder="Buscar posto ou cidade...">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 CARDS DE KPIS COM HIERARQUIA VISUAL -->
+        <div class="row g-2 flex-grow-1">
+          <!-- CARD 1: VOLUME -->
+          <div class="col-6 col-md-4 col-xl">
+            <div class="kpi-card" style="border-left: 4px solid #198754;">
+              <div>
+                <span class="kpi-label">Volume Entregue</span>
+                <div class="kpi-val text-dark" id="kpiVolume">1.737.403 L</div>
+              </div>
+              <span class="kpi-sub">Litros na competência</span>
+            </div>
+          </div>
+
+          <!-- CARD 2: GASTO TOTAL -->
+          <div class="col-6 col-md-4 col-xl">
+            <div class="kpi-card" style="border-left: 4px solid #0f172a;">
+              <div>
+                <span class="kpi-label">Gasto Total</span>
+                <div class="kpi-val text-dark" id="kpiGasto">R$ 11.085.827</div>
+              </div>
+              <span class="kpi-sub">Custo total auditado</span>
+            </div>
+          </div>
+
+          <!-- CARD 3: PREÇO MÉDIO REAL -->
+          <div class="col-6 col-md-4 col-xl">
+            <div class="kpi-card" style="border-left: 4px solid #f59e0b;">
+              <div>
+                <span class="kpi-label">Preço Médio Real</span>
+                <div class="kpi-val text-dark" id="kpiPrecoMedio">R$ 6,739</div>
+              </div>
+              <span class="kpi-sub">Média dos abastecimentos</span>
+            </div>
+          </div>
+
+          <!-- CARD 4: PONTOS COM VOLUME -->
+          <div class="col-6 col-md-6 col-xl">
+            <div class="kpi-card" style="border-left: 4px solid #64748b;">
+              <div>
+                <span class="kpi-label">Pontos Ativos</span>
+                <div class="kpi-val text-dark" id="kpiPontos">99</div>
+              </div>
+              <span class="kpi-sub">Unidades com consumo</span>
+            </div>
+          </div>
+
+          <!-- CARD 5: OFICIAL ANP / ANTT (NOVO) -->
+          <div class="col-12 col-md-6 col-xl">
+            <div class="kpi-card kpi-anp-antt">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="kpi-label text-primary">ANP / ANTT Brasil</span>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.60rem;">OFICIAL</span>
+                </div>
+                <div class="kpi-val text-primary" id="kpiAnpBrasil">R$ 6,052</div>
+              </div>
+              <span class="kpi-sub" id="kpiDataAnp"><i class="bi bi-clock-history me-1"></i>Ref: Semanal ANP</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- LADO DIREITO: MAPA DO BRASIL COMPLETO COM HEATMAP (4 COLUNAS) -->
+      <div class="col-12 col-xl-4">
+        <div class="map-container h-100 d-flex flex-column justify-content-between">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold text-dark" style="font-size: 0.78rem;">
+              <i class="bi bi-geo-alt-fill text-success me-1"></i> FILTRO INTERATIVO POR ESTADO
+            </span>
+            <span class="text-muted" style="font-size: 0.68rem;" id="infoEstadoHover">Passe o mouse ou clique</span>
+          </div>
+
+          <!-- SILHUETA COMPLETA DO BRASIL (TODOS OS 27 ESTADOS) -->
+          <div class="text-center" style="height: 175px;">
+            <svg viewBox="0 0 500 500" style="max-height: 100%; width: 100%;" id="svgMapaBrasil">
+              <g id="estadosBrasil">
+                <!-- NORTE -->
+                <path id="RR" class="uf-path sem-op" d="M165,25 L190,40 L180,75 L150,60 Z"><title>Roraima</title></path>
+                <path id="AP" class="uf-path sem-op" d="M275,55 L300,75 L285,100 L265,85 Z"><title>Amapá</title></path>
+                <path id="AM" class="uf-path sem-op" d="M60,75 L160,75 L165,150 L110,180 L50,130 Z"><title>Amazonas</title></path>
+                <path id="PA" class="uf-path op-media" d="M175,70 L265,85 L285,155 L215,185 L175,145 Z"><title>Pará</title></path>
+                <path id="AC" class="uf-path sem-op" d="M20,150 L65,155 L55,185 L15,175 Z"><title>Acre</title></path>
+                <path id="RO" class="uf-path sem-op" d="M105,185 L145,165 L160,210 L120,225 Z"><title>Rondônia</title></path>
+                <path id="TO" class="uf-path op-media" d="M255,175 L285,180 L275,255 L245,235 Z"><title>Tocantins</title></path>
+
+                <!-- NORDESTE -->
+                <path id="MA" class="uf-path op-baixa" d="M285,115 L335,135 L315,185 L285,160 Z"><title>Maranhão</title></path>
+                <path id="PI" class="uf-path sem-op" d="M330,145 L355,165 L335,215 L315,185 Z"><title>Piauí</title></path>
+                <path id="CE" class="uf-path op-media" d="M360,135 L395,145 L385,175 L355,165 Z"><title>Ceará</title></path>
+                <path id="RN" class="uf-path sem-op" d="M395,145 L425,150 L415,165 L390,165 Z"><title>Rio Grande do Norte</title></path>
+                <path id="PB" class="uf-path sem-op" d="M400,165 L430,165 L425,180 L395,175 Z"><title>Paraíba</title></path>
+                <path id="PE" class="uf-path op-baixa" d="M370,180 L430,180 L415,195 L360,195 Z"><title>Pernambuco</title></path>
+                <path id="AL" class="uf-path sem-op" d="M405,195 L425,195 L415,210 L395,205 Z"><title>Alagoas</title></path>
+                <path id="SE" class="uf-path sem-op" d="M395,210 L410,210 L400,225 L385,220 Z"><title>Sergipe</title></path>
+                <path id="BA" class="uf-path op-alta" d="M295,205 L375,195 L395,255 L325,295 L285,235 Z"><title>Bahia</title></path>
+
+                <!-- CENTRO-OESTE -->
+                <path id="MT" class="uf-path op-baixa" d="M165,195 L245,190 L240,285 L160,265 Z"><title>Mato Grosso</title></path>
+                <path id="GO" class="uf-path op-alta" d="M245,245 L295,245 L285,315 L235,305 Z"><title>Goiás</title></path>
+                <path id="DF" class="uf-path sem-op" d="M270,265 L280,265 L280,275 L270,275 Z"><title>Distrito Federal</title></path>
+                <path id="MS" class="uf-path op-baixa" d="M195,295 L245,295 L235,365 L185,355 Z"><title>Mato Grosso do Sul</title></path>
+
+                <!-- SUDESTE -->
+                <path id="MG" class="uf-path op-alta" d="M285,285 L355,275 L350,345 L275,340 Z"><title>Minas Gerais</title></path>
+                <path id="ES" class="uf-path op-baixa" d="M355,305 L375,310 L365,335 L350,330 Z"><title>Espírito Santo</title></path>
+                <path id="RJ" class="uf-path op-baixa" d="M335,345 L365,340 L355,360 L325,355 Z"><title>Rio de Janeiro</title></path>
+                <path id="SP" class="uf-path op-muito-alta" d="M245,330 L315,330 L305,380 L235,365 Z"><title>São Paulo</title></path>
+
+                <!-- SUL -->
+                <path id="PR" class="uf-path op-muito-alta" d="M225,370 L285,370 L275,410 L215,400 Z"><title>Paraná</title></path>
+                <path id="SC" class="uf-path op-baixa" d="M225,410 L275,410 L265,435 L220,430 Z"><title>Santa Catarina</title></path>
+                <path id="RS" class="uf-path op-baixa" d="M205,435 L265,435 L245,485 L185,475 Z"><title>Rio Grande do Sul</title></path>
+              </g>
+            </svg>
+          </div>
+
+          <!-- LEGENDA DA CONCENTRAÇÃO DE VOLUME -->
+          <div class="d-flex justify-content-between align-items-center pt-1 border-top" style="font-size: 0.65rem;">
+            <div class="d-flex align-items-center gap-1">
+              <span style="width: 10px; height: 10px; background: #e2e8f0; display: inline-block; border-radius: 2px;"></span>
+              <span class="text-muted">Sem base</span>
+            </div>
+            <div class="d-flex align-items-center gap-1">
+              <span class="text-muted">Concentração:</span>
+              <span style="width: 8px; height: 8px; background: #86efac; display: inline-block; border-radius: 2px;" title="Baixa"></span>
+              <span style="width: 8px; height: 8px; background: #22c55e; display: inline-block; border-radius: 2px;" title="Média"></span>
+              <span style="width: 8px; height: 8px; background: #15803d; display: inline-block; border-radius: 2px;" title="Alta"></span>
+              <span style="width: 8px; height: 8px; background: #052e16; display: inline-block; border-radius: 2px;" title="Muito Alta"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SEÇÃO 2: VISÃO PRINCIPAL (CONSOLIDADO / LISTAGEM) -->
+    <div id="secaoListagemGeral">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="fw-bold text-dark" style="font-size: 0.88rem;">
+            <i class="bi bi-pie-chart-fill text-success me-1"></i> Painel Consolidado • Visão Integrada da Frota
+          </span>
+          <span class="badge bg-light text-muted border" id="badgeTotalPostos">A listar 99 postos</span>
+        </div>
+        <div class="d-flex align-items-center gap-3 small" style="font-size: 0.72rem;">
+          <div class="d-flex align-items-center gap-1">
+            <span style="width: 12px; height: 3px; background: #22c55e; display: inline-block; border-radius: 2px;"></span>
+            <span class="text-muted">Referência ANP</span>
+          </div>
+          <div class="d-flex align-items-center gap-1">
+            <span style="width: 12px; height: 3px; background: #0284c7; display: inline-block; border-radius: 2px;"></span>
+            <span class="text-muted">Garagem Interna</span>
+          </div>
+          <div class="d-flex align-items-center gap-1">
+            <span style="width: 12px; height: 3px; background: #ea580c; display: inline-block; border-radius: 2px;"></span>
+            <span class="text-muted">Rota Rodoviária</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTAINER DOS CARDS DINÂMICOS -->
+      <div id="containerCardsPostos">
+        <!-- RENDERIZADO VIA JAVASCRIPT: ESTRUTURA COM GRÁFICO 100% LIVRE NO MEIO -->
+      </div>
+    </div>
+
+    <!-- SEÇÃO 3: CONTAINER DAS MATRIZES GERENCIAIS (QUANDO CLICAR NO BOTÃO DA BARRA SUPERIOR) -->
+    <div id="secaoMatrizesGerenciais" style="display: none;">
+      <!-- RENDERIZADO PELO MÓDULO matrizes.js -->
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="matrizes.js"></script>
+  
+  <script>
+    // ESTADO GLOBAL DA APLICAÇÃO
+    let baseRegistrosMensais = [];
+    let ufFiltroSelecionada = null;
+
+    // INICIALIZAÇÃO E NAVEGAÇÃO ENTRE ABAS
+    document.addEventListener('DOMContentLoaded', () => {
+      configurarAbas();
+      carregarBaseAbastecimentos();
+    });
+
+    function configurarAbas() {
+      const botoes = document.querySelectorAll('#grupoBotoesVisao .nav-pill-btn');
+      botoes.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          botoes.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          const aba = btn.getAttribute('data-aba');
+          const secaoGeral = document.getElementById('secaoListagemGeral');
+          const secaoMatrizes = document.getElementById('secaoMatrizesGerenciais');
+
+          if (aba === 'matrizes') {
+            secaoGeral.style.display = 'none';
+            secaoMatrizes.style.display = 'block';
+            if (typeof renderizarAbaMatrizes === 'function') {
+              renderizarAbaMatrizes();
+            }
+          } else {
+            secaoMatrizes.style.display = 'none';
+            secaoGeral.style.display = 'block';
+            filtrarERenderizarCards();
+          }
+        });
+      });
+    }
+
+    // CARREGAMENTO DA BASE DO WORKER KMM
+    async function carregarBaseAbastecimentos() {
+      try {
+        const resp = await fetch('https://api-abastecimentos.klapowsko.workers.dev');
+        if (!resp.ok) throw new Error("Falha na API");
+        const json = await resp.json();
+        baseRegistrosMensais = json.dados || [];
+
+        popularFiltroRedes();
+        atualizarKpisGerais();
+        filtrarERenderizarCards();
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err);
+      }
+    }
+
+    // POPULAR FILTRO DE REDES COM CONTAGEM DINÂMICA ENTRE PARÊNTESES: REDE (QTD)
+    function popularFiltroRedes() {
+      const selectRede = document.getElementById('filtroRede');
+      if (!selectRede) return;
+
+      const contagemRedes = {};
+      baseRegistrosMensais.forEach(r => {
+        const nomePosto = r.POSTO || '';
+        let rede = 'OUTROS';
+
+        if (nomePosto.includes('MARAJO') || nomePosto.includes('MARAJÓ')) rede = 'REDE MARAJÓ';
+        else if (nomePosto.includes('GRAAL')) rede = 'REDE GRAAL';
+        else if (nomePosto.includes('CARGOSOFT')) rede = 'BASES PRÓPRIAS';
+        else if (nomePosto.includes('IPIRANGA')) rede = 'REDE IPIRANGA';
+        else if (nomePosto.includes('SIM')) rede = 'REDE SIM';
+        else if (nomePosto.includes('DEBONI')) rede = 'REDE DEBONI';
+
+        if (!contagemRedes[rede]) contagemRedes[rede] = new Set();
+        contagemRedes[rede].add(r.POSTO);
+      });
+
+      selectRede.innerHTML = '<option value="TODAS">Todas as Redes</option>';
+      Object.keys(contagemRedes).sort().forEach(rede => {
+        const qtd = contagemRedes[rede].size;
+        selectRede.innerHTML += `<option value="${rede}">${rede} (${qtd})</option>`;
+      });
+    }
+
+    // ATUALIZAÇÃO DOS KPIS DE CABEÇALHO
+    function atualizarKpisGerais() {
+      let vol = 0;
+      let gasto = 0;
+      let postosUnicos = new Set();
+
+      baseRegistrosMensais.forEach(r => {
+        vol += parseFloat(r.LITROS_MES || 0);
+        gasto += parseFloat(r.VALOR_TOTAL_MES || 0);
+        postosUnicos.add(r.POSTO);
+      });
+
+      const precoMed = vol > 0 ? (gasto / vol) : 0;
+
+      document.getElementById('kpiVolume').innerText = vol.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + ' L';
+      document.getElementById('kpiGasto').innerText = 'R$ ' + gasto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('kpiPrecoMedio').innerText = 'R$ ' + precoMed.toFixed(3).replace('.', ',');
+      document.getElementById('kpiPontos').innerText = postosUnicos.size;
+    }
+
+    // RENDERIZAÇÃO DOS CARDS COM O GRÁFICO 100% LIVRE NO MEIO
+    function filtrarERenderizarCards() {
+      const container = document.getElementById('containerCardsPostos');
+      if (!container) return;
+
+      // Agrupa os registros por posto para gerar a série histórica e os totais
+      const postosMapa = {};
+
+      baseRegistrosMensais.forEach(r => {
+        if (!postosMapa[r.POSTO]) {
+          postosMapa[r.POSTO] = {
+            nome: r.POSTO,
+            uf: r.UF_POSTO,
+            municipio: r.MUNICIPIO_POSTO,
+            tipo: r.TIPO_OPERACAO,
+            volumeTotal: 0,
+            gastoTotal: 0,
+            meses: {}
+          };
+        }
+        const v = parseFloat(r.LITROS_MES || 0);
+        const g = parseFloat(r.VALOR_TOTAL_MES || 0);
+        postosMapa[r.POSTO].volumeTotal += v;
+        postosMapa[r.POSTO].gastoTotal += g;
+        postosMapa[r.POSTO].meses[r.MES_ANO] = parseFloat(r.PRECO_MEDIO_MES || 0);
+      });
+
+      const lista = Object.values(postosMapa).sort((a, b) => b.volumeTotal - a.volumeTotal);
+      document.getElementById('badgeTotalPostos').innerText = `A listar ${lista.length} postos`;
+
+      let html = '';
+
+      lista.slice(0, 30).forEach(p => {
+        const precoMed = p.volumeTotal > 0 ? (p.gastoTotal / p.volumeTotal) : 0;
+        const badgeTipo = p.tipo === 'INTERNO' 
+          ? '<span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:0.65rem;">GARAGEM</span>'
+          : '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:0.65rem;">ROTA</span>';
+
+        // Gera o SVG Sparkline central livre sem tocar na barra branca
+        const svgSparkline = gerarSvgSparkline(p.meses);
+
+        html += `
+          <div class="posto-card">
+            <!-- 1. IDENTIFICAÇÃO DO POSTO -->
+            <div class="posto-info">
+              <span class="uf-tag">${p.uf}</span>
+              <div class="text-truncate">
+                <div class="fw-bold text-dark text-truncate" style="font-size: 0.82rem;" title="${p.nome}">${p.nome}</div>
+                <div class="text-muted" style="font-size: 0.70rem;">
+                  ${p.municipio} • ${badgeTipo}
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. GRÁFICO CENTRAL 100% LIVRE E VISÍVEL -->
+            <div class="sparkline-wrapper">
+              ${svgSparkline}
+            </div>
+
+            <!-- 3. BLOCO BRANCO FINANCEIRO COMPACTADO À DIREITA -->
+            <div class="bloco-financeiro">
+              <div class="item-metrica">
+                <span class="lbl">Volume</span>
+                <span class="val text-dark">${p.volumeTotal.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} L</span>
+              </div>
+              <div class="item-metrica">
+                <span class="lbl">Preço Médio</span>
+                <span class="val text-primary">R$ ${precoMed.toFixed(3).replace('.', ',')}</span>
+              </div>
+              <div class="item-metrica">
+                <span class="lbl">Ref. ANP</span>
+                <span class="val text-success">R$ 6,052</span>
+              </div>
+              <div class="item-metrica">
+                <span class="lbl">Gap Mercado</span>
+                <span class="val text-danger">+R$ 0,404</span>
+              </div>
+              <button class="btn btn-tratativa ms-1">
+                <i class="bi bi-card-checklist me-1"></i>Tratativa
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // GERADOR DE LINHA TEMPORAL SPARKLINE EM SVG NATIVO
+    function gerarSvgSparkline(mesesObj) {
+      const meses = ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08', '2026-09', '2026-10'];
+      const pontos = [];
+      
+      meses.forEach((m, idx) => {
+        const val = mesesObj[m];
+        if (val) {
+          pontos.push({ x: (idx / (meses.length - 1)) * 300, y: val });
+        }
+      });
+
+      if (pontos.length < 2) {
+        return `<svg viewBox="0 0 300 40"><line x1="0" y1="20" x2="300" y2="20" stroke="#cbd5e1" stroke-dasharray="4"/></svg>`;
+      }
+
+      const ys = pontos.map(p => p.y);
+      const min = Math.min(...ys) * 0.98;
+      const max = Math.max(...ys) * 1.02;
+      const range = (max - min) || 1;
+
+      const coords = pontos.map(p => {
+        const yNorm = 35 - ((p.y - min) / range) * 30;
+        return `${p.x.toFixed(1)},${yNorm.toFixed(1)}`;
+      }).join(' ');
+
+      return `
+        <svg viewBox="0 0 300 40" preserveAspectRatio="none">
+          <polyline fill="none" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${coords}"/>
+        </svg>
+      `;
+    }
+  </script>
+</body>
+</html>
