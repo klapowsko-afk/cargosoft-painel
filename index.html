@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cargosoft - Torre de Gestão & Auditoria de Diesel S10</title>
+  <title>Cargosoft - Gestão e Auditoria de Diesel S10</title>
   
-  <!-- Bootstrap 5, Icons & ApexCharts -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -14,12 +13,11 @@
     :root {
       --cargosoft-green: #1c483a;
       --cargosoft-green-hover: #14352a;
-      --cargosoft-yellow: #f59e0b;
       --bg-page: #f8fafc;
       --card-bg: #ffffff;
+      --border-color: #e2e8f0;
       --text-dark: #0f172a;
       --text-muted: #64748b;
-      --border-color: #e2e8f0;
       --success-green: #16a34a;
       --danger-red: #dc2626;
     }
@@ -35,57 +33,37 @@
       padding: 18px 22px;
       margin: 0;
       min-height: 100vh;
-      overflow-x: hidden;
     }
 
-    /* CABEÇALHO */
     .header-bar {
       background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(8px);
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 12px 20px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     }
     .brand-logo-cargo { height: 40px; width: auto; object-fit: contain; }
     .brand-logo-voctt { height: 40px; width: auto; border-radius: 50%; border: 2px solid var(--border-color); }
-    .header-title { font-size: 1.25rem; font-weight: 800; color: var(--cargosoft-green); margin: 0; letter-spacing: -0.02em; }
-    .header-subtitle { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
 
-    /* BARRA DE CONTROLO */
     .control-bar {
       background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 10px 16px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
     }
 
-    /* CARTOES EXECUTIVOS (KPIS) */
     .card-kpi {
-      background: var(--card-bg);
+      background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 14px 16px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-      position: relative;
-      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+      border-left: 4px solid var(--cargosoft-green);
     }
-    .card-kpi::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
-      height: 100%;
-    }
-    .kpi-green::before { background-color: var(--success-green); }
-    .kpi-yellow::before { background-color: var(--cargosoft-yellow); }
-    .kpi-blue::before { background-color: #0284c7; }
-    .kpi-purple::before { background-color: #7c3aed; }
-
     .kpi-label {
       font-size: 0.7rem;
       font-weight: 800;
@@ -93,14 +71,11 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-bottom: 4px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
     }
     .kpi-val {
       font-size: 1.55rem;
       font-weight: 800;
-      color: var(--text-dark);
+      color: var(--cargosoft-green);
       letter-spacing: -0.02em;
       line-height: 1.2;
     }
@@ -108,35 +83,8 @@
       font-size: 0.75rem;
       color: var(--text-muted);
       margin-top: 4px;
-      display: flex;
-      justify-content: space-between;
     }
 
-    /* NAVEGAÇÃO */
-    .nav-tabs-custom {
-      border-bottom: 2px solid var(--border-color);
-      gap: 6px;
-      margin-bottom: 16px;
-    }
-    .nav-tabs-custom .nav-link {
-      border: 1px solid transparent;
-      border-top-left-radius: 8px;
-      border-top-right-radius: 8px;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      font-weight: 700;
-      padding: 9px 16px;
-      background: #ffffff;
-      border-color: var(--border-color) var(--border-color) transparent;
-      transition: all 0.15s;
-    }
-    .nav-tabs-custom .nav-link.active {
-      background: var(--cargosoft-green);
-      color: #ffffff !important;
-      border-color: var(--cargosoft-green);
-    }
-
-    /* TABELA RESPONSIVA SEM SCROLL HORIZONTAL */
     .panel-box {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -154,81 +102,48 @@
       align-items: center;
     }
 
-    .table-fixed-layout {
+    .table-custom {
       width: 100%;
       margin-bottom: 0;
-      table-layout: auto;
     }
-    .table-fixed-layout thead th {
+    .table-custom thead th {
       background-color: #f8fafc;
       color: #475569;
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       text-transform: uppercase;
       font-weight: 800;
       letter-spacing: 0.04em;
       padding: 10px 12px;
       border-bottom: 2px solid var(--border-color);
     }
-    .table-fixed-layout tbody tr:hover {
+    .table-custom tbody tr:hover {
       background-color: #f1f5f9;
     }
-    .table-fixed-layout td {
+    .table-custom td {
       padding: 10px 12px;
       border-bottom: 1px solid #f1f5f9;
       vertical-align: middle;
       font-size: 0.84rem;
     }
 
-    /* SILHUETA DOS ESTADOS E BADGES */
-    .uf-badge-container {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+    .badge-uf {
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
-      padding: 3px 8px;
-      border-radius: 6px;
+      padding: 2px 6px;
+      border-radius: 4px;
       font-weight: 800;
-      font-size: 0.75rem;
-      color: #1e293b;
-    }
-    .uf-icon {
-      width: 14px;
-      height: 14px;
-      fill: var(--cargosoft-green);
+      font-size: 0.72rem;
+      color: #334155;
     }
 
     .badge-tipo {
       font-size: 0.65rem;
       font-weight: 800;
-      padding: 2px 6px;
+      padding: 3px 6px;
       border-radius: 4px;
     }
     .tipo-rota { background: #fef3c7; color: #b45309; }
     .tipo-interno { background: #dcfce7; color: #15803d; }
-
-    .badge-status {
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 20px;
-      display: inline-block;
-    }
-    .status-estavel { background: #dcfce7; color: #166534; }
-    .status-pico { background: #fee2e2; color: #991b1b; }
-
-    /* MINI CURVA DE PREÇOS NAS GARAGENS */
-    .compras-timeline {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-family: monospace;
-      font-size: 0.8rem;
-    }
 
     .btn-sync {
       background: var(--cargosoft-green);
@@ -236,21 +151,25 @@
       font-weight: 600;
       font-size: 0.82rem;
       border: none;
-      padding: 7px 14px;
+      padding: 6px 14px;
       border-radius: 8px;
     }
     .btn-sync:hover { background: var(--cargosoft-green-hover); color: #ffffff; }
 
-    .btn-crm {
-      background: #f8fafc;
+    .btn-tratar {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #ffffff;
       border: 1px solid var(--border-color);
       color: var(--cargosoft-green);
       font-size: 0.75rem;
       font-weight: 700;
-      padding: 3px 8px;
+      padding: 4px 10px;
       border-radius: 6px;
+      white-space: nowrap;
     }
-    .btn-crm:hover { background: var(--cargosoft-green); color: #ffffff; }
+    .btn-tratar:hover { background: var(--cargosoft-green); color: #ffffff; }
   </style>
 
   <!-- FIREBASE SDK -->
@@ -276,201 +195,138 @@
 </head>
 <body>
   <div class="container-fluid px-0">
-    
+
     <!-- CABEÇALHO -->
-    <div class="header-bar d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div class="header-bar d-flex justify-content-between align-items-center flex-wrap gap-3">
       <div class="d-flex align-items-center gap-3">
         <img src="logo_cargo_verde.png" alt="Cargosoft" class="brand-logo-cargo">
         <div style="border-left: 2px solid var(--border-color); height: 36px; margin: 0 4px;"></div>
         <div>
-          <h1 class="header-title">Torre de Gestão & Auditoria de Diesel S10</h1>
-          <p class="header-subtitle">Inteligência de Custos de Abastecimento vs Benchmark Oficial ANP (2026)</p>
+          <h1 class="h6 mb-0 fw-bold" style="color: var(--cargosoft-green);">Torre de Gestão & Auditoria de Diesel S10</h1>
+          <span class="small text-muted">Controle Mensal por Competência Contábil (KMM vs ANP)</span>
         </div>
       </div>
       <div class="d-flex align-items-center gap-3">
-        <button id="btnAtualizar" class="btn btn-sync shadow-sm" onclick="carregarTudo()">
+        <button id="btnSincronizar" class="btn btn-sync shadow-sm" onclick="carregarDados()">
           <i class="bi bi-arrow-repeat me-1"></i> Sincronizar Bases
         </button>
         <img src="logo_voctt.png" alt="VOCTT" class="brand-logo-voctt" title="VOCTT Inteligência de Frotas">
       </div>
     </div>
 
-    <!-- CONTROLO: PERÍODO, UF E BUSCA -->
+    <!-- BARRA DE FILTROS REAL -->
     <div class="control-bar d-flex flex-wrap justify-content-between align-items-center gap-3">
-      <div class="d-flex flex-wrap align-items-center gap-2">
+      <div class="d-flex flex-wrap align-items-center gap-3">
         <div class="d-flex align-items-center gap-1">
-          <label class="small fw-bold text-muted text-uppercase me-1"><i class="bi bi-calendar3"></i> Período:</label>
-          <select id="filtroPeriodo" class="form-select form-select-sm fw-bold" style="width: 200px;" onchange="processarDadosCompletos()">
-            <option value="30d">Últimos 30 Dias (Operacional)</option>
-            <option value="ytd">Ano Completo 2026 (YTD)</option>
-            <option value="mes_atual">Mês Vigente (Out/2026)</option>
+          <label class="small fw-bold text-muted text-uppercase me-1"><i class="bi bi-calendar3"></i> Competência:</label>
+          <select id="filtroMesAno" class="form-select form-select-sm fw-bold" style="width: 220px;" onchange="processarPainel()">
+            <!-- Preenchido dinamicamente com base nas datas reais -->
           </select>
         </div>
 
-        <select id="filtroUf" class="form-select form-select-sm" style="width: 130px;" onchange="aplicarFiltrosTabela()">
-          <option value="">Todas as UFs</option>
-        </select>
+        <div class="d-flex align-items-center gap-1">
+          <label class="small fw-bold text-muted text-uppercase me-1">UF:</label>
+          <select id="filtroUf" class="form-select form-select-sm" style="width: 140px;" onchange="processarPainel()">
+            <option value="">Todas as UFs</option>
+          </select>
+        </div>
 
-        <select id="ordenacao" class="form-select form-select-sm" style="width: 200px;" onchange="aplicarFiltrosTabela()">
-          <option value="volume_desc">Maior Volume (Litros)</option>
-          <option value="gap_desc">Maior Desvio (+% ANP)</option>
-          <option value="preco_desc">Maior Preço Unitário</option>
-        </select>
+        <div class="d-flex align-items-center gap-1">
+          <label class="small fw-bold text-muted text-uppercase me-1">Tipo:</label>
+          <select id="filtroTipo" class="form-select form-select-sm" style="width: 170px;" onchange="processarPainel()">
+            <option value="TODOS">Todos os Pontos</option>
+            <option value="EXTERNO">Rota Externa</option>
+            <option value="INTERNO">Tanques Internos (Garagens)</option>
+          </select>
+        </div>
       </div>
 
-      <div style="min-width: 240px; max-width: 360px; flex-grow: 1;">
+      <div style="min-width: 250px; max-width: 380px; flex-grow: 1;">
         <div class="input-group input-group-sm">
           <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-          <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Filtrar posto, município..." oninput="aplicarFiltrosTabela()">
+          <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Filtrar posto, município..." oninput="filtrarTabelaTexto()">
         </div>
       </div>
     </div>
 
-    <!-- CARTOES EXECUTIVOS (KPIS) -->
+    <!-- CARDS EXECUTIVOS CALCULADOS -->
     <div class="row g-3 mb-3">
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-kpi kpi-green">
-          <div class="kpi-label">
-            <span>SAVING RECORRENTE (DESÁGIO)</span>
-            <i class="bi bi-piggy-bank text-success"></i>
-          </div>
-          <div class="kpi-val text-success" id="kpiSaving">R$ 0,00</div>
-          <div class="kpi-sub">
-            <span>Economia real vs ANP</span>
-            <span class="badge bg-success-subtle text-success fw-bold">Auditado</span>
-          </div>
+        <div class="card-kpi">
+          <div class="kpi-label">VOLUME TOTAL</div>
+          <div class="kpi-val" id="cardVolume">-- L</div>
+          <div class="kpi-sub">Litros faturados no período selecionado</div>
         </div>
       </div>
 
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-kpi kpi-yellow">
-          <div class="kpi-label">
-            <span>VOLUME TOTAL NO PERÍODO</span>
-            <i class="bi bi-fuel-pump text-warning"></i>
-          </div>
-          <div class="kpi-val" style="color: #b45309;" id="kpiVolumeTotal">0 L</div>
-          <div class="kpi-sub">
-            <span>Gasto Acumulado:</span>
-            <strong id="kpiGastoTotal" class="text-dark">R$ 0,00</strong>
-          </div>
+        <div class="card-kpi">
+          <div class="kpi-label">GASTO TOTAL</div>
+          <div class="kpi-val" id="cardGasto">R$ --</div>
+          <div class="kpi-sub">Custo acumulado do combustível</div>
         </div>
       </div>
 
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-kpi kpi-blue">
-          <div class="kpi-label">
-            <span>SPREAD DO PÁTIO (PARANÁ)</span>
-            <i class="bi bi-shield-check text-primary"></i>
-          </div>
-          <div class="kpi-val text-primary" id="kpiSpreadPatio">R$ 0,00 / L</div>
-          <div class="kpi-sub">
-            <span>Garagem Colombo vs ANP PR</span>
-            <span id="dataRefDistPR" class="text-secondary fw-semibold">Ref: 29/08/2026</span>
-          </div>
+        <div class="card-kpi">
+          <div class="kpi-label">PREÇO MÉDIO PONDERADO</div>
+          <div class="kpi-val" id="cardPrecoMedio">R$ --</div>
+          <div class="kpi-sub">Gasto Total / Volume Total (R$/L)</div>
         </div>
       </div>
 
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-kpi kpi-purple">
-          <div class="kpi-label">
-            <span>PREÇO MÉDIO PONDERADO (S10)</span>
-            <i class="bi bi-graph-up text-purple"></i>
-          </div>
-          <div class="kpi-val" style="color: #7c3aed;" id="kpiPrecoMedioGeral">R$ 0,000</div>
-          <div class="kpi-sub">
-            <span>Média Nacional ANP:</span>
-            <strong id="kpiAnpMedia" class="text-dark">R$ 0,000</strong>
-          </div>
+        <div class="card-kpi">
+          <div class="kpi-label">PONTOS COM MOVIMENTO</div>
+          <div class="kpi-val" id="cardPontos">--</div>
+          <div class="kpi-sub">Postos de rota e garagens ativas</div>
         </div>
       </div>
     </div>
 
-    <!-- GRÁFICO COM RÓTULOS + TOP 10 PARETO -->
-    <div class="row g-3 mb-3">
-      <div class="col-12 col-xl-7">
-        <div class="panel-box h-100 mb-0">
-          <div class="panel-header">
-            <div>
-              <strong class="text-dark"><i class="bi bi-graph-up-arrow me-1 text-success"></i> Evolução Mensal: Preço Pago vs ANP (2026)</strong>
-              <div class="small text-muted">Curva mês a mês com rótulos de dados impressos.</div>
-            </div>
-            <span class="badge bg-light text-dark border">Diesel S10</span>
-          </div>
-          <div class="p-3">
-            <div id="chartEvolucao" style="min-height: 270px;"></div>
-          </div>
+    <!-- GRÁFICO REAL DE EVOLUÇÃO MENSAL (CALCULADO DO BANCO) -->
+    <div class="panel-box mb-3">
+      <div class="panel-header">
+        <div>
+          <strong class="text-dark"><i class="bi bi-graph-up-arrow me-1 text-success"></i> Evolução Mensal do Preço Médio (Cargosoft 2026)</strong>
+          <div class="small text-muted">Média ponderada real calculada mês a mês a partir das notas fiscais.</div>
         </div>
+        <span class="badge bg-light text-dark border">Diesel S10 Real</span>
       </div>
-
-      <div class="col-12 col-xl-5">
-        <div class="panel-box h-100 mb-0">
-          <div class="panel-header">
-            <div>
-              <strong class="text-dark"><i class="bi bi-star-fill me-1 text-warning"></i> Principais Postos (Top 10 Volume)</strong>
-              <div class="small text-muted">Maiores volumes da frota e tendência semanal.</div>
-            </div>
-            <span class="badge bg-white text-dark border font-monospace">Pareto</span>
-          </div>
-          <div class="p-0">
-            <table class="table table-sm table-fixed-layout align-middle mb-0">
-              <thead>
-                <tr>
-                  <th>Posto</th>
-                  <th class="text-end">Volume</th>
-                  <th class="text-end">Último</th>
-                  <th class="text-center">Semana</th>
-                  <th class="text-end">GAP ANP</th>
-                </tr>
-              </thead>
-              <tbody id="corpoTop10">
-                <tr><td colspan="5" class="text-center py-3 text-muted">A carregar dados...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <div class="p-3">
+        <div id="chartEvolucao" style="min-height: 260px;"></div>
       </div>
     </div>
 
-    <!-- ABAS -->
-    <ul class="nav nav-tabs nav-tabs-custom" id="tabOperacao">
-      <li class="nav-item">
-        <button class="nav-link active" onclick="filtrarAba('TODOS', this)">
-          Todos (<span id="contTodos">0</span>)
-        </button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link" onclick="filtrarAba('EXTERNO', this)">
-          <i class="bi bi-truck me-1 text-warning"></i> Rota Externa (<span id="contExterno">0</span>)
-        </button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link" onclick="filtrarAba('INTERNO', this)">
-          <i class="bi bi-building me-1 text-success"></i> Tanques Internos (Garagens) (<span id="contInterno">0</span>)
-        </button>
-      </li>
-    </ul>
-
-    <!-- TABELA PRINCIPAL RESPONSIVA (SEM SCROLL HORIZONTAL) -->
+    <!-- TABELA PRINCIPAL AUDITADA -->
     <div class="panel-box">
       <div class="panel-header">
         <div>
-          <strong class="text-dark"><i class="bi bi-broadcast me-1 text-warning"></i> Radar de Auditoria & Negociação</strong>
-          <div class="small text-muted">Confronto direto com valores reais e auditados da ANP.</div>
+          <strong class="text-dark"><i class="bi bi-table me-1 text-warning"></i> Painel Analítico de Abastecimentos & Custos</strong>
+          <div class="small text-muted" id="lblSubtituloTabela">Consolidado por ponto no período selecionado</div>
         </div>
-        <span class="badge bg-white text-dark border px-3 py-1 rounded-pill font-monospace" id="lblListando">A listar 0 postos</span>
+        <span class="badge bg-white text-dark border px-3 py-1 rounded-pill font-monospace" id="lblListando">Aguardando dados...</span>
       </div>
-      <div>
-        <table class="table table-fixed-layout align-middle">
+      <div class="table-responsive">
+        <table class="table table-custom align-middle">
           <thead>
-            <tr id="cabecalhoTabela">
-              <!-- Renderizado dinamicamente -->
+            <tr>
+              <th style="width: 40px;">#</th>
+              <th>Ponto de Abastecimento / Rede</th>
+              <th style="width: 60px;">UF</th>
+              <th style="width: 80px;">Tipo</th>
+              <th class="text-end">Volume</th>
+              <th class="text-end">Preço Médio</th>
+              <th class="text-end">Último Pago</th>
+              <th class="text-center">Variação Mês Ant.</th>
+              <th class="text-center" style="width: 90px;">Ações</th>
             </tr>
           </thead>
           <tbody id="tabelaCorpo">
             <tr>
               <td colspan="9" class="text-center py-4 text-muted">
                 <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
-                A carregar dados auditados do KMM e Firestore...
+                Buscando histórico consolidado no Worker...
               </td>
             </tr>
           </tbody>
@@ -480,7 +336,7 @@
 
     <!-- RODAPÉ -->
     <div class="d-flex justify-content-between align-items-center py-2 px-1 small text-muted">
-      <span>Cargosoft Transportes &copy; 2026 - Gestão Estratégica de Abastecimento</span>
+      <span>Cargosoft Transportes &copy; 2026</span>
       <span class="d-flex align-items-center gap-2">
         Desenvolvido por <strong>VOCTT Inteligência & Consultoria de Frotas</strong>
         <img src="logo_voctt.png" alt="VOCTT" style="height: 18px; width: 18px; border-radius: 50%;">
@@ -489,85 +345,38 @@
 
   </div>
 
-  <!-- MODAL CRM -->
-  <div class="modal fade" id="modalNegociacao" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header" style="background: var(--cargosoft-green); color: #fff;">
-          <h5 class="modal-title fs-6 fw-bold"><i class="bi bi-pencil-square me-2"></i> Negociação: <span id="crmPostoNome"></span></h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label small fw-bold text-muted">ÚLTIMO PREÇO PRATICADO</label>
-            <input type="text" id="crmPrecoAtual" class="form-control form-control-sm font-monospace fw-bold" readonly>
-          </div>
-          <div class="mb-3">
-            <label class="form-label small fw-bold text-muted">NOVO PREÇO NEGOCIADO (R$)</label>
-            <input type="number" step="0.001" id="crmNovoPreco" class="form-control form-control-sm font-monospace" placeholder="Ex: 6.200">
-          </div>
-          <div class="mb-3">
-            <label class="form-label small fw-bold text-muted">DETALHES / REGISTO DA CONVERSA</label>
-            <textarea id="crmObservacao" rows="3" class="form-control form-control-sm" placeholder="Ex: Desconto de R$ 0,15 concedido pela gerência."></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Fechar</button>
-          <button type="button" class="btn btn-sm btn-sync" onclick="salvarCrmNegociacao()">Gravar Negociação</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
   <script>
     const WORKER_URL = "https://api-abastecimentos.klapowsko.workers.dev";
-    
-    let dadosKmmOriginais = [];
-    let baseAnpRevenda = {};
-    let baseAnpDistribuicao = {};
-    let abaAtual = "TODOS";
+    let baseRegistrosMensais = [];
     let chartInstance = null;
-    let historicoCrm = JSON.parse(localStorage.getItem("cargosoft_crm_diesel") || "{}");
 
-    // Silhuetas e identificadores visuais dos Estados
-    function gerarBadgeUf(uf) {
-      return `
-        <span class="uf-badge-container">
-          <svg class="uf-icon" viewBox="0 0 24 24">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-          </svg>
-          ${uf}
-        </span>
-      `;
+    function identificarNomePonto(posto, municipio, uf, tipo) {
+      if (tipo === 'INTERNO') {
+        const mun = (municipio || '').toUpperCase();
+        if (mun.includes('COLOMBO') || uf === 'PR') return "Filial Colombo (Matriz)";
+        if (mun.includes('EUSEBIO') || mun.includes('FORTALEZA') || uf === 'CE') return "Filial Eusébio";
+        if (mun.includes('BARUERI')) return "Filial Barueri";
+        if (mun.includes('RIBEIRAO')) return "Filial Ribeirão Preto";
+        if (mun.includes('SIMOES') || mun.includes('SALVADOR') || uf === 'BA') return "Filial Simões Filho";
+        if (mun.includes('GOIANIA') || mun.includes('APARECIDA') || uf === 'GO') return "Filial Goiânia";
+        return `Garagem ${municipio || 'Interna'}`;
+      }
+      return posto || 'NÃO IDENTIFICADO';
     }
 
-    function identificarFilial(municipio, uf) {
-      if (municipio.includes('COLOMBO') || uf === 'PR') return "Filial Colombo (Matriz)";
-      if (municipio.includes('EUSEBIO') || uf === 'CE') return "Filial Eusébio";
-      if (municipio.includes('BARUERI') || uf === 'SP') return "Filial Barueri";
-      if (municipio.includes('SIMOES') || uf === 'BA') return "Filial Simões Filho";
-      if (municipio.includes('RIBEIRAO') || uf === 'SP') return "Filial Ribeirão Preto";
-      if (municipio.includes('APARECIDA') || uf === 'GO') return "Filial Goiânia";
-      return `Garagem ${municipio}`;
-    }
-
-    async function carregarTudo() {
-      const btn = document.getElementById('btnAtualizar');
-      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> A sincronizar...`;
+    async function carregarDados() {
+      const btn = document.getElementById('btnSincronizar');
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Buscando...`;
       btn.disabled = true;
 
       try {
-        await carregarDadosFirestoreANP();
-
         const resp = await fetch(WORKER_URL);
         const json = await resp.json();
 
         if (json && json.status === "sucesso" && Array.isArray(json.dados)) {
-          dadosKmmOriginais = json.dados;
-          popularFiltroUFs(dadosKmmOriginais);
-          processarDadosCompletos();
+          baseRegistrosMensais = json.dados;
+          popularFiltrosDinamicos();
+          processarPainel();
         } else {
           document.getElementById('tabelaCorpo').innerHTML = `
             <tr><td colspan="9" class="text-center py-4 text-danger">Erro no banco: ${json.mensagem || 'Dados inválidos'}</td></tr>
@@ -575,7 +384,7 @@
         }
       } catch (err) {
         document.getElementById('tabelaCorpo').innerHTML = `
-          <tr><td colspan="9" class="text-center py-4 text-warning">Erro de conexão: ${err.message}. Clique em Sincronizar Bases.</td></tr>
+          <tr><td colspan="9" class="text-center py-4 text-danger">Falha de conexão: ${err.message}</td></tr>
         `;
       } finally {
         btn.innerHTML = `<i class="bi bi-arrow-repeat me-1"></i> Sincronizar Bases`;
@@ -583,150 +392,202 @@
       }
     }
 
-    async function carregarDadosFirestoreANP() {
-      try {
-        if (!window.db || !window.getDocs || !window.collection) return;
-        
-        const snapRev = await window.getDocs(window.collection(window.db, "anp_revenda_uf"));
-        snapRev.forEach(d => {
-          baseAnpRevenda[d.id] = d.data();
-        });
+    function popularFiltrosDinamicos() {
+      // Meses reais encontrados na base
+      const meses = [...new Set(baseRegistrosMensais.map(d => d.MES_ANO).filter(Boolean))].sort().reverse();
+      const selectMes = document.getElementById('filtroMesAno');
+      selectMes.innerHTML = '<option value="YTD">Ano Completo 2026 (Consolidado)</option>';
+      
+      const nomesMes = {
+        '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
+        '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
+        '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
+      };
 
-        const snapDist = await window.getDocs(window.collection(window.db, "anp_distribuicao_uf"));
-        snapDist.forEach(d => {
-          baseAnpDistribuicao[d.id] = d.data();
-        });
-      } catch (e) {
-        console.warn("Aviso ao carregar Firestore ANP:", e);
-      }
-    }
+      meses.forEach(m => {
+        const [ano, mes] = m.split('-');
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.innerText = `${nomesMes[mes] || mes}/${ano} (Competência)`;
+        selectMes.appendChild(opt);
+      });
 
-    function popularFiltroUFs(dados) {
-      const ufs = [...new Set(dados.map(d => d.UF_POSTO).filter(Boolean))].sort();
-      const select = document.getElementById('filtroUf');
-      select.innerHTML = '<option value="">Todas as UFs</option>';
+      // UFs reais encontradas
+      const ufs = [...new Set(baseRegistrosMensais.map(d => d.UF_POSTO).filter(Boolean))].sort();
+      const selectUf = document.getElementById('filtroUf');
+      selectUf.innerHTML = '<option value="">Todas as UFs</option>';
       ufs.forEach(uf => {
         const opt = document.createElement('option');
         opt.value = uf;
         opt.innerText = uf;
-        select.appendChild(opt);
+        selectUf.appendChild(opt);
       });
     }
 
-    function processarDadosCompletos() {
-      const periodo = document.getElementById('filtroPeriodo').value;
-      
-      let dadosFiltrados = dadosKmmOriginais.map(p => {
-        let litros = parseFloat(p.LITROS_ULTIMOS_30D || 0);
-        let precoMedio = parseFloat(p.PRECO_MEDIO_LITRO || 0);
+    let dadosTabelaAtual = [];
 
-        if (periodo === 'ytd') {
-          litros = parseFloat(p.TOTAL_LITROS || 0);
-        } else if (periodo === 'mes_atual') {
-          litros = litros * 0.65;
+    function processarPainel() {
+      const mesSel = document.getElementById('filtroMesAno').value;
+      const ufSel = document.getElementById('filtroUf').value;
+      const tipoSel = document.getElementById('filtroTipo').value;
+
+      // Filtra os dados de base
+      let registros = baseRegistrosMensais;
+
+      if (ufSel) {
+        registros = registros.filter(d => d.UF_POSTO === ufSel);
+      }
+      if (tipoSel !== 'TODOS') {
+        registros = registros.filter(d => d.TIPO_OPERACAO === tipoSel);
+      }
+
+      // Renderiza o gráfico com a base do filtro (curva mês a mês)
+      renderizarGraficoEvolucaoReal(registros);
+
+      // Consolidação para a Tabela e Cards conforme o mês escolhido
+      let registrosPeriodo = registros;
+      if (mesSel !== 'YTD') {
+        registrosPeriodo = registros.filter(d => d.MES_ANO === mesSel);
+      }
+
+      // Agrupa por Posto para a Tabela
+      const postosMap = {};
+      let somaLitrosTotal = 0;
+      let somaGastoTotal = 0;
+
+      registrosPeriodo.forEach(d => {
+        const chave = d.POSTO + "_" + d.UF_POSTO;
+        const litros = parseFloat(d.LITROS_MES || 0);
+        const valor = parseFloat(d.VALOR_TOTAL_MES || 0);
+
+        somaLitrosTotal += litros;
+        somaGastoTotal += valor;
+
+        if (!postosMap[chave]) {
+          postosMap[chave] = {
+            POSTO: d.POSTO,
+            UF_POSTO: d.UF_POSTO,
+            MUNICIPIO_POSTO: d.MUNICIPIO_POSTO,
+            TIPO_OPERACAO: d.TIPO_OPERACAO,
+            LITROS_TOTAL: 0,
+            VALOR_TOTAL: 0,
+            ULTIMO_PRECO: parseFloat(d.ULTIMO_PRECO_MES || 0),
+            DATA_MAIS_RECENTE: d.ULTIMA_DATA_MES,
+            MES_ATUAL: d.MES_ANO
+          };
+        }
+
+        postosMap[chave].LITROS_TOTAL += litros;
+        postosMap[chave].VALOR_TOTAL += valor;
+
+        if (d.ULTIMA_DATA_MES > postosMap[chave].DATA_MAIS_RECENTE) {
+          postosMap[chave].DATA_MAIS_RECENTE = d.ULTIMA_DATA_MES;
+          postosMap[chave].ULTIMO_PRECO = parseFloat(d.ULTIMO_PRECO_MES || 0);
+        }
+      });
+
+      // Calcula Preço Médio Ponderado por Posto
+      dadosTabelaAtual = Object.values(postosMap).map(p => {
+        const precoMedio = p.LITROS_TOTAL > 0 ? (p.VALOR_TOTAL / p.LITROS_TOTAL) : 0;
+        
+        // Variação vs Mês Anterior Real (se estiver filtrado em um mês específico)
+        let variacaoMesAnt = null;
+        if (mesSel !== 'YTD') {
+          const [ano, mes] = mesSel.split('-').map(Number);
+          const mesAntNum = mes === 1 ? 12 : mes - 1;
+          const anoAntNum = mes === 1 ? ano - 1 : ano;
+          const chaveMesAnt = `${anoAntNum}-${String(mesAntNum).padStart(2, '0')}`;
+
+          const registroMesAnt = baseRegistrosMensais.find(r => 
+            r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === chaveMesAnt
+          );
+
+          if (registroMesAnt) {
+            const precoAnt = parseFloat(registroMesAnt.PRECO_MEDIO_MES || 0);
+            if (precoAnt > 0) {
+              variacaoMesAnt = precoMedio - precoAnt;
+            }
+          }
         }
 
         return {
           ...p,
-          LITROS_PROCESSADOS: litros,
-          VALOR_TOTAL_PROCESSADO: litros * precoMedio
+          NOME_EXIBICAO: identificarNomePonto(p.POSTO, p.MUNICIPIO_POSTO, p.UF_POSTO, p.TIPO_OPERACAO),
+          PRECO_MEDIO: precoMedio,
+          VARIACAO_MES_ANT: variacaoMesAnt
         };
       });
 
-      document.getElementById('contTodos').innerText = dadosFiltrados.length;
-      document.getElementById('contExterno').innerText = dadosFiltrados.filter(d => d.TIPO_OPERACAO === 'EXTERNO').length;
-      document.getElementById('contInterno').innerText = dadosFiltrados.filter(d => d.TIPO_OPERACAO === 'INTERNO').length;
+      // Ordena por maior volume
+      dadosTabelaAtual.sort((a, b) => b.LITROS_TOTAL - a.LITROS_TOTAL);
 
-      atualizarCardsKPIs(dadosFiltrados);
-      renderizarGraficoEvolucao();
-      renderizarTop10(dadosFiltrados);
-      aplicarFiltrosTabela();
+      // Atualiza Cards 100% calculados
+      const precoMedioGeral = somaLitrosTotal > 0 ? (somaGastoTotal / somaLitrosTotal) : 0;
+      document.getElementById('cardVolume').innerText = somaLitrosTotal.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + " L";
+      document.getElementById('cardGasto').innerText = "R$ " + somaGastoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('cardPrecoMedio').innerText = precoMedioGeral > 0
+        ? "R$ " + precoMedioGeral.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })
+        : "R$ 0,000";
+      document.getElementById('cardPontos').innerText = dadosTabelaAtual.length.toString();
+
+      renderizarTabela(dadosTabelaAtual);
     }
 
-    function atualizarCardsKPIs(dados) {
-      let somaLitros = 0;
-      let somaGasto = 0;
-      let savingTotal = 0;
-      let somaPrecoAnp = 0;
-      let countAnp = 0;
+    function renderizarGraficoEvolucaoReal(registros) {
+      // Agrupa os registros por mês
+      const mesesMap = {};
+      registros.forEach(d => {
+        if (!d.MES_ANO) return;
+        if (!mesesMap[d.MES_ANO]) {
+          mesesMap[d.MES_ANO] = { litros: 0, valor: 0 };
+        }
+        mesesMap[d.MES_ANO].litros += parseFloat(d.LITROS_MES || 0);
+        mesesMap[d.MES_ANO].valor += parseFloat(d.VALOR_TOTAL_MES || 0);
+      });
 
-      dados.forEach(p => {
-        const litros = p.LITROS_PROCESSADOS;
-        const precoMedio = parseFloat(p.PRECO_MEDIO_LITRO || 0);
-        const uf = p.UF_POSTO || 'PR';
+      const mesesOrdenados = Object.keys(mesesMap).sort();
+      const labels = [];
+      const precos = [];
 
-        const anpObj = (p.TIPO_OPERACAO === 'INTERNO') ? baseAnpDistribuicao[uf] : baseAnpRevenda[uf];
-        const precoRef = anpObj ? (p.TIPO_OPERACAO === 'INTERNO' ? anpObj.preco_medio_dist : anpObj.preco_medio) : 6.15;
+      const nomesMesCurto = {
+        '01': 'Jan', '02': 'Fev', '03': 'Mar', '04': 'Abr',
+        '05': 'Mai', '06': 'Jun', '07': 'Jul', '08': 'Ago',
+        '09': 'Set', '10': 'Out', '11': 'Nov', '12': 'Dez'
+      };
 
-        somaLitros += litros;
-        somaGasto += (litros * precoMedio);
-
-        if (litros > 0) {
-          somaPrecoAnp += precoRef;
-          countAnp++;
-          if (precoRef > precoMedio) {
-            savingTotal += (litros * (precoRef - precoMedio));
-          }
+      mesesOrdenados.forEach(m => {
+        const [ano, mes] = m.split('-');
+        const item = mesesMap[m];
+        const medio = item.litros > 0 ? (item.valor / item.litros) : 0;
+        if (medio > 0) {
+          labels.push(`${nomesMesCurto[mes] || mes}/${ano.slice(2)}`);
+          precos.push(parseFloat(medio.toFixed(3)));
         }
       });
 
-      const precoMedioGeral = somaLitros > 0 ? (somaGasto / somaLitros) : 0;
-      const mediaAnpNacional = countAnp > 0 ? (somaPrecoAnp / countAnp) : 6.15;
-
-      // Pátio Paraná vs ANP Oficial do Paraná
-      const distPRObj = baseAnpDistribuicao['PR'];
-      const precoDistPR = distPRObj ? distPRObj.preco_medio_dist : 6.000;
-      const dataRefPR = distPRObj ? distPRObj.data_referencia : "29/08/2026";
-      
-      const postoPR = dados.find(d => d.TIPO_OPERACAO === 'INTERNO' && d.UF_POSTO === 'PR');
-      const precoPatioPR = postoPR ? parseFloat(postoPR.PRECO_MEDIO_LITRO || 5.96) : 5.96;
-      const spreadPatio = (precoPatioPR - precoDistPR);
-
-      document.getElementById('kpiSaving').innerText = "R$ " + Math.max(savingTotal, 18960).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-      document.getElementById('kpiVolumeTotal').innerText = somaLitros.toLocaleString('pt-BR', {maximumFractionDigits: 0}) + " L";
-      document.getElementById('kpiGastoTotal').innerText = "R$ " + somaGasto.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-      document.getElementById('kpiPrecoMedioGeral').innerText = "R$ " + precoMedioGeral.toFixed(3);
-      document.getElementById('kpiAnpMedia').innerText = "R$ " + mediaAnpNacional.toFixed(3);
-      document.getElementById('kpiSpreadPatio').innerText = "R$ " + spreadPatio.toFixed(2) + " / L";
-      document.getElementById('dataRefDistPR').innerText = `Ref. ANP: ${dataRefPR}`;
-    }
-
-    function renderizarGraficoEvolucao() {
-      const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out'];
-      const precosCargosoft = [6.02, 6.05, 6.09, 6.11, 6.14, 6.10, 6.12, 6.15, 6.18, 6.21];
-      const precosANP =       [6.15, 6.18, 6.22, 6.25, 6.28, 6.24, 6.26, 6.29, 6.31, 6.34];
-
       const options = {
-        series: [
-          { name: "Preço Médio Pago (Cargosoft)", data: precosCargosoft },
-          { name: "Benchmark Oficial ANP", data: precosANP }
-        ],
+        series: [{ name: "Preço Médio Ponderado", data: precos }],
         chart: {
-          type: 'area',
-          height: 270,
+          type: 'line',
+          height: 250,
           toolbar: { show: false },
           fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif'
         },
-        colors: ['#1c483a', '#7c3aed'],
-        fill: {
-          type: 'gradient',
-          gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.05, stops: [0, 95, 100] }
-        },
+        colors: ['#1c483a'],
         stroke: { curve: 'smooth', width: 3 },
+        markers: { size: 5, colors: ['#1c483a'] },
         dataLabels: {
           enabled: true,
-          formatter: val => "R$ " + val.toFixed(2),
-          style: { fontSize: '10px', fontWeight: 'bold', colors: ['#1c483a', '#7c3aed'] },
-          background: { enabled: true, borderRadius: 4, padding: 3 }
+          formatter: val => "R$ " + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+          style: { fontSize: '11px', fontWeight: 'bold' }
         },
-        xaxis: { categories: meses },
+        xaxis: { categories: labels },
         yaxis: {
-          labels: { formatter: val => "R$ " + val.toFixed(2) },
-          min: 5.90,
-          max: 6.45
+          labels: {
+            formatter: val => "R$ " + val.toFixed(2)
+          }
         },
-        grid: { borderColor: '#f1f5f9' },
-        legend: { position: 'top', horizontalAlign: 'right', fontWeight: 600 }
+        grid: { borderColor: '#f1f5f9' }
       };
 
       if (chartInstance) chartInstance.destroy();
@@ -734,250 +595,72 @@
       chartInstance.render();
     }
 
-    function renderizarTop10(dados) {
-      const tbody = document.getElementById('corpoTop10');
+    function renderizarTabela(dados) {
+      const tbody = document.getElementById('tabelaCorpo');
       tbody.innerHTML = "";
+      document.getElementById('lblListando').innerText = `A listar ${dados.length} postos`;
 
-      const top10 = [...dados]
-        .filter(d => d.LITROS_PROCESSADOS > 0)
-        .sort((a, b) => b.LITROS_PROCESSADOS - a.LITROS_PROCESSADOS)
-        .slice(0, 10);
+      if (dados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">Nenhum registro encontrado para este filtro.</td></tr>`;
+        return;
+      }
 
-      top10.forEach(p => {
-        const uf = p.UF_POSTO || 'PR';
-        const anpObj = (p.TIPO_OPERACAO === 'INTERNO') ? baseAnpDistribuicao[uf] : baseAnpRevenda[uf];
-        const precoANP = anpObj ? (p.TIPO_OPERACAO === 'INTERNO' ? anpObj.preco_medio_dist : anpObj.preco_medio) : 6.15;
-        const ultimo = parseFloat(p.ULTIMO_PRECO_PAGO || p.PRECO_MEDIO_LITRO || 0);
+      dados.forEach((p, idx) => {
+        const ehInterno = (p.TIPO_OPERACAO === 'INTERNO');
+        const badgeTipo = ehInterno 
+          ? `<span class="badge-tipo tipo-interno">GARAGEM</span>`
+          : `<span class="badge-tipo tipo-rota">ROTA</span>`;
 
-        const gapPct = precoANP > 0 ? (((ultimo - precoANP) / precoANP) * 100) : 0;
-        const gapFormatado = (gapPct > 0 ? "+" : "") + gapPct.toFixed(1) + "%";
-        const corGap = gapPct <= 0 ? "text-success" : "text-danger";
-
-        const diffSemana = (ultimo - parseFloat(p.PRECO_MEDIO_LITRO || ultimo));
-        let setaSemana = `<span class="text-muted fw-bold">⏸️</span>`;
-        if (diffSemana > 0.02) setaSemana = `<span class="text-danger fw-bold">🔺</span>`;
-        if (diffSemana < -0.02) setaSemana = `<span class="text-success fw-bold">🔻</span>`;
+        let variacaoHtml = `<span class="text-muted small">--</span>`;
+        if (p.VARIACAO_MES_ANT !== null) {
+          const diff = p.VARIACAO_MES_ANT;
+          if (diff > 0.005) {
+            variacaoHtml = `<span class="text-danger fw-bold small">🔺 +R$ ${diff.toFixed(2)}</span>`;
+          } else if (diff < -0.005) {
+            variacaoHtml = `<span class="text-success fw-bold small">🔻 -R$ ${Math.abs(diff).toFixed(2)}</span>`;
+          } else {
+            variacaoHtml = `<span class="text-muted small">Estável</span>`;
+          }
+        }
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
+          <td class="text-muted small">#${idx + 1}</td>
           <td>
-            <div class="fw-bold text-truncate" style="max-width: 160px;" title="${p.POSTO}">${p.POSTO}</div>
-            <span class="badge bg-light text-dark border px-2 py-0 small">${uf}</span>
+            <div class="fw-bold" style="color: #0f172a;">${p.NOME_EXIBICAO}</div>
+            <div class="small text-muted">${p.MUNICIPIO_POSTO || 'ND'}</div>
           </td>
-          <td class="text-end font-monospace fw-semibold">${Math.round(p.LITROS_PROCESSADOS).toLocaleString('pt-BR')} L</td>
-          <td class="text-end font-monospace fw-bold">R$ ${ultimo.toFixed(3)}</td>
-          <td class="text-center">${setaSemana}</td>
-          <td class="text-end font-monospace fw-bold ${corGap}">${gapFormatado}</td>
+          <td><span class="badge-uf">${p.UF_POSTO || '--'}</span></td>
+          <td>${badgeTipo}</td>
+          <td class="text-end font-monospace fw-semibold">${Math.round(p.LITROS_TOTAL).toLocaleString('pt-BR')} L</td>
+          <td class="text-end font-monospace fw-bold" style="color: var(--cargosoft-green);">R$ ${p.PRECO_MEDIO.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</td>
+          <td class="text-end font-monospace">R$ ${p.ULTIMO_PRECO.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</td>
+          <td class="text-center font-monospace">${variacaoHtml}</td>
+          <td class="text-center">
+            <button class="btn-tratar" onclick="alert('Tratamento para: ${p.NOME_EXIBICAO}')">
+              <i class="bi bi-pencil-square"></i> Tratar
+            </button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    function filtrarAba(tipo, el) {
-      abaAtual = tipo;
-      document.querySelectorAll('#tabOperacao .nav-link').forEach(btn => btn.classList.remove('active'));
-      el.classList.add('active');
-      aplicarFiltrosTabela();
-    }
-
-    function aplicarFiltrosTabela() {
-      const periodo = document.getElementById('filtroPeriodo').value;
-      let lista = dadosKmmOriginais.map(p => ({
-        ...p,
-        LITROS_PROCESSADOS: (periodo === 'ytd') ? parseFloat(p.TOTAL_LITROS || 0) : parseFloat(p.LITROS_ULTIMOS_30D || 0)
-      }));
-
-      if (abaAtual === 'INTERNO') {
-        lista = lista.filter(d => d.TIPO_OPERACAO === 'INTERNO');
-      } else if (abaAtual === 'EXTERNO') {
-        lista = lista.filter(d => d.TIPO_OPERACAO === 'EXTERNO');
-      }
-
-      const ufSel = document.getElementById('filtroUf').value;
-      if (ufSel) lista = lista.filter(d => d.UF_POSTO === ufSel);
-
+    function filtrarTabelaTexto() {
       const busca = document.getElementById('campoBusca').value.trim().toLowerCase();
-      if (busca) {
-        lista = lista.filter(d => 
-          (d.POSTO && d.POSTO.toLowerCase().includes(busca)) ||
-          (d.MUNICIPIO_POSTO && d.MUNICIPIO_POSTO.toLowerCase().includes(busca)) ||
-          (d.UF_POSTO && d.UF_POSTO.toLowerCase().includes(busca))
-        );
+      if (!busca) {
+        renderizarTabela(dadosTabelaAtual);
+        return;
       }
-
-      const ord = document.getElementById('ordenacao').value;
-      if (ord === 'volume_desc') {
-        lista.sort((a, b) => b.LITROS_PROCESSADOS - a.LITROS_PROCESSADOS);
-      } else if (ord === 'preco_desc') {
-        lista.sort((a, b) => parseFloat(b.ULTIMO_PRECO_PAGO || 0) - parseFloat(a.ULTIMO_PRECO_PAGO || 0));
-      } else if (ord === 'gap_desc') {
-        lista.sort((a, b) => {
-          const refA = (a.TIPO_OPERACAO === 'INTERNO') ? (baseAnpDistribuicao[a.UF_POSTO]?.preco_medio_dist || 6.00) : (baseAnpRevenda[a.UF_POSTO]?.preco_medio || 6.15);
-          const refB = (b.TIPO_OPERACAO === 'INTERNO') ? (baseAnpDistribuicao[b.UF_POSTO]?.preco_medio_dist || 6.00) : (baseAnpRevenda[b.UF_POSTO]?.preco_medio || 6.15);
-          return (parseFloat(b.ULTIMO_PRECO_PAGO || 0) - refB) - (parseFloat(a.ULTIMO_PRECO_PAGO || 0) - refA);
-        });
-      }
-
-      renderizarTabelaPrincipal(lista);
+      const filtrados = dadosTabelaAtual.filter(d => 
+        d.NOME_EXIBICAO.toLowerCase().includes(busca) ||
+        (d.MUNICIPIO_POSTO && d.MUNICIPIO_POSTO.toLowerCase().includes(busca)) ||
+        (d.UF_POSTO && d.UF_POSTO.toLowerCase().includes(busca))
+      );
+      renderizarTabela(filtrados);
     }
 
-    function renderizarTabelaPrincipal(dados) {
-      const thead = document.getElementById('cabecalhoTabela');
-      const tbody = document.getElementById('tabelaCorpo');
-      tbody.innerHTML = "";
-      document.getElementById('lblListando').innerText = `A listar ${dados.length} de ${dadosKmmOriginais.length} postos`;
-
-      if (abaAtual === 'INTERNO') {
-        thead.innerHTML = `
-          <th style="width: 40px;">#</th>
-          <th>Unidade Operacional (Filial)</th>
-          <th style="width: 80px;">UF</th>
-          <th class="text-end">Volume Entregue</th>
-          <th class="text-end">Último Lote (Granel)</th>
-          <th class="text-center">Evolução dos Últimos Lotes</th>
-          <th class="text-end">ANP Distribuição</th>
-          <th>Amostragem ANP</th>
-          <th class="text-center" style="width: 70px;">Ações</th>
-        `;
-
-        dados.forEach((p, idx) => {
-          const uf = p.UF_POSTO || 'PR';
-          const distObj = baseAnpDistribuicao[uf];
-          const precoDistANP = distObj ? distObj.preco_medio_dist : 6.000;
-          const dataVigencia = distObj ? distObj.data_referencia : "29/08/2026";
-          
-          const nomeFilial = identificarFilial(p.MUNICIPIO_POSTO, uf);
-          const ultimoPreco = parseFloat(p.ULTIMO_PRECO_PAGO || 0);
-          const precoMedio = parseFloat(p.PRECO_MEDIO_LITRO || ultimoPreco);
-          const lote2 = precoMedio * 0.99;
-          const lote3 = precoMedio * 0.978;
-
-          const diff = ultimoPreco - lote2;
-          const setaEvolucao = diff <= 0
-            ? `<span class="badge bg-success-subtle text-success fw-bold">🔻 Queda (-R$ ${Math.abs(diff).toFixed(2)})</span>`
-            : `<span class="badge bg-danger-subtle text-danger fw-bold">🔺 Alta (+R$ ${diff.toFixed(2)})</span>`;
-
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td class="text-muted small">#${idx + 1}</td>
-            <td>
-              <div class="fw-bold" style="color: var(--cargosoft-green); font-size: 0.92rem;">${nomeFilial}</div>
-              <div class="small text-muted">${p.MUNICIPIO_POSTO}</div>
-            </td>
-            <td>${gerarBadgeUf(uf)}</td>
-            <td class="text-end font-monospace fw-semibold">${Math.round(p.LITROS_PROCESSADOS).toLocaleString('pt-BR')} L</td>
-            <td class="text-end font-monospace fw-bold" style="color: #0f172a;">R$ ${ultimoPreco.toFixed(3)}</td>
-            <td class="text-center">
-              <div class="compras-timeline">
-                <span class="text-muted">R$ ${lote3.toFixed(2)}</span>
-                <span class="text-muted">➔</span>
-                <span class="text-muted">R$ ${lote2.toFixed(2)}</span>
-                <span class="text-muted">➔</span>
-                <strong>R$ ${ultimoPreco.toFixed(2)}</strong>
-                ${setaEvolucao}
-              </div>
-            </td>
-            <td class="text-end font-monospace fw-bold" style="color: #0284c7;">R$ ${precoDistANP.toFixed(3)}</td>
-            <td class="small font-monospace text-muted"><i class="bi bi-calendar-event me-1"></i>${dataVigencia}</td>
-            <td class="text-center">
-              <button class="btn btn-crm" onclick="abrirCrm('${nomeFilial}', ${ultimoPreco})">
-                <i class="bi bi-pencil-square"></i> Tratar
-              </button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-
-      } else {
-        thead.innerHTML = `
-          <th style="width: 40px;">#</th>
-          <th>Posto / Rede</th>
-          <th style="width: 80px;">UF</th>
-          <th style="width: 70px;">Tipo</th>
-          <th class="text-end">Volume</th>
-          <th class="text-end">Último Preço</th>
-          <th class="text-end">ANP Semanal</th>
-          <th class="text-end">Variação / GAP</th>
-          <th class="text-center">Status</th>
-          <th class="text-center" style="width: 70px;">Ações</th>
-        `;
-
-        dados.forEach((p, idx) => {
-          const uf = p.UF_POSTO || 'PR';
-          const ehInterno = (p.TIPO_OPERACAO === 'INTERNO');
-          const anpObj = ehInterno ? baseAnpDistribuicao[uf] : baseAnpRevenda[uf];
-          const precoANP = anpObj ? (ehInterno ? anpObj.preco_medio_dist : anpObj.preco_medio) : 6.15;
-          const ultimo = parseFloat(p.ULTIMO_PRECO_PAGO || 0);
-
-          const gapPct = precoANP > 0 ? (((ultimo - precoANP) / precoANP) * 100) : 0;
-          const gapFormatado = (gapPct > 0 ? "+" : "") + gapPct.toFixed(2) + "%";
-          const corGap = gapPct <= 0 ? "color: var(--success-green);" : "color: var(--danger-red);";
-
-          const ehPico = gapPct > 1.5;
-          const statusHtml = ehPico
-            ? `<span class="badge-status status-pico">⚠️ Pico</span>`
-            : `<span class="badge-status status-estavel">Estável</span>`;
-
-          const tipoBadge = ehInterno
-            ? `<span class="badge-tipo tipo-interno">INTERNO</span>`
-            : `<span class="badge-tipo tipo-rota">ROTA</span>`;
-
-          const nomeExibicao = ehInterno ? identificarFilial(p.MUNICIPIO_POSTO, uf) : p.POSTO;
-
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td class="text-muted small">#${idx + 1}</td>
-            <td>
-              <div class="fw-bold" style="color: #0f172a;">${nomeExibicao}</div>
-              <div class="small text-muted">${p.MUNICIPIO_POSTO}</div>
-            </td>
-            <td>${gerarBadgeUf(uf)}</td>
-            <td>${tipoBadge}</td>
-            <td class="text-end font-monospace fw-semibold">${Math.round(p.LITROS_PROCESSADOS).toLocaleString('pt-BR')} L</td>
-            <td class="text-end font-monospace fw-bold" style="color: #0f172a;">R$ ${ultimo.toFixed(3)}</td>
-            <td class="text-end font-monospace fw-semibold" style="color: #7c3aed;">R$ ${precoANP.toFixed(3)}</td>
-            <td class="text-end font-monospace fw-bold" style="${corGap}">${gapFormatado}</td>
-            <td class="text-center">${statusHtml}</td>
-            <td class="text-center">
-              <button class="btn btn-crm" onclick="abrirCrm('${nomeExibicao}', ${ultimo})">
-                <i class="bi bi-pencil-square"></i>
-              </button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }
-    }
-
-    let postoEmEdicao = "";
-    function abrirCrm(nomePosto, precoAtual) {
-      postoEmEdicao = nomePosto;
-      document.getElementById('crmPostoNome').innerText = nomePosto;
-      document.getElementById('crmPrecoAtual').value = "R$ " + precoAtual.toFixed(3);
-
-      const salvo = historicoCrm[nomePosto] || {};
-      document.getElementById('crmNovoPreco').value = salvo.novoPreco || "";
-      document.getElementById('crmObservacao').value = salvo.observacao || "";
-
-      new bootstrap.Modal(document.getElementById('modalNegociacao')).show();
-    }
-
-    function salvarCrmNegociacao() {
-      const novoPreco = document.getElementById('crmNovoPreco').value;
-      const obs = document.getElementById('crmObservacao').value;
-
-      historicoCrm[postoEmEdicao] = {
-        novoPreco: novoPreco,
-        observacao: obs,
-        data: new Date().toLocaleDateString('pt-BR')
-      };
-
-      localStorage.setItem("cargosoft_crm_diesel", JSON.stringify(historicoCrm));
-      bootstrap.Modal.getInstance(document.getElementById('modalNegociacao')).hide();
-      alert(`Negociação gravada com sucesso para ${postoEmEdicao}!`);
-    }
-
-    carregarTudo();
+    carregarDados();
   </script>
 </body>
 </html>
