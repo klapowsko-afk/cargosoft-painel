@@ -246,7 +246,6 @@
       stroke-width: 2.5;
     }
 
-    /* TOOLTIP DO MAPA SVG */
     #mapTooltip {
       position: absolute;
       display: none;
@@ -265,7 +264,7 @@
       display: none;
     }
     #mapLeaflet {
-      height: 520px;
+      height: 550px;
       width: 100%;
       border-radius: 8px;
       z-index: 5;
@@ -274,6 +273,19 @@
       font-size: 0.75rem !important;
       max-height: 250px;
       overflow-y: auto;
+    }
+    .autocomplete-list {
+      z-index: 1060;
+      position: absolute;
+      width: 100%;
+      top: 100%;
+      left: 0;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      max-height: 190px;
+      overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     }
   </style>
 </head>
@@ -433,52 +445,57 @@
       </div>
     </div>
 
-    <!-- SEÇÃO 2: ROTEIRIZADOR LEAFLET.JS COM AUTOCOMPLETAR -->
+    <!-- SEÇÃO 2: ROTEIRIZADOR LEAFLET.JS COM ATÉ 5 CIDADES E FILTRO DE RAIO (200 KM) -->
     <div id="secaoRoteirizador" class="panel-box">
       <div class="panel-header">
         <div>
           <strong class="text-dark"><i class="bi bi-map-fill me-1 text-primary"></i> Planejador & Roteirizador de Abastecimento</strong>
-          <div class="small text-muted">Trace a rota da viagem para identificar postos cadastrados e direcionar os motoristas para o menor preço</div>
+          <div class="small text-muted">Trace rotas com paradas e filtre automaticamente apenas os postos no corredor rodoviário (até 200 km)</div>
         </div>
         <span class="badge bg-primary text-white px-3 py-1 rounded-pill font-monospace">Motor OSRM &bull; Leaflet</span>
       </div>
       <div class="p-3">
         <div class="row g-3">
           
-          <!-- COLUNA ESQUERDA: CAMPOS COM AUTOCOMPLETE REAL -->
+          <!-- COLUNA ESQUERDA: ENTRADA DINÂMICA DE CIDADES -->
           <div class="col-12 col-md-4">
             <div class="card p-3 border-0 bg-light position-relative">
               
-              <!-- ORIGEM -->
-              <label class="small fw-bold text-dark mb-1">1. Cidade de Origem:</label>
-              <div class="position-relative mb-2">
-                <input type="text" id="rotaOrigem" class="form-control form-control-sm" value="Colombo, PR" autocomplete="off" oninput="buscarSugestoesCidades(this, 'sugestoesOrigem', 'coordOrigem')">
-                <input type="hidden" id="coordOrigem" value="-25.2917,-49.2242">
-                <div id="sugestoesOrigem" class="list-group position-absolute w-100 shadow-sm" style="z-index: 1050; display: none; max-height: 180px; overflow-y: auto;"></div>
+              <div id="containerPontosRota">
+                <!-- ORIGEM (PONTO 0) -->
+                <div class="mb-2 position-relative ponto-rota-item" data-index="0">
+                  <label class="small fw-bold text-dark mb-1 d-flex justify-content-between">
+                    <span>1. Cidade de Origem:</span>
+                  </label>
+                  <input type="text" class="form-control form-control-sm input-cidade-rota" placeholder="Digite a cidade de partida..." autocomplete="off">
+                  <input type="hidden" class="hidden-coord-rota">
+                  <div class="autocomplete-list shadow-sm" style="display: none;"></div>
+                </div>
+
+                <!-- DESTINO FINAL (PONTO FINAL) -->
+                <div class="mb-2 position-relative ponto-rota-item" data-index="1">
+                  <label class="small fw-bold text-dark mb-1 d-flex justify-content-between">
+                    <span>2. Cidade de Destino:</span>
+                  </label>
+                  <input type="text" class="form-control form-control-sm input-cidade-rota" placeholder="Digite a cidade de destino..." autocomplete="off">
+                  <input type="hidden" class="hidden-coord-rota">
+                  <div class="autocomplete-list shadow-sm" style="display: none;"></div>
+                </div>
               </div>
 
-              <!-- PARADA INTERMEDIÁRIA -->
-              <label class="small fw-bold text-dark mb-1">2. Parada Intermediária (Opcional):</label>
-              <div class="position-relative mb-2">
-                <input type="text" id="rotaVia" class="form-control form-control-sm" placeholder="Ex: Araucária, PR ou Betim, MG" autocomplete="off" oninput="buscarSugestoesCidades(this, 'sugestoesVia', 'coordVia')">
-                <input type="hidden" id="coordVia" value="">
-                <div id="sugestoesVia" class="list-group position-absolute w-100 shadow-sm" style="z-index: 1050; display: none; max-height: 180px; overflow-y: auto;"></div>
+              <!-- BOTÃO ADICIONAR PARADA (ATÉ 5 PONTOS) -->
+              <div class="mb-3">
+                <button type="button" id="btnAdicionarParada" class="btn btn-outline-dark btn-sm w-100 fw-semibold" onclick="adicionarCampoParada()">
+                  <i class="bi bi-plus-circle me-1"></i> Adicionar Parada Intermediária
+                </button>
               </div>
 
-              <!-- DESTINO -->
-              <label class="small fw-bold text-dark mb-1">3. Cidade de Destino:</label>
-              <div class="position-relative mb-3">
-                <input type="text" id="rotaDestino" class="form-control form-control-sm" value="Primavera do Leste, MT" autocomplete="off" oninput="buscarSugestoesCidades(this, 'sugestoesDestino', 'coordDestino')">
-                <input type="hidden" id="coordDestino" value="-15.5583,-54.2986">
-                <div id="sugestoesDestino" class="list-group position-absolute w-100 shadow-sm" style="z-index: 1050; display: none; max-height: 180px; overflow-y: auto;"></div>
-              </div>
-
-              <button class="btn btn-sm btn-success fw-bold w-100 py-2 shadow-sm" onclick="calcularRotaLeaflet()">
+              <button class="btn btn-sm btn-success fw-bold w-100 py-2 shadow-sm mb-3" onclick="calcularRotaLeaflet()">
                 <i class="bi bi-signpost-2-fill me-1"></i> Traçar Rota & Mapear Postos
               </button>
 
-              <div class="mt-3 pt-3 border-top small text-muted">
-                <span class="fw-bold d-block text-dark mb-1">Legenda dos Postos no Caminho:</span>
+              <div class="pt-2 border-top small text-muted">
+                <span class="fw-bold d-block text-dark mb-1">Postos Filtrados (Raio de até 200 km da Rota):</span>
                 <div><span class="legend-indicator" style="background:#16a34a;"></span>Posto Recomendado (Menor Preço)</div>
                 <div><span class="legend-indicator" style="background:#eab308;"></span>Preço de Mercado Aceitável</div>
                 <div><span class="legend-indicator" style="background:#dc2626;"></span>Alerta de Custo Elevado</div>
@@ -516,9 +533,35 @@
     let postoFiltrado = "";
     let leafletMapInstance = null;
     let routingControlInstance = null;
+    let markersPostosLeaflet = [];
     let debounceTimerGeo = null;
 
-    // Histórico de Distribuição ANP 2026 oficial (Tanques Internos)
+    // Cache local de coordenadas geográficas
+    const cacheCoordenadas = {
+      "COLOMBO, PR": [-25.2917, -49.2242],
+      "CURITIBA, PR": [-25.4284, -49.2733],
+      "ARAUCARIA, PR": [-25.5925, -49.4069],
+      "BARUERI, SP": [-23.5113, -46.8765],
+      "SAO PAULO, SP": [-23.5505, -46.6333],
+      "RIBEIRAO PRETO, SP": [-21.1767, -47.8208],
+      "BETIM, MG": [-19.9678, -44.1983],
+      "BELO HORIZONTE, MG": [-19.9167, -43.9345],
+      "FRUTAL, MG": [-20.0247, -48.9406],
+      "ARAPORA, MG": [-18.1436, -49.1828],
+      "CENTRALINA, MG": [-18.5836, -49.4994],
+      "CAMPOS ALTOS, MG": [-19.6961, -46.1728],
+      "MONTE CARMELO, MG": [-18.7275, -47.4981],
+      "DELTA, MG": [-19.9753, -47.7711],
+      "APARECIDA DE GOIANIA, GO": [-16.8228, -49.2481],
+      "GOIANIA, GO": [-16.6869, -49.2648],
+      "PRIMAVERA DO LESTE, MT": [-15.5583, -54.2986],
+      "CUIABA, MT": [-15.6014, -56.0979],
+      "EUSEBIO, CE": [-3.8906, -38.4597],
+      "FORTALEZA, CE": [-3.7172, -38.5433],
+      "SIMOES FILHO, BA": [-12.7878, -38.4028],
+      "SALVADOR, BA": [-12.9777, -38.5016]
+    };
+
     const anpDistribuicao = {
       "BA": { "2026-01": 5.44, "2026-02": 5.40, "2026-03": 6.28, "2026-04": 6.47, "2026-05": 6.34, "2026-06": 6.27, "2026-07": 6.12, "2026-08": 6.09, "2026-09": 6.239, "2026-10": 6.239 },
       "CE": { "2026-01": 5.44, "2026-02": 5.40, "2026-03": 6.28, "2026-04": 6.47, "2026-05": 6.34, "2026-06": 6.27, "2026-07": 6.12, "2026-08": 6.09, "2026-09": 6.167, "2026-10": 6.167 },
@@ -528,7 +571,6 @@
       "MG": { "2026-01": 5.42, "2026-02": 5.38, "2026-03": 6.20, "2026-04": 6.40, "2026-05": 6.28, "2026-06": 6.20, "2026-07": 6.08, "2026-08": 6.02, "2026-09": 6.380, "2026-10": 6.380 }
     };
 
-    // Histórico de Revenda ANP 2026 oficial (Postos de Rodovia)
     const anpRevenda = {
       "BA": { "2026-01": 5.95, "2026-02": 5.92, "2026-03": 6.65, "2026-04": 6.82, "2026-05": 6.75, "2026-06": 6.70, "2026-07": 6.58, "2026-08": 6.55, "2026-09": 6.680, "2026-10": 6.680 },
       "CE": { "2026-01": 5.88, "2026-02": 5.85, "2026-03": 6.60, "2026-04": 6.78, "2026-05": 6.70, "2026-06": 6.65, "2026-07": 6.52, "2026-08": 6.48, "2026-09": 6.550, "2026-10": 6.550 },
@@ -600,7 +642,6 @@
         selectMes.appendChild(opt);
       });
 
-      // Popular Seletor de Postos
       const postosUnicos = [...new Set(baseRegistrosMensais.map(d => d.POSTO).filter(Boolean))].sort();
       const selectPosto = document.getElementById('filtroPosto');
       selectPosto.innerHTML = '<option value="">Todos os Postos Cadastrados</option>';
@@ -1087,116 +1128,188 @@
       document.getElementById('mapTooltip').style.display = "none";
     }
 
-    /* MÓDULO ROTEIRIZADOR LEAFLET COM AUTOCOMPLETAR */
-    function buscarSugestoesCidades(inputEl, listaId, hiddenCoordId) {
-      clearTimeout(debounceTimerGeo);
-      const termo = inputEl.value.trim();
-      const listaEl = document.getElementById(listaId);
+    /* MÓDULO ROTEIRIZADOR LEAFLET DINÂMICO */
+    function configurarAutocompletarItem(itemEl) {
+      const input = itemEl.querySelector('.input-cidade-rota');
+      const hiddenCoord = itemEl.querySelector('.hidden-coord-rota');
+      const lista = itemEl.querySelector('.autocomplete-list');
 
-      if (termo.length < 3) {
-        listaEl.style.display = "none";
-        listaEl.innerHTML = "";
+      input.addEventListener('input', () => {
+        clearTimeout(debounceTimerGeo);
+        const termo = input.value.trim();
+
+        if (termo.length < 3) {
+          lista.style.display = "none";
+          lista.innerHTML = "";
+          hiddenCoord.value = "";
+          return;
+        }
+
+        debounceTimerGeo = setTimeout(async () => {
+          try {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=br&limit=6&q=${encodeURIComponent(termo)}`;
+            const res = await fetch(url, { headers: { 'Accept-Language': 'pt-BR' } });
+            const data = await res.json();
+
+            lista.innerHTML = "";
+            if (!data || data.length === 0) {
+              lista.style.display = "none";
+              return;
+            }
+
+            data.forEach(cidade => {
+              const btn = document.createElement("button");
+              btn.type = "button";
+              btn.className = "list-group-item list-group-item-action small py-2 text-start";
+              btn.style.fontSize = "0.75rem";
+              btn.innerText = cidade.display_name;
+
+              btn.onclick = () => {
+                input.value = cidade.display_name.split(',').slice(0, 3).join(', ');
+                hiddenCoord.value = `${cidade.lat},${cidade.lon}`;
+                lista.style.display = "none";
+                lista.innerHTML = "";
+              };
+
+              lista.appendChild(btn);
+            });
+
+            lista.style.display = "block";
+          } catch(e) {
+            console.warn(e);
+          }
+        }, 300);
+      });
+    }
+
+    function adicionarCampoParada() {
+      const container = document.getElementById('containerPontosRota');
+      const itens = container.querySelectorAll('.ponto-rota-item');
+
+      if (itens.length >= 5) {
+        alert("Limite máximo de 5 pontos na rota atingido.");
         return;
       }
 
-      debounceTimerGeo = setTimeout(async () => {
-        try {
-          const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=br&limit=5&q=${encodeURIComponent(termo)}`;
-          const res = await fetch(url, { headers: { 'Accept-Language': 'pt-BR' } });
-          const cidades = await res.json();
+      const novoIndex = itens.length;
+      const novoItem = document.createElement('div');
+      novoItem.className = 'mb-2 position-relative ponto-rota-item';
+      novoItem.setAttribute('data-index', novoIndex);
+      novoItem.innerHTML = `
+        <label class="small fw-bold text-dark mb-1 d-flex justify-content-between">
+          <span>Parada Intermediária:</span>
+          <span class="text-danger cursor-pointer" onclick="removerCampoParada(this)" title="Remover"><i class="bi bi-trash"></i></span>
+        </label>
+        <input type="text" class="form-control form-control-sm input-cidade-rota" placeholder="Digite a parada intermediária..." autocomplete="off">
+        <input type="hidden" class="hidden-coord-rota">
+        <div class="autocomplete-list shadow-sm" style="display: none;"></div>
+      `;
 
-          listaEl.innerHTML = "";
-          if (!cidades || cidades.length === 0) {
-            listaEl.style.display = "none";
-            return;
-          }
+      // Insere antes do destino final
+      container.insertBefore(novoItem, itens[itens.length - 1]);
+      configurarAutocompletarItem(novoItem);
+      renumerarRotulos();
+    }
 
-          cidades.forEach(item => {
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "list-group-item list-group-item-action small py-2";
-            btn.style.fontSize = "0.75rem";
-            btn.innerText = item.display_name;
+    function removerCampoParada(btnEl) {
+      const item = btnEl.closest('.ponto-rota-item');
+      item.remove();
+      renumerarRotulos();
+    }
 
-            btn.onclick = () => {
-              inputEl.value = item.display_name.split(',').slice(0, 3).join(', ');
-              document.getElementById(hiddenCoordId).value = `${item.lat},${item.lon}`;
-              listaEl.style.display = "none";
-              listaEl.innerHTML = "";
-            };
-
-            listaEl.appendChild(btn);
-          });
-
-          listaEl.style.display = "block";
-        } catch (e) {
-          console.warn("Erro ao buscar cidades:", e);
+    function renumerarRotulos() {
+      const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
+      itens.forEach((el, idx) => {
+        const label = el.querySelector('label span');
+        if (idx === 0) {
+          label.innerText = "1. Cidade de Origem:";
+        } else if (idx === itens.length - 1) {
+          label.innerText = `${idx + 1}. Cidade de Destino:`;
+        } else {
+          label.innerText = `${idx + 1}. Parada Intermediária:`;
         }
-      }, 350);
+      });
     }
 
     document.addEventListener("click", (e) => {
-      ['sugestoesOrigem', 'sugestoesVia', 'sugestoesDestino'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el && !el.contains(e.target)) {
-          el.style.display = "none";
+      document.querySelectorAll('.autocomplete-list').forEach(list => {
+        if (!list.closest('.ponto-rota-item').contains(e.target)) {
+          list.style.display = "none";
         }
       });
     });
 
     function inicializarMapaLeaflet() {
       if (!leafletMapInstance) {
-        leafletMapInstance = L.map('mapLeaflet').setView([-23.5505, -46.6333], 5);
+        leafletMapInstance = L.map('mapLeaflet').setView([-20.0, -48.0], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; OpenStreetMap'
         }).addTo(leafletMapInstance);
+
+        // Inicializa listeners dos 2 campos nativos
+        document.querySelectorAll('.ponto-rota-item').forEach(configurarAutocompletarItem);
       }
       setTimeout(() => {
         leafletMapInstance.invalidateSize();
-        calcularRotaLeaflet();
       }, 250);
     }
 
-    async function obterCoordenadasTexto(texto) {
-      if (!texto) return null;
+    async function buscarCoordNominatim(termo) {
+      if (!termo) return null;
+      const chaveCache = termo.trim().toUpperCase();
+      if (cacheCoordenadas[chaveCache]) return cacheCoordenadas[chaveCache];
+
       try {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=br&limit=1&q=${encodeURIComponent(texto)}`;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=br&limit=1&q=${encodeURIComponent(termo)}`;
         const res = await fetch(url, { headers: { 'Accept-Language': 'pt-BR' } });
-        const data = await res.json();
-        if (data && data.length > 0) {
-          return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        const d = await res.json();
+        if (d && d.length > 0) {
+          const c = [parseFloat(d[0].lat), parseFloat(d[0].lon)];
+          cacheCoordenadas[chaveCache] = c;
+          return c;
         }
-      } catch (e) {}
+      } catch(e){}
       return null;
+    }
+
+    // Fórmula Haversine para calcular distância real em KM entre duas coordenadas
+    function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
 
     async function calcularRotaLeaflet() {
       if (!leafletMapInstance) return;
 
-      const origemTexto = document.getElementById('rotaOrigem').value.trim();
-      const destinoTexto = document.getElementById('rotaDestino').value.trim();
-      const viaTexto = document.getElementById('rotaVia').value.trim();
+      const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
+      const waypoints = [];
 
-      let coordOrigem = document.getElementById('coordOrigem').value;
-      let coordDestino = document.getElementById('coordDestino').value;
-      let coordVia = document.getElementById('coordVia').value;
+      for (const item of itens) {
+        const input = item.querySelector('.input-cidade-rota');
+        const hidden = item.querySelector('.hidden-coord-rota');
+        let coords = null;
 
-      let latLngOrigem = coordOrigem ? coordOrigem.split(',').map(Number) : await obterCoordenadasTexto(origemTexto);
-      let latLngDestino = coordDestino ? coordDestino.split(',').map(Number) : await obterCoordenadasTexto(destinoTexto);
-      let latLngVia = coordVia ? coordVia.split(',').map(Number) : (viaTexto ? await obterCoordenadasTexto(viaTexto) : null);
+        if (hidden.value) {
+          coords = hidden.value.split(',').map(Number);
+        } else if (input.value.trim()) {
+          coords = await buscarCoordNominatim(input.value.trim());
+          if (coords) hidden.value = `${coords[0]},${coords[1]}`;
+        }
 
-      if (!latLngOrigem || !latLngDestino) {
-        alert("Não foi possível localizar a Origem ou o Destino digitado. Por favor, clique na sugestão de cidade.");
+        if (coords) {
+          waypoints.push(L.latLng(coords[0], coords[1]));
+        }
+      }
+
+      if (waypoints.length < 2) {
+        alert("Preencha ao menos uma Cidade de Origem e uma Cidade de Destino válidas.");
         return;
       }
-
-      const waypoints = [L.latLng(latLngOrigem[0], latLngOrigem[1])];
-
-      if (latLngVia) {
-        waypoints.push(L.latLng(latLngVia[0], latLngVia[1]));
-      }
-
-      waypoints.push(L.latLng(latLngDestino[0], latLngDestino[1]));
 
       if (routingControlInstance) {
         leafletMapInstance.removeControl(routingControlInstance);
@@ -1212,11 +1325,17 @@
         }
       }).addTo(leafletMapInstance);
 
-      plotarPostosCadastradosNoMapa();
+      routingControlInstance.on('routesfound', function(e) {
+        const routeCoords = e.routes[0].coordinates;
+        plotarPostosNoRaioDaRota(routeCoords, 200); // Raio limite de 200 km da rota
+      });
     }
 
-    async function plotarPostosCadastradosNoMapa() {
-      // Coleta municípios dos postos cadastrados
+    async function plotarPostosNoRaioDaRota(routeCoords, maxDistKm) {
+      // Limpa marcadores anteriores
+      markersPostosLeaflet.forEach(m => leafletMapInstance.removeLayer(m));
+      markersPostosLeaflet = [];
+
       const postos = [...new Set(baseRegistrosMensais.map(d => ({
         posto: d.POSTO,
         municipio: (d.MUNICIPIO_POSTO || '').toUpperCase(),
@@ -1225,13 +1344,30 @@
         tipo: d.TIPO_OPERACAO
       })))];
 
-      // Geocodificação rápida para as cidades dos postos cadastrados
-      for (const p of postos.slice(0, 25)) {
+      // Passo de amostragem na linha da rota para otimização geométrica
+      const amostraRota = [];
+      const passo = Math.max(1, Math.floor(routeCoords.length / 80));
+      for (let i = 0; i < routeCoords.length; i += passo) {
+        amostraRota.push(routeCoords[i]);
+      }
+
+      for (const p of postos) {
         if (!p.municipio || p.municipio === 'ND') continue;
-        const coords = await obterCoordenadasTexto(`${p.municipio}, ${p.uf}, Brasil`);
-        if (coords) {
+        const coordsPosto = await buscarCoordNominatim(`${p.municipio}, ${p.uf}, Brasil`);
+        if (!coordsPosto) continue;
+
+        // Mede a menor distância do posto a qualquer ponto da rota
+        let menorDist = Infinity;
+        for (const pt of amostraRota) {
+          const d = calcularDistanciaKm(coordsPosto[0], coordsPosto[1], pt.lat, pt.lng);
+          if (d < menorDist) menorDist = d;
+          if (menorDist <= maxDistKm) break;
+        }
+
+        // Só plota se estiver dentro do raio de 200 km
+        if (menorDist <= maxDistKm) {
           const corPin = p.preco < 6.40 ? "#16a34a" : (p.preco < 6.75 ? "#eab308" : "#dc2626");
-          const marker = L.circleMarker(coords, {
+          const marker = L.circleMarker(coordsPosto, {
             radius: 8,
             fillColor: corPin,
             color: "#ffffff",
@@ -1244,8 +1380,11 @@
             <strong style="color:#1c483a;">${p.posto}</strong><br>
             Cidade: ${p.municipio}/${p.uf}<br>
             Último Preço: <b>R$ ${p.preco.toFixed(3)}</b><br>
-            Tipo: ${p.tipo}
+            Tipo: ${p.tipo}<br>
+            <span class="small text-muted">Aprox. ${Math.round(menorDist)} km da rota</span>
           `);
+
+          markersPostosLeaflet.push(marker);
         }
       }
     }
