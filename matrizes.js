@@ -1,5 +1,5 @@
 // Módulo de Matrizes Gerenciais e Auditoria Estratégica (Power BI Engine Alinhado)
-// Inclui o Modo de Checagem com matrizes brutas de Custo Médio Pago e ANP Revenda
+// Utiliza QTD_ABASTECIMENTOS para reproduzir o AVERAGE(VALOR_UNITARIO) de cada abastecimento
 
 let cacheAnpBase = null;
 
@@ -21,7 +21,7 @@ async function calcularMatrizesGerenciais(registros) {
   const mapaRevenda = dadosAnp.revenda || {};
   const mapaDistribuicao = dadosAnp.distribuicao || {};
 
-  // Gera dinamicamente os meses disponíveis a partir dos registros KMM
+  // Extrai dinamicamente a lista ordenada de competências presentes na base
   const mesesDisponiveis = [...new Set(registros.map(r => r.MES_ANO).filter(Boolean))].sort();
 
   const nomesAbrev = {
@@ -38,41 +38,49 @@ async function calcularMatrizesGerenciais(registros) {
     };
   });
 
-  // UFs com operação
+  // UFs com movimentação
   const ufsExterno = [...new Set(registros.filter(r => r.TIPO_OPERACAO === 'EXTERNO').map(r => r.UF_POSTO).filter(Boolean))].sort();
   const ufsInterno = [...new Set(registros.filter(r => r.TIPO_OPERACAO === 'INTERNO').map(r => r.UF_POSTO).filter(Boolean))].sort();
 
-  // Agrupamento para Média Simples (AVERAGE) idêntica ao DAX do Power BI
-  const precosAgrupados = {};
+  // Agrupador por UF, Mês e Tipo de Operação considerando o peso das transações individuais
+  const dadosAgrupados = {};
 
   registros.forEach(r => {
     const chave = `${r.UF_POSTO}_${r.MES_ANO}_${r.TIPO_OPERACAO}`;
-    if (!precosAgrupados[chave]) {
-      precosAgrupados[chave] = [];
+    if (!dadosAgrupados[chave]) {
+      dadosAgrupados[chave] = { somaPonderadaTransacoes: 0, totalAbastecimentos: 0 };
     }
+
     const preco = parseFloat(r.PRECO_MEDIO_MES || 0);
-    if (preco > 0) {
-      precosAgrupados[chave].push(preco);
+    const qtd = parseInt(r.QTD_ABASTECIMENTOS || 0, 10);
+
+    if (preco > 0 && qtd > 0) {
+      dadosAgrupados[chave].somaPonderadaTransacoes += (preco * qtd);
+      dadosAgrupados[chave].totalAbastecimentos += qtd;
     }
   });
 
+  // Média exata de abastecimentos do mês para a UF (Réplica do AVERAGE do Power BI)
   function getPrecoMedioSimples(uf, mes, tipo) {
-    const lista = precosAgrupados[`${uf}_${mes}_${tipo}`];
-    if (!lista || lista.length === 0) return null;
-    const soma = lista.reduce((a, b) => a + b, 0);
-    return soma / lista.length;
+    const d = dadosAgrupados[`${uf}_${mes}_${tipo}`];
+    if (!d || d.totalAbastecimentos === 0) return null;
+    return d.somaPonderadaTransacoes / d.totalAbastecimentos;
   }
 
+  // Média acumulada da UF considerando todas as transações do ano
   function getTotalUfSimples(uf, tipo) {
-    const todosPrecos = [];
+    let somaTotal = 0;
+    let qtdTotal = 0;
+
     mesesColunas.forEach(m => {
-      const lista = precosAgrupados[`${uf}_${m.id}_${tipo}`];
-      if (lista && lista.length > 0) {
-        todosPrecos.push(...lista);
+      const d = dadosAgrupados[`${uf}_${m.id}_${tipo}`];
+      if (d && d.totalAbastecimentos > 0) {
+        somaTotal += d.somaPonderadaTransacoes;
+        qtdTotal += d.totalAbastecimentos;
       }
     });
-    if (todosPrecos.length === 0) return null;
-    return todosPrecos.reduce((a, b) => a + b, 0) / todosPrecos.length;
+
+    return qtdTotal > 0 ? (somaTotal / qtdTotal) : null;
   }
 
   // 1. MATRIZ EXECUTIVA EXTERNA (Var % vs ANP Revenda)
@@ -350,7 +358,7 @@ async function renderizarAbaMatrizes() {
       <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
         <div>
           <h6 class="fw-bold text-dark mb-0"><i class="bi bi-ui-checks-grid me-1 text-secondary"></i> Painel de Checagem: Confronto de Preços Brutos em Reais (R$/L)</h6>
-          <span class="small text-muted">Use estas duas tabelas para auditar os valores de Custo Pago e ANP Revenda direto contra o Power BI</span>
+          <span class="small text-muted">Valores médios por transação e preços semanais consolidados da ANP</span>
         </div>
         <span class="badge bg-secondary text-white font-monospace">Auditoria Interna de Dados</span>
       </div>
