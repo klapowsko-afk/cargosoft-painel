@@ -256,7 +256,7 @@ async function calcularMatrizesGerenciais(registros) {
   htmlCheckPago += `</tbody></table>`;
 
   // CHECAGEM 2: Custo Médio ANP Revenda (R$/L)
-  const ufsAnp = Object.keys(mapaRevenda).sort();
+  const ufsAnpRevenda = Object.keys(mapaRevenda).sort();
   let htmlCheckAnp = `
     <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.70rem;">
       <thead class="table-dark">
@@ -269,7 +269,7 @@ async function calcularMatrizesGerenciais(registros) {
       <tbody>
   `;
 
-  ufsAnp.forEach(uf => {
+  ufsAnpRevenda.forEach(uf => {
     let tds = `<td><b>${uf}</b></td>`;
     const valoresUf = [];
     mesesColunas.forEach(m => {
@@ -283,7 +283,68 @@ async function calcularMatrizesGerenciais(registros) {
   });
   htmlCheckAnp += `</tbody></table>`;
 
-  return { htmlExterna, htmlInterna, htmlSpread, htmlCheckPago, htmlCheckAnp };
+  // CHECAGEM 3: Custo Médio Interno Pago (R$/L)
+  let htmlCheckInternoPago = `
+    <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.70rem;">
+      <thead class="table-dark">
+        <tr>
+          <th style="width: 45px;">UF</th>
+          ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
+          <th class="fw-bold bg-primary text-white">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  ufsInterno.forEach(uf => {
+    let tds = `<td><b>${uf}</b></td>`;
+    mesesColunas.forEach(m => {
+      const p = getPrecoMedioSimples(uf, m.id, 'INTERNO');
+      tds += `<td>${p ? p.toFixed(2).replace('.', ',') : '-'}</td>`;
+    });
+    const tot = getTotalUfSimples(uf, 'INTERNO');
+    tds += `<td class="fw-bold bg-light">${tot ? tot.toFixed(2).replace('.', ',') : '-'}</td>`;
+    htmlCheckInternoPago += `<tr>${tds}</tr>`;
+  });
+  htmlCheckInternoPago += `</tbody></table>`;
+
+  // CHECAGEM 4: Custo Médio ANP Distribuição (R$/L)
+  const ufsAnpDist = Object.keys(mapaDistribuicao).sort();
+  let htmlCheckAnpDist = `
+    <table class="table table-sm table-bordered text-center align-middle" style="font-size: 0.70rem;">
+      <thead class="table-dark">
+        <tr>
+          <th style="width: 45px;">UF</th>
+          ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
+          <th class="fw-bold bg-success text-white">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  ufsAnpDist.forEach(uf => {
+    let tds = `<td><b>${uf}</b></td>`;
+    const valoresUf = [];
+    mesesColunas.forEach(m => {
+      const v = (mapaDistribuicao[uf] && mapaDistribuicao[uf][m.id]) ? mapaDistribuicao[uf][m.id] : null;
+      if (v) valoresUf.push(v);
+      tds += `<td>${v ? v.toFixed(2).replace('.', ',') : '-'}</td>`;
+    });
+    const mediaUf = valoresUf.length > 0 ? (valoresUf.reduce((a, b) => a + b, 0) / valoresUf.length) : null;
+    tds += `<td class="fw-bold bg-light">${mediaUf ? mediaUf.toFixed(2).replace('.', ',') : '-'}</td>`;
+    htmlCheckAnpDist += `<tr>${tds}</tr>`;
+  });
+  htmlCheckAnpDist += `</tbody></table>`;
+
+  return {
+    htmlExterna,
+    htmlInterna,
+    htmlSpread,
+    htmlCheckPago,
+    htmlCheckAnp,
+    htmlCheckInternoPago,
+    htmlCheckAnpDist
+  };
 }
 
 async function renderizarAbaMatrizes() {
@@ -334,7 +395,7 @@ async function renderizarAbaMatrizes() {
             ${matrizes.htmlInterna}
           </div>
           <div class="alert alert-light border mt-1 py-1 px-2 text-muted" style="font-size: 0.69rem;">
-            <em>💡 <strong>Como interpretar:</strong> Avalia a eficiência na compra de atacado para as garagens. A série oficial da ANP encerrou em agosto/2026.</em>
+            <em>💡 <strong>Como interpretar:</strong> Avalia a eficiência na compra de atacado para as garagens em relação ao Levantamento Oficial de Preços de Distribuição de Combustíveis (PDC/ANP).</em>
           </div>
         </div>
 
@@ -358,16 +419,17 @@ async function renderizarAbaMatrizes() {
       <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
         <div>
           <h6 class="fw-bold text-dark mb-0"><i class="bi bi-ui-checks-grid me-1 text-secondary"></i> Painel de Checagem: Confronto de Preços Brutos em Reais (R$/L)</h6>
-          <span class="small text-muted">Valores médios por transação e preços semanais consolidados da ANP</span>
+          <span class="small text-muted">Valores médios ponderados por transação e preços oficiais da ANP (Revenda e Distribuição)</span>
         </div>
         <span class="badge bg-secondary text-white font-monospace">Auditoria Interna de Dados</span>
       </div>
 
-      <div class="row g-3">
+      <!-- CHECAGEM DE REVENDA -->
+      <div class="row g-3 mb-3">
         <!-- TABELA CHECAGEM 1: CUSTO MEDIO EXTERNO PAGO -->
         <div class="col-12 col-xl-6">
-          <div class="card p-2 bg-white border">
-            <span class="fw-bold small text-dark mb-2 d-block">1. Custo Médio Externo Pago (R$/L)</span>
+          <div class="card p-2 bg-white border h-100">
+            <span class="fw-bold small text-dark mb-2 d-block">1. Custo Médio Externo Pago (R$/L) - Bomba de Rua</span>
             <div class="table-responsive">
               ${matrizes.htmlCheckPago}
             </div>
@@ -376,10 +438,33 @@ async function renderizarAbaMatrizes() {
 
         <!-- TABELA CHECAGEM 2: CUSTO MEDIO ANP REVENDA -->
         <div class="col-12 col-xl-6">
-          <div class="card p-2 bg-white border">
-            <span class="fw-bold small text-dark mb-2 d-block">2. Custo Médio ANP Revenda (R$/L)</span>
+          <div class="card p-2 bg-white border h-100">
+            <span class="fw-bold small text-dark mb-2 d-block">2. Custo Médio ANP Revenda (R$/L) - Base Oficial</span>
             <div class="table-responsive">
               ${matrizes.htmlCheckAnp}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHECAGEM DE DISTRIBUIÇÃO -->
+      <div class="row g-3">
+        <!-- TABELA CHECAGEM 3: CUSTO MEDIO INTERNO PAGO -->
+        <div class="col-12 col-xl-6">
+          <div class="card p-2 bg-white border h-100">
+            <span class="fw-bold small text-dark mb-2 d-block">3. Custo Médio Interno Pago (R$/L) - Garagens / Tanques</span>
+            <div class="table-responsive">
+              ${matrizes.htmlCheckInternoPago}
+            </div>
+          </div>
+        </div>
+
+        <!-- TABELA CHECAGEM 4: CUSTO MEDIO ANP DISTRIBUIÇÃO -->
+        <div class="col-12 col-xl-6">
+          <div class="card p-2 bg-white border h-100">
+            <span class="fw-bold small text-dark mb-2 d-block">4. Custo Médio ANP Distribuição (R$/L) - Base Oficial PDC</span>
+            <div class="table-responsive">
+              ${matrizes.htmlCheckAnpDist}
             </div>
           </div>
         </div>
