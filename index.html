@@ -99,7 +99,7 @@
       color: #ffffff;
     }
 
-    /* CARDS KPIS COM ENCAIXE PRECISO E SIMÉTRICO */
+    /* CARDS KPIS COM ENCAIXE SIMÉTRICO SEM VÃO */
     .card-kpi {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -107,7 +107,7 @@
       padding: 8px 12px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
       border-left: 4px solid var(--cargosoft-green);
-      min-height: 108px;
+      min-height: 122px;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -184,29 +184,30 @@
       z-index: 1;
     }
 
-    /* LISTA COMPACTA DOS TOP 3 POSTOS DE AÇÃO */
+    /* LISTA DOS TOP 3 POSTOS DE AÇÃO */
     .lista-top3-acao {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 3px;
       position: relative;
       z-index: 2;
-      margin-top: 2px;
+      margin: auto 0;
     }
     .item-top3-acao {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.66rem;
+      font-size: 0.68rem;
       line-height: 1.25;
-      border-bottom: 1px dotted rgba(234, 88, 12, 0.2);
-      padding-bottom: 1px;
+      border-bottom: 1px dotted rgba(234, 88, 12, 0.25);
+      padding-bottom: 2px;
     }
     .item-top3-acao:last-child {
       border-bottom: none;
+      padding-bottom: 0;
     }
     .item-top3-nome {
-      max-width: 140px;
+      max-width: 220px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -225,10 +226,10 @@
       background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      padding: 6px 10px;
+      padding: 6px 12px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
       height: 100%;
-      min-height: 108px;
+      min-height: 122px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -239,16 +240,16 @@
       width: 100%;
     }
     .tabela-sintetica th {
-      font-size: 0.58rem;
+      font-size: 0.60rem;
       font-weight: 800;
       color: var(--text-muted);
       text-transform: uppercase;
       border-bottom: 1px solid var(--border-color);
-      padding: 3px 5px;
+      padding: 4px 6px;
       white-space: nowrap;
     }
     .tabela-sintetica td {
-      padding: 3px 5px;
+      padding: 4px 6px;
       vertical-align: middle;
       border-bottom: 1px solid #f1f5f9;
       white-space: nowrap;
@@ -274,13 +275,13 @@
       gap: 8px;
     }
 
+    /* CARD DO POSTO */
     .card-posto-termometro {
       background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 8px;
       margin-bottom: 6px;
       position: relative;
-      overflow: hidden;
       display: flex;
       align-items: center;
       padding: 6px 12px;
@@ -290,6 +291,7 @@
     .card-posto-termometro:hover {
       box-shadow: 0 4px 14px rgba(0,0,0,0.06);
       border-color: #cbd5e1;
+      z-index: 10;
     }
     .card-posto-termometro.zebrado-sutil {
       background: linear-gradient(to right, #f8fafc 0%, #f1f5f9 60%, #ffffff 100%);
@@ -316,14 +318,13 @@
       word-break: break-word;
     }
 
+    /* COLUNA DO GRÁFICO (PERMITE O TOOLTIP VAZAR POR CIMA LIVREMENTE) */
     .col-posto-grafico {
       flex: 1;
       height: 48px;
       position: relative;
-      overflow: hidden;
       min-width: 130px;
-      -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.85) 6%, rgba(0,0,0,0.95) 94%, transparent 100%);
-      mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.85) 6%, rgba(0,0,0,0.95) 94%, transparent 100%);
+      overflow: visible !important;
     }
 
     .linha-corte-tempo {
@@ -443,15 +444,15 @@
       padding: 8px 10px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
       height: 100%;
-      min-height: 230px;
+      min-height: 255px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
     #miniMapaBrasil {
       width: 100%;
-      height: 230px;
-      min-height: 230px;
+      height: 215px;
+      min-height: 215px;
       background: #ffffff;
       border-radius: 6px;
       z-index: 2;
@@ -474,29 +475,34 @@
       border-top-color: rgba(15, 23, 42, 0.96) !important;
     }
 
-    /* TOOLTIP MICRO-DISCRETO APEXCHARTS */
+    /* TOOLTIP LIVRE, NÃO-CORTADO E ULTRA COMPACTO */
+    .apexcharts-tooltip {
+      position: fixed !important;
+      z-index: 99999 !important;
+      pointer-events: none !important;
+    }
     .apexcharts-tooltip.apexcharts-theme-dark {
-      background: rgba(15, 23, 42, 0.94) !important;
+      background: rgba(15, 23, 42, 0.96) !important;
       border: 1px solid #334155 !important;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35) !important;
       padding: 3px 6px !important;
-      font-size: 0.65rem !important;
-      line-height: 1.2 !important;
+      font-size: 0.62rem !important;
       border-radius: 4px !important;
     }
     .apexcharts-tooltip-title {
-      font-size: 0.62rem !important;
-      padding: 2px 4px !important;
+      font-size: 0.60rem !important;
+      padding: 1px 3px !important;
       margin-bottom: 2px !important;
       background: transparent !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
       font-weight: 700 !important;
     }
     .apexcharts-tooltip-series-group {
-      padding: 1px 4px !important;
+      padding: 1px 2px !important;
     }
     .apexcharts-tooltip-text {
-      font-size: 0.62rem !important;
+      font-size: 0.60rem !important;
+      line-height: 1.15 !important;
     }
 
     #secaoRoteirizador, #secaoMatrizesGerenciais {
@@ -589,14 +595,14 @@
       </div>
     </div>
 
-    <!-- LINHA 2: GRID SIMÉTRICO REBALANCEADO (ALTURA SIMÉTRICA SEM VÃO) -->
+    <!-- LINHA 2: GRID SIMÉTRICO SEM VÃO E COM ENCAIXE PRECISO -->
     <div class="row g-2 mb-3 align-items-stretch">
       <div class="col-12 col-xl-8 d-flex flex-column justify-content-between">
         
-        <!-- FILEIRA SUPERIOR -->
-        <div class="row g-2 mb-2">
-          <!-- CARD 1 CONSOLIDADO: VOLUME & VALOR COM MESMA FONTE E GRÁFICO INTEGRAL AO FUNDO -->
-          <div class="col-6 col-md-3">
+        <!-- FILEIRA SUPERIOR (CARD DE PONTOS EXPURGADO / PRIORIDADE DE AÇÃO EXPANDIDO) -->
+        <div class="row g-2 mb-2 flex-grow-1">
+          <!-- CARD 1: VOLUME & GASTO TOTAL COM GRÁFICO INTEGRAL AO FUNDO -->
+          <div class="col-12 col-md-4">
             <div class="card-kpi">
               <div class="kpi-label">VOLUME & GASTO TOTAL</div>
               <div class="my-auto py-1">
@@ -609,7 +615,7 @@
           </div>
           
           <!-- CARD 2: PREÇO MÉDIO REAL -->
-          <div class="col-6 col-md-3">
+          <div class="col-12 col-md-3">
             <div class="card-kpi">
               <div class="kpi-label" id="cardPrecoMedioLabel">PREÇO MÉDIO REAL</div>
               <div class="my-auto">
@@ -619,34 +625,23 @@
             </div>
           </div>
 
-          <!-- CARD 3: POSTOS COM PRIORIDADE DE AÇÃO (TOP 3 RESUMIDO) -->
-          <div class="col-6 col-md-3">
+          <!-- CARD 3: POSTOS COM PRIORIDADE DE AÇÃO (TOP 3 AMPLIADO) -->
+          <div class="col-12 col-md-5">
             <div class="card-kpi card-kpi-ineficiencia">
               <div class="d-flex justify-content-between align-items-center mb-1">
-                <div class="kpi-label text-warning-emphasis mb-0">PRIORIDADE DE AÇÃO</div>
+                <div class="kpi-label text-warning-emphasis mb-0">POSTOS COM PRIORIDADE DE AÇÃO</div>
                 <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.52rem;">TOP 3</span>
               </div>
-              <div class="lista-top3-acao my-auto" id="listaTop3Acao">
+              <div class="lista-top3-acao" id="listaTop3Acao">
                 <div class="text-muted small" style="font-size: 0.65rem;">Calculando...</div>
               </div>
               <div class="kpi-sub" style="font-size: 0.58rem;">Maior desvio financeiro acumulado</div>
             </div>
           </div>
-          
-          <!-- CARD 4: PONTOS COM VOLUME -->
-          <div class="col-6 col-md-3">
-            <div class="card-kpi">
-              <div class="kpi-label">PONTOS COM VOLUME</div>
-              <div class="my-auto">
-                <div class="kpi-val" id="cardPontos">--</div>
-              </div>
-              <div class="kpi-sub">Unidades ativas</div>
-            </div>
-          </div>
         </div>
 
-        <!-- FILEIRA INFERIOR: RESPIRO E ESPAÇAMENTO EQUILIBRADO -->
-        <div class="row g-2">
+        <!-- FILEIRA INFERIOR: CARD ANP COMPACTADO / TABELA AMPLIADA -->
+        <div class="row g-2 flex-grow-1">
           <!-- CARD MAIOR PREÇO UF -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-alerta">
@@ -675,24 +670,24 @@
             </div>
           </div>
 
-          <!-- CARD ANP / ANTT BRASIL -->
-          <div class="col-6 col-md-3">
+          <!-- CARD ANP / ANTT BRASIL (COMPACTADO PARA COL-MD-2) -->
+          <div class="col-6 col-md-2">
             <div class="card-kpi card-kpi-anp">
               <div class="d-flex justify-content-between align-items-center mb-1">
-                <div class="kpi-label text-primary mb-0">ANP / ANTT BRASIL</div>
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.52rem;">OFICIAL</span>
+                <div class="kpi-label text-primary mb-0">ANP / ANTT</div>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.50rem;">OFICIAL</span>
               </div>
               <div class="my-auto py-1">
-                <div class="kpi-val text-primary" id="cardAnpAntt">Indisponível</div>
+                <div class="kpi-val text-primary" id="cardAnpAntt">--</div>
               </div>
-              <div class="kpi-sub text-truncate" id="cardAnpAnttSub" style="font-size: 0.58rem;">
-                <i class="bi bi-clock-history me-1"></i>Aguardando publicação
+              <div class="kpi-sub text-truncate" id="cardAnpAnttSub" style="font-size: 0.56rem;">
+                Sem publicação
               </div>
             </div>
           </div>
 
-          <!-- TABELA SINTÉTICA (VOL LTS EM UMA LINHA) -->
-          <div class="col-6 col-md-3">
+          <!-- TABELA SINTÉTICA (AMPLIADA PARA COL-MD-4 COM RESPIRO TOTAL) -->
+          <div class="col-12 col-md-4">
             <div class="card-tabela-resumo">
               <table class="table tabela-sintetica text-end">
                 <thead>
@@ -739,7 +734,7 @@
             <span class="text-muted" style="font-size: 0.62rem;" id="lblHoverEstado">Passe o mouse ou clique</span>
           </div>
 
-          <div class="flex-grow-1 position-relative my-1" style="min-height: 230px;">
+          <div class="flex-grow-1 position-relative my-1" style="min-height: 215px;">
             <div id="miniMapaBrasil"></div>
           </div>
 
@@ -1450,7 +1445,6 @@
       document.getElementById('cardPrecoMedio').innerText = precoMedioCard > 0
         ? "R$ " + precoMedioCard.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })
         : "R$ 0,000";
-      document.getElementById('cardPontos').innerText = listaPostos.length.toString();
 
       // ATUALIZAÇÃO DO CARD "POSTOS COM PRIORIDADE DE AÇÃO" (TOP 3 RESUMIDO)
       const postosComDesvio = listaPostos
@@ -1469,7 +1463,7 @@
           </div>
         `).join('');
       } else {
-        containerTop3.innerHTML = `<div class="text-muted small" style="font-size: 0.65rem;">Nenhum posto operando com ágio no filtro atual.</div>`;
+        containerTop3.innerHTML = `<div class="text-muted small" style="font-size: 0.65rem;">Nenhum posto com ágio no filtro atual.</div>`;
       }
 
       // RENDERIZAR MINI GRÁFICO AO FUNDO INTEGRAL DO CARD 1
@@ -1508,7 +1502,7 @@
         stroke: { curve: 'smooth', width: 1.5 },
         fill: {
           type: 'solid',
-          opacity: 0.22
+          opacity: 0.16
         },
         tooltip: { enabled: false }
       };
@@ -1521,7 +1515,7 @@
       const containerMaior = document.getElementById('cardMaiorConteudo');
       const containerMenor = document.getElementById('cardMenorConteudo');
       const lblMaiorSub = document.getElementById('cardMaiorUfSub');
-      const lblMenorSub = document.getElementById('cardMenorUfSub');
+      const lblMenorSub = document.getElementById('cardMaiorUfSub');
 
       let amostra = todosRegistros.filter(d => parseFloat(d.ULTIMO_PRECO_MES || 0) > 0 && d.ULTIMA_DATA_MES);
 
@@ -1740,13 +1734,13 @@
             </div>
           </div>
 
-          <!-- COLUNA 2: LINHA DO TEMPO COM TOOLTIP DISCRETO -->
+          <!-- COLUNA 2: LINHA DO TEMPO (OVERFLOW LIVRE) -->
           <div class="col-posto-grafico">
             ${marcadoresLinhasHtml}
             <div id="${chartDomId}" style="width: 100%; height: 100%;"></div>
           </div>
 
-          <!-- COLUNA 3: MÉTRICAS INTEGRADAS (PREÇO MÉDIO NEUTRO) -->
+          <!-- COLUNA 3: MÉTRICAS INTEGRADAS -->
           <div class="col-posto-metricas">
             <div class="col-m-vol">
               <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">Volume</div>
@@ -1796,7 +1790,7 @@
         const corPago = ehInterno ? '#2563eb' : '#ea580c';
         const corAnpTracejado = '#64748b';
 
-        // WAVE COM TRAÇO MAIS FINO (1.2px) E TOOLTIP MICRO
+        // WAVE COM TRAÇO FINO (1.2px) E TOOLTIP LIVRE QUE NÃO CORTA
         const optionsSpark = {
           series: [
             { name: ehInterno ? "Custo Interno" : "Preço Pago", data: dadosKmmMes },
@@ -1814,7 +1808,7 @@
           colors: [corPago, corAnpTracejado],
           stroke: { 
             curve: 'smooth', 
-            width: [1.2, 1.2], // Traço mais fino e sutil
+            width: [1.2, 1.2],
             dashArray: [0, 4]
           },
           fill: {
@@ -1824,6 +1818,9 @@
           tooltip: {
             enabled: true,
             theme: 'dark',
+            fixed: {
+              enabled: false
+            },
             x: {
               show: true,
               formatter: function(val, opt) {
