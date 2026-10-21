@@ -5,15 +5,47 @@ let cacheAnpBase = null;
 
 async function obterBaseAnpOficial() {
   if (cacheAnpBase) return cacheAnpBase;
-  try {
-    const resp = await fetch('anp_base.json');
-    if (!resp.ok) throw new Error("Ficheiro anp_base.json não encontrado");
-    cacheAnpBase = await resp.json();
+
+  // 1. Aproveita os dados já baixados pelo index.html via Firestore
+  if (typeof dadosAnpBaseGlobal !== 'undefined' && dadosAnpBaseGlobal && dadosAnpBaseGlobal.revenda) {
+    cacheAnpBase = dadosAnpBaseGlobal;
     return cacheAnpBase;
-  } catch (err) {
-    console.error("Falha ao carregar anp_base.json:", err);
-    return { revenda: {}, distribuicao: {} };
   }
+
+  // 2. Fallback direto à API REST do Firestore caso chamado isoladamente
+  try {
+    const FIRESTORE_REST_URL = "https://firestore.googleapis.com/v1/projects/cargosoft-diesel/databases/(default)/documents/anp_consolidada/mensal_2026";
+    const resp = await fetch(FIRESTORE_REST_URL);
+    if (!resp.ok) throw new Error("Erro ao consultar Firestore REST");
+    const json = await resp.json();
+
+    function decodificar(v) {
+      if (!v || typeof v !== 'object') return null;
+      if ('stringValue' in v) return v.stringValue;
+      if ('doubleValue' in v) return parseFloat(v.doubleValue);
+      if ('integerValue' in v) return parseInt(v.integerValue, 10);
+      if ('mapValue' in v && v.mapValue.fields) {
+        const res = {};
+        for (const [k, val] of Object.entries(v.mapValue.fields)) {
+          res[k] = decodificar(val);
+        }
+        return res;
+      }
+      return null;
+    }
+
+    if (json && json.fields) {
+      cacheAnpBase = {};
+      for (const [k, val] of Object.entries(json.fields)) {
+        cacheAnpBase[k] = decodificar(val);
+      }
+      return cacheAnpBase;
+    }
+  } catch (err) {
+    console.error("Falha ao carregar dados oficiais ANP do Firestore:", err);
+  }
+
+  return { revenda: {}, distribuicao: {} };
 }
 
 function alternarPainelAuditoria() {
@@ -38,7 +70,6 @@ function emitirRelatorioMatrizes() {
   const secao = document.getElementById('secaoMatrizesGerenciais');
   if (!secao) return;
 
-  // Clona o conteúdo excluindo botões e o painel bruto retrátil se fechado
   const conteudo = secao.cloneNode(true);
   const botoes = conteudo.querySelectorAll('button, #btnToggleAuditoria, #btnEmitirRelatorio');
   botoes.forEach(b => b.remove());
@@ -81,7 +112,6 @@ function emitirRelatorioMatrizes() {
 function gerarInsightsInteligentes(analiseExterna, analiseInterna, analiseSpread) {
   const cards = [];
 
-  // 1. Melhor performance de compra em rota (Externo - Filtrado por Volume Significativo)
   if (analiseExterna.melhorUf) {
     cards.push(`
       <div class="col-12 col-md-4">
@@ -100,7 +130,6 @@ function gerarInsightsInteligentes(analiseExterna, analiseInterna, analiseSpread
     `);
   }
 
-  // 2. Estado Crítico / Ponto Focal de Renegociação
   if (analiseExterna.piorUf && analiseExterna.piorVar > 0) {
     cards.push(`
       <div class="col-12 col-md-4">
@@ -133,7 +162,6 @@ function gerarInsightsInteligentes(analiseExterna, analiseInterna, analiseSpread
     `);
   }
 
-  // 3. Análise de Margem Operacional de Garagem (Spread)
   if (analiseSpread.ufMenorSpread) {
     const spreadAbaixo = analiseSpread.menorSpreadVal < 0.15;
     const corBorda = spreadAbaixo ? 'border-danger' : 'border-warning';
@@ -277,7 +305,6 @@ async function calcularMatrizesGerenciais(registros) {
         precosAnpAno.push(refAnp);
         const varPerc = ((precoPago - refAnp) / refAnp) * 100;
         
-        // Fundo pastel suave com letra contrastante
         const bgCor = varPerc <= 0 ? '#ecfdf5' : '#fef2f2';
         const txtCor = varPerc <= 0 ? '#047857' : '#b91c1c';
         const textoSinal = (varPerc > 0 ? '+' : '') + varPerc.toFixed(2).replace('.', ',') + '%';
@@ -294,7 +321,6 @@ async function calcularMatrizesGerenciais(registros) {
       const mediaAnpAno = precosAnpAno.reduce((a, b) => a + b, 0) / precosAnpAno.length;
       const varTotal = ((totalPago - mediaAnpAno) / mediaAnpAno) * 100;
 
-      // Filtra estados relevantes (> 30 abastecimentos) para a análise estratégica
       if (qtdTotal >= 30) {
         if (varTotal < melhorVarExt) {
           melhorVarExt = varTotal;
@@ -308,7 +334,6 @@ async function calcularMatrizesGerenciais(registros) {
         }
       }
 
-      // Estilo elegante para o Total: Fundo pastel reforçado com letra acentuada
       const bgTotal = varTotal <= 0 ? '#d1fae5' : '#fee2e2';
       const textCorTotal = varTotal <= 0 ? '#065f46' : '#991b1b';
       const textTotal = (varTotal > 0 ? '+' : '') + varTotal.toFixed(2).replace('.', ',') + '%';
@@ -446,10 +471,6 @@ async function calcularMatrizesGerenciais(registros) {
   });
   htmlSpread += `</tbody></table>`;
 
-  // ==========================================
-  // TABELAS DE CHECAGEM BRUTAS (ESPELHO POWER BI)
-  // ==========================================
-
   // CHECAGEM 1: Custo Médio Externo Pago (R$/L)
   let htmlCheckPago = `
     <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.70rem;">
@@ -581,7 +602,7 @@ async function renderizarAbaMatrizes() {
   container.innerHTML = `
     <div class="text-center py-5 text-muted">
       <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
-      A consolidar matrizes gerenciais com a base anp_base.json...
+      A consolidar matrizes gerenciais com a base do Firestore...
     </div>
   `;
 
@@ -606,7 +627,7 @@ async function renderizarAbaMatrizes() {
       </div>
     </div>
 
-    <!-- BLOCO 1: MATRIZES EXECUTIVAS COLORIDAS (ESTILO PASTEL CORPORATIVO) -->
+    <!-- BLOCO 1: MATRIZES EXECUTIVAS COLORIDAS -->
     <div class="row g-3 mb-3">
       <!-- AUDITORIA EXTERNA -->
       <div class="col-12 col-xl-7">
@@ -666,14 +687,14 @@ async function renderizarAbaMatrizes() {
     <!-- BLOCO DE TEXTOS INTELIGENTES / DIAGNÓSTICO ESTRATÉGICO -->
     ${matrizes.htmlInsights}
 
-    <!-- BARRA INFERIOR DE AUDITORIA BRUTA (LOCALIZADA ABAIXO DOS INSIGHTS) -->
+    <!-- BARRA INFERIOR DE AUDITORIA BRUTA -->
     <div class="d-flex justify-content-center my-3">
       <button id="btnToggleAuditoria" class="btn btn-sm btn-outline-secondary px-4 shadow-sm" onclick="alternarPainelAuditoria()">
         <i class="bi bi-shield-check me-1"></i> Exibir Tabelas de Auditoria Bruta (4)
       </button>
     </div>
 
-    <!-- BLOCO 2: MODO DE CHECAGEM BRUTO (OCULTO POR PADRÃO VIA TOGGLE) -->
+    <!-- BLOCO 2: MODO DE CHECAGEM BRUTO -->
     <div id="painelChecagemBruta" class="card p-3 shadow-sm border-0 bg-light d-none" style="display: none;">
       <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
         <div>
