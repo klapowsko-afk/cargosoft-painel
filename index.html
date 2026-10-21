@@ -10,6 +10,9 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css">
   
+  <!-- MÓDULO VISUAL DE LOGIN VOCTT -->
+  <link rel="stylesheet" href="login.css">
+  
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
@@ -920,6 +923,9 @@
   </div>
 
   <div id="mapTooltip"></div>
+
+  <!-- INJEÇÃO DA LÓGICA DE LOGIN VOCTT -->
+  <script src="login.js"></script>
 
   <script>
     const WORKER_URL = "https://api-abastecimentos.klapowsko.workers.dev";
@@ -1875,7 +1881,7 @@
       });
     }
 
-    carregarDados();
+    // O carregamento inicial dos dados passa a ser liberado após o login bem-sucedido
   </script>
 </body>
 </html>
