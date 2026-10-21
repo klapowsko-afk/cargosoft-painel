@@ -99,7 +99,7 @@
       color: #ffffff;
     }
 
-    /* CARDS KPIS COM ENCAIXE SIMÉTRICO SEM VÃO */
+    /* CARDS KPIS COM ENCAIXE PRECISO E SIMÉTRICO */
     .card-kpi {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -153,6 +153,14 @@
       position: relative;
       z-index: 2;
     }
+    .kpi-val-grande {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      position: relative;
+      z-index: 2;
+    }
     .kpi-val-split {
       font-size: 0.84rem;
       font-weight: 800;
@@ -184,7 +192,7 @@
       z-index: 1;
     }
 
-    /* LISTA DOS TOP 3 POSTOS DE AÇÃO */
+    /* LISTA DOS TOP 3 POSTOS DE AÇÃO AMPLIADA */
     .lista-top3-acao {
       display: flex;
       flex-direction: column;
@@ -197,7 +205,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.68rem;
+      font-size: 0.67rem;
       line-height: 1.25;
       border-bottom: 1px dotted rgba(234, 88, 12, 0.25);
       padding-bottom: 2px;
@@ -206,19 +214,33 @@
       border-bottom: none;
       padding-bottom: 0;
     }
+    .item-top3-dados {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      flex: 1;
+    }
     .item-top3-nome {
-      max-width: 220px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       color: var(--text-dark);
       font-weight: 700;
+      max-width: 175px;
+    }
+    .item-top3-historico {
+      font-size: 0.60rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      font-family: monospace;
     }
     .item-top3-val {
       font-weight: 800;
       color: #dc2626;
       font-family: monospace;
       white-space: nowrap;
+      margin-left: 6px;
     }
 
     /* TABELA SINTÉTICA DE CONFERÊNCIA */
@@ -275,7 +297,6 @@
       gap: 8px;
     }
 
-    /* CARD DO POSTO */
     .card-posto-termometro {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -318,13 +339,11 @@
       word-break: break-word;
     }
 
-    /* COLUNA DO GRÁFICO (PERMITE O TOOLTIP VAZAR POR CIMA LIVREMENTE) */
     .col-posto-grafico {
       flex: 1;
       height: 48px;
       position: relative;
       min-width: 130px;
-      overflow: visible !important;
     }
 
     .linha-corte-tempo {
@@ -475,17 +494,12 @@
       border-top-color: rgba(15, 23, 42, 0.96) !important;
     }
 
-    /* TOOLTIP LIVRE, NÃO-CORTADO E ULTRA COMPACTO */
-    .apexcharts-tooltip {
-      position: fixed !important;
-      z-index: 99999 !important;
-      pointer-events: none !important;
-    }
+    /* TOOLTIP PRECISO, COLADO NO MOUSE E MICRO-COMPACTO */
     .apexcharts-tooltip.apexcharts-theme-dark {
       background: rgba(15, 23, 42, 0.96) !important;
       border: 1px solid #334155 !important;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35) !important;
-      padding: 3px 6px !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+      padding: 2px 6px !important;
       font-size: 0.62rem !important;
       border-radius: 4px !important;
     }
@@ -614,18 +628,18 @@
             </div>
           </div>
           
-          <!-- CARD 2: PREÇO MÉDIO REAL -->
+          <!-- CARD 2: PREÇO MÉDIO REAL COM DESTAQUE TIPOGRÁFICO -->
           <div class="col-12 col-md-3">
             <div class="card-kpi">
               <div class="kpi-label" id="cardPrecoMedioLabel">PREÇO MÉDIO REAL</div>
-              <div class="my-auto">
-                <div class="kpi-val" id="cardPrecoMedio">R$ --</div>
+              <div class="my-auto py-1">
+                <div class="kpi-val-grande text-success" id="cardPrecoMedio">R$ --</div>
               </div>
               <div class="kpi-sub" id="cardPrecoMedioSub">Média frota auditada</div>
             </div>
           </div>
 
-          <!-- CARD 3: POSTOS COM PRIORIDADE DE AÇÃO (TOP 3 AMPLIADO) -->
+          <!-- CARD 3: POSTOS COM PRIORIDADE DE AÇÃO (TOP 3 COM DETALHAMENTO DE PREÇO/DATA) -->
           <div class="col-12 col-md-5">
             <div class="card-kpi card-kpi-ineficiencia">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -640,9 +654,9 @@
           </div>
         </div>
 
-        <!-- FILEIRA INFERIOR: CARD ANP COMPACTADO / TABELA AMPLIADA -->
+        <!-- FILEIRA INFERIOR: PADRONIZAÇÃO VISUAL, ANP EXPANDIDO E TABELA COM RESPIRO -->
         <div class="row g-2 flex-grow-1">
-          <!-- CARD MAIOR PREÇO UF -->
+          <!-- CARD MAIOR PREÇO UF (UF EM CINZA NEUTRO E TAGS PADRONIZADAS) -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-alerta">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -656,7 +670,7 @@
             </div>
           </div>
 
-          <!-- CARD MENOR PREÇO UF -->
+          <!-- CARD MENOR PREÇO UF (UF EM CINZA NEUTRO E TAGS PADRONIZADAS) -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-destaque">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -670,7 +684,7 @@
             </div>
           </div>
 
-          <!-- CARD ANP / ANTT BRASIL (COMPACTADO PARA COL-MD-2) -->
+          <!-- CARD ANP / ANTT BRASIL (VALOR AUMENTADO) -->
           <div class="col-6 col-md-2">
             <div class="card-kpi card-kpi-anp">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -678,7 +692,7 @@
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.50rem;">OFICIAL</span>
               </div>
               <div class="my-auto py-1">
-                <div class="kpi-val text-primary" id="cardAnpAntt">--</div>
+                <div class="kpi-val-grande text-primary" id="cardAnpAntt">--</div>
               </div>
               <div class="kpi-sub text-truncate" id="cardAnpAnttSub" style="font-size: 0.56rem;">
                 Sem publicação
@@ -1309,7 +1323,6 @@
         baseCalculo = registrosModo.filter(d => d.MES_ANO === mesSel);
       }
 
-      // Correção temporal justa para opção local
       let amostraTempoLocal = baseCalculo;
       if (mesSel === 'YTD') {
         let maxDataGeral = "";
@@ -1439,14 +1452,13 @@
         precoMedioCard = somaLitrosCards > 0 ? (somaGastoCards / somaLitrosCards) : 0;
       }
 
-      // ATUALIZAÇÃO DO CARD 1 COM MESMA TIPOGRAFIA E TAMANHO
       document.getElementById('cardVolume').innerText = somaLitrosCards.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + " L";
       document.getElementById('cardGasto').innerText = "R$ " + somaGastoCards.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       document.getElementById('cardPrecoMedio').innerText = precoMedioCard > 0
         ? "R$ " + precoMedioCard.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })
         : "R$ 0,000";
 
-      // ATUALIZAÇÃO DO CARD "POSTOS COM PRIORIDADE DE AÇÃO" (TOP 3 RESUMIDO)
+      // ATUALIZAÇÃO DO CARD "POSTOS COM PRIORIDADE DE AÇÃO" (TOP 3 COMPLETO COM PREÇO E DATA)
       const postosComDesvio = listaPostos
         .filter(p => p.TIPO_OPERACAO === 'EXTERNO' && p.IMPACTO_REAIS > 0)
         .sort((a, b) => b.IMPACTO_REAIS - a.IMPACTO_REAIS)
@@ -1454,19 +1466,23 @@
 
       const containerTop3 = document.getElementById('listaTop3Acao');
       if (postosComDesvio.length > 0) {
-        containerTop3.innerHTML = postosComDesvio.map(p => `
-          <div class="item-top3-acao">
-            <span class="item-top3-nome" title="${p.NOME_EXIBICAO}">
-              <strong>${p.UF_POSTO}</strong> &bull; ${p.NOME_EXIBICAO}
-            </span>
-            <span class="item-top3-val">+R$ ${Math.round(p.IMPACTO_REAIS).toLocaleString('pt-BR')}</span>
-          </div>
-        `).join('');
+        containerTop3.innerHTML = postosComDesvio.map(p => {
+          const dataFmt = formatarDataDiaMes(p.DATA_MAIS_RECENTE);
+          return `
+            <div class="item-top3-acao">
+              <div class="item-top3-dados">
+                <span class="badge bg-dark text-white p-1" style="font-size:0.58rem;">${p.UF_POSTO}</span>
+                <span class="item-top3-nome" title="${p.NOME_EXIBICAO}">${p.NOME_EXIBICAO}</span>
+                <span class="item-top3-historico">R$ ${p.ULTIMO_PRECO.toFixed(2)} (${dataFmt})</span>
+              </div>
+              <span class="item-top3-val">+R$ ${Math.round(p.IMPACTO_REAIS).toLocaleString('pt-BR')}</span>
+            </div>
+          `;
+        }).join('');
       } else {
         containerTop3.innerHTML = `<div class="text-muted small" style="font-size: 0.65rem;">Nenhum posto com ágio no filtro atual.</div>`;
       }
 
-      // RENDERIZAR MINI GRÁFICO AO FUNDO INTEGRAL DO CARD 1
       renderizarSparklineVolumeCard(mesesDisponiveis, registrosModo);
       atualizarCardsExtremosSemPonderada(registros, mesSel);
       renderizarTermometroPostos(listaPostos, mesesDisponiveis);
@@ -1515,7 +1531,7 @@
       const containerMaior = document.getElementById('cardMaiorConteudo');
       const containerMenor = document.getElementById('cardMenorConteudo');
       const lblMaiorSub = document.getElementById('cardMaiorUfSub');
-      const lblMenorSub = document.getElementById('cardMaiorUfSub');
+      const lblMenorSub = document.getElementById('cardMenorUfSub');
 
       let amostra = todosRegistros.filter(d => parseFloat(d.ULTIMO_PRECO_MES || 0) > 0 && d.ULTIMA_DATA_MES);
 
@@ -1571,11 +1587,17 @@
         if (extRota.max || extInterno.max) {
           containerMaior.innerHTML = `
             <div class="kpi-val-split text-danger" title="Pico Rota: ${extRota.max ? extRota.max.posto : 'ND'}">
-              <span><span class="badge bg-danger-subtle text-danger border border-danger-subtle p-0 me-1" style="font-size:0.58rem;">ROTA</span>${extRota.max ? extRota.max.uf : '--'}</span>
+              <span class="d-flex align-items-center gap-1">
+                <span class="badge-tipo tipo-rota">ROTA</span>
+                <span style="color: #334155; font-weight: 800;">${extRota.max ? extRota.max.uf : '--'}</span>
+              </span>
               <span>R$ ${extRota.max ? extRota.max.preco.toFixed(3) : '--'}</span>
             </div>
             <div class="kpi-val-split text-danger pt-1 mt-1" style="border-top: 1px dotted #fecaca;" title="Maior Garagem: ${extInterno.max ? extInterno.max.posto : 'ND'}">
-              <span><span class="badge bg-danger-subtle text-danger border border-danger-subtle p-0 me-1" style="font-size:0.58rem;">GARAGEM</span>${extInterno.max ? extInterno.max.uf : '--'}</span>
+              <span class="d-flex align-items-center gap-1">
+                <span class="badge-tipo tipo-interno">GARAGEM</span>
+                <span style="color: #334155; font-weight: 800;">${extInterno.max ? extInterno.max.uf : '--'}</span>
+              </span>
               <span>R$ ${extInterno.max ? extInterno.max.preco.toFixed(3) : '--'}</span>
             </div>
           `;
@@ -1588,11 +1610,17 @@
         if (extRota.min || extInterno.min) {
           containerMenor.innerHTML = `
             <div class="kpi-val-split text-success" title="Menor Posto Rota: ${extRota.min ? extRota.min.posto : 'ND'}">
-              <span><span class="badge bg-success-subtle text-success border border-success-subtle p-0 me-1" style="font-size:0.58rem;">ROTA</span>${extRota.min ? extRota.min.uf : '--'}</span>
+              <span class="d-flex align-items-center gap-1">
+                <span class="badge-tipo tipo-rota">ROTA</span>
+                <span style="color: #334155; font-weight: 800;">${extRota.min ? extRota.min.uf : '--'}</span>
+              </span>
               <span>R$ ${extRota.min ? extRota.min.preco.toFixed(3) : '--'}</span>
             </div>
             <div class="kpi-val-split text-success pt-1 mt-1" style="border-top: 1px dotted #bbf7d0;" title="Menor Garagem Ativa: ${extInterno.min ? extInterno.min.posto : 'ND'}">
-              <span><span class="badge bg-success-subtle text-success border border-success-subtle p-0 me-1" style="font-size:0.58rem;">GARAGEM</span>${extInterno.min ? extInterno.min.uf : '--'}</span>
+              <span class="d-flex align-items-center gap-1">
+                <span class="badge-tipo tipo-interno">GARAGEM</span>
+                <span style="color: #334155; font-weight: 800;">${extInterno.min ? extInterno.min.uf : '--'}</span>
+              </span>
               <span>R$ ${extInterno.min ? extInterno.min.preco.toFixed(3) : '--'}</span>
             </div>
           `;
@@ -1610,7 +1638,7 @@
         if (ext.max) {
           containerMaior.innerHTML = `
             <div class="kpi-val text-danger" title="${ext.max.posto}">
-              ${ext.max.uf} - R$ ${ext.max.preco.toFixed(3)}
+              <span style="color: #334155;">${ext.max.uf}</span> - R$ ${ext.max.preco.toFixed(3)}
             </div>
           `;
           lblMaiorSub.innerText = `${rotuloTipo} • ${ext.max.posto}`;
@@ -1622,7 +1650,7 @@
         if (ext.min) {
           containerMenor.innerHTML = `
             <div class="kpi-val text-success" title="${ext.min.posto}">
-              ${ext.min.uf} - R$ ${ext.min.preco.toFixed(3)}
+              <span style="color: #334155;">${ext.min.uf}</span> - R$ ${ext.min.preco.toFixed(3)}
             </div>
           `;
           lblMenorSub.innerText = `${rotuloTipo} • ${ext.min.posto}`;
@@ -1734,7 +1762,7 @@
             </div>
           </div>
 
-          <!-- COLUNA 2: LINHA DO TEMPO (OVERFLOW LIVRE) -->
+          <!-- COLUNA 2: LINHA DO TEMPO -->
           <div class="col-posto-grafico">
             ${marcadoresLinhasHtml}
             <div id="${chartDomId}" style="width: 100%; height: 100%;"></div>
@@ -1790,7 +1818,7 @@
         const corPago = ehInterno ? '#2563eb' : '#ea580c';
         const corAnpTracejado = '#64748b';
 
-        // WAVE COM TRAÇO FINO (1.2px) E TOOLTIP LIVRE QUE NÃO CORTA
+        // WAVE COM TRAÇO FINO (1.2px) E TOOLTIP VINCULADO AO MOUSE
         const optionsSpark = {
           series: [
             { name: ehInterno ? "Custo Interno" : "Preço Pago", data: dadosKmmMes },
@@ -1818,9 +1846,7 @@
           tooltip: {
             enabled: true,
             theme: 'dark',
-            fixed: {
-              enabled: false
-            },
+            followCursor: true,
             x: {
               show: true,
               formatter: function(val, opt) {
