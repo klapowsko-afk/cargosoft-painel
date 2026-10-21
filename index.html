@@ -55,21 +55,21 @@
     .brand-logo-cargo { height: 40px; width: auto; object-fit: contain; }
     .brand-logo-voctt { height: 40px; width: auto; border-radius: 50%; border: 2px solid var(--border-color); }
 
-    /* BARRA SUPERIOR INTEGRADA EM LINHA ÚNICA */
-    .cockpit-bar {
+    /* BARRA SUPERIOR MESTRE DE FORA A FORA */
+    .cockpit-bar-mestre {
       background: linear-gradient(135deg, #062316 0%, #0f3d26 50%, #144e31 100%);
       border-radius: 10px;
-      padding: 6px 12px;
+      padding: 6px 14px;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
     }
-    .cockpit-bar .form-select {
+    .cockpit-bar-mestre .form-select {
       background-color: rgba(255, 255, 255, 0.12);
       border: 1px solid rgba(255, 255, 255, 0.25);
       color: #ffffff;
       font-size: 0.78rem;
       font-weight: 600;
     }
-    .cockpit-bar .form-select option {
+    .cockpit-bar-mestre .form-select option {
       color: #0f172a;
       background: #ffffff;
     }
@@ -80,7 +80,7 @@
       color: #e2e8f0;
       font-size: 0.74rem;
       font-weight: 700;
-      padding: 5px 9px;
+      padding: 5px 11px;
       border-radius: 20px;
       transition: all 0.2s ease;
       display: inline-flex;
@@ -99,15 +99,7 @@
       color: #ffffff;
     }
 
-    .control-sub-bar {
-      background: #ffffff;
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 5px 10px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-    }
-
-    /* CARDS KPIS COM ALTURA SIMÉTRICA */
+    /* CARDS KPIS */
     .card-kpi {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -155,7 +147,7 @@
       font-size: 0.82rem;
       font-weight: 800;
       letter-spacing: -0.01em;
-      line-height: 1.25;
+      line-height: 1.35;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -180,20 +172,20 @@
       justify-content: center;
     }
     .tabela-sintetica {
-      font-size: 0.66rem;
+      font-size: 0.68rem;
       margin-bottom: 0;
       width: 100%;
     }
     .tabela-sintetica th {
-      font-size: 0.58rem;
+      font-size: 0.60rem;
       font-weight: 800;
       color: var(--text-muted);
       text-transform: uppercase;
       border-bottom: 1px solid var(--border-color);
-      padding: 2px 4px;
+      padding: 3px 5px;
     }
     .tabela-sintetica td {
-      padding: 2px 4px;
+      padding: 3px 5px;
       vertical-align: middle;
       border-bottom: 1px solid #f1f5f9;
       white-space: nowrap;
@@ -215,6 +207,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     /* CARD DO POSTO: 3 COLUNAS SEM ENCAVALAMENTO */
@@ -279,10 +273,10 @@
       pointer-events: none;
     }
 
-    /* COLUNA 3: MÉTRICAS REDIMENSIONADAS (PROTEGENDO O BOTÃO TRATATIVA) */
+    /* COLUNA 3: MÉTRICAS REDIMENSIONADAS COM DATA DO ÚLTIMO PAGO */
     .col-posto-metricas {
-      width: 640px;
-      min-width: 640px;
+      width: 650px;
+      min-width: 650px;
       flex-shrink: 0;
       background: rgba(255, 255, 255, 0.90);
       backdrop-filter: blur(6px);
@@ -301,7 +295,7 @@
     .col-m-pm { width: 85px; flex-shrink: 0; }
     .col-m-anp { width: 75px; flex-shrink: 0; }
     .col-m-gap { width: 110px; flex-shrink: 0; }
-    .col-m-ult { width: 80px; flex-shrink: 0; }
+    .col-m-ult { width: 90px; flex-shrink: 0; }
     .col-m-var { width: 80px; flex-shrink: 0; }
     .col-m-btn { width: 85px; flex-shrink: 0; text-align: right; }
 
@@ -366,7 +360,7 @@
       margin-right: 3px;
     }
 
-    /* CONTENTOR DO MAPA PREENCHENDO A ALTURA TOTAL */
+    /* CONTENTOR DO MAPA PREENCHENDO ALTURA DE 230px */
     .map-container {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -374,15 +368,15 @@
       padding: 8px 10px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
       height: 100%;
-      min-height: 180px;
+      min-height: 230px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
     #miniMapaBrasil {
       width: 100%;
-      height: 195px;
-      min-height: 195px;
+      height: 230px;
+      min-height: 230px;
       background: #ffffff;
       border-radius: 6px;
       z-index: 2;
@@ -400,6 +394,7 @@
       border-radius: 6px !important;
       box-shadow: 0 4px 14px rgba(0,0,0,0.25) !important;
       padding: 6px 10px !important;
+      z-index: 1050 !important;
     }
     .custom-leaflet-tooltip:before {
       border-top-color: rgba(15, 23, 42, 0.96) !important;
@@ -440,7 +435,7 @@
 
     @media print {
       body { background: #ffffff !important; padding: 0 !important; }
-      .header-bar, .cockpit-bar, .control-sub-bar, .card-kpi, .card-tabela-resumo, .map-container, #secaoPainelPrincipal, #secaoMatrizesGerenciais, #btnSincronizar { display: none !important; }
+      .header-bar, .cockpit-bar-mestre, .card-kpi, .card-tabela-resumo, .map-container, #secaoPainelPrincipal, #secaoMatrizesGerenciais, #btnSincronizar { display: none !important; }
       #secaoRoteirizador { display: block !important; border: none !important; }
       #areaImpressaoRoteiro { display: block !important; }
     }
@@ -449,7 +444,7 @@
 <body>
   <div class="container-fluid px-0">
 
-    <!-- CABEÇALHO -->
+    <!-- CABEÇALHO PRINCIPAL -->
     <div class="header-bar d-flex justify-content-between align-items-center flex-wrap gap-2">
       <div class="d-flex align-items-center gap-3">
         <img src="logo_cargo_verde.png" alt="Cargosoft" class="brand-logo-cargo">
@@ -467,77 +462,38 @@
       </div>
     </div>
 
-    <!-- LINHA 1: BARRA SUPERIOR INTEGRADA EM LINHA ÚNICA -->
-    <div class="row g-2 mb-2 align-items-stretch">
-      <div class="col-12 col-xl-auto">
-        <div class="cockpit-bar d-flex align-items-center gap-2 h-100">
-          <label class="small fw-bold text-white-50 text-uppercase" style="font-size: 0.68rem; white-space: nowrap;">
-            <i class="bi bi-calendar3 me-1"></i> Competência:
-          </label>
-          <select id="filtroMesAno" class="form-select form-select-sm" style="min-width: 190px;" onchange="processarPainel()">
-          </select>
-        </div>
+    <!-- LINHA 1: BARRA SUPERIOR MESTRE DE FORA A FORA (COMPETÊNCIA + 5 MODOS) -->
+    <div class="cockpit-bar-mestre d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+      <div class="d-flex align-items-center gap-2">
+        <label class="small fw-bold text-white-50 text-uppercase mb-0" style="font-size: 0.68rem; white-space: nowrap;">
+          <i class="bi bi-calendar3 me-1"></i> Competência:
+        </label>
+        <select id="filtroMesAno" class="form-select form-select-sm" style="min-width: 200px;" onchange="processarPainel()">
+        </select>
       </div>
 
-      <div class="col-12 col-xl">
-        <div class="control-sub-bar d-flex align-items-center justify-content-between gap-2 h-100 flex-nowrap">
-          <div class="d-flex align-items-center gap-1">
-            <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.65rem; white-space: nowrap;">Rede:</label>
-            <select id="filtroRede" class="form-select form-select-sm" style="min-width: 145px;" onchange="aplicarFiltroRede()">
-              <option value="">Todas as Redes</option>
-            </select>
-          </div>
-
-          <div class="d-flex align-items-center gap-1">
-            <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.65rem; white-space: nowrap;">Posto:</label>
-            <select id="filtroPosto" class="form-select form-select-sm" style="min-width: 155px;" onchange="aplicarFiltroPostoSelect()">
-              <option value="">Todos os Postos</option>
-            </select>
-          </div>
-
-          <div style="min-width: 120px; flex-grow: 1;">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text bg-white border-end-0 text-muted px-1"><i class="bi bi-search"></i></span>
-              <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Buscar..." oninput="filtrarTabelaTexto()">
-            </div>
-          </div>
-
-          <span id="badgeFiltroUf" class="badge bg-dark text-white px-2 py-1" style="display: none; font-size: 0.65rem; white-space: nowrap;">
-            UF: <span id="lblUfAtiva"></span>
-            <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroUf()"></i>
-          </span>
-
-          <span id="badgeFiltroPosto" class="badge bg-primary text-white px-2 py-1" style="display: none; font-size: 0.65rem; white-space: nowrap;">
-            <span id="lblPostoAtivo"></span>
-            <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroPosto()"></i>
-          </span>
-        </div>
-      </div>
-
-      <div class="col-12 col-xl-auto">
-        <div class="cockpit-bar d-flex align-items-center justify-content-end gap-1 h-100 flex-nowrap" style="overflow-x: auto;">
-          <button class="btn-toggle-tipo active" id="btnModoGeral" onclick="alternarModoOperacao('TODOS')">
-            <i class="bi bi-pie-chart-fill me-1"></i> Consolidado Geral
-          </button>
-          <button class="btn-toggle-tipo" id="btnModoInterno" onclick="alternarModoOperacao('INTERNO')">
-            <i class="bi bi-fuel-pump-fill me-1"></i> Tanques Próprios
-          </button>
-          <button class="btn-toggle-tipo" id="btnModoExterno" onclick="alternarModoOperacao('EXTERNO')">
-            <i class="bi bi-truck me-1"></i> Rota Rodoviária
-          </button>
-          <button class="btn-toggle-tipo" id="btnModoRota" onclick="alternarModoOperacao('ROTEIRIZADOR')">
-            <i class="bi bi-map-fill me-1"></i> Roteirizador de Postos
-          </button>
-          <button class="btn-toggle-tipo" id="btnModoMatrizes" onclick="alternarModoOperacao('MATRIZES')">
-            <i class="bi bi-table me-1"></i> Matrizes Gerenciais
-          </button>
-        </div>
+      <div class="d-flex align-items-center gap-1 flex-nowrap" style="overflow-x: auto;">
+        <button class="btn-toggle-tipo active" id="btnModoGeral" onclick="alternarModoOperacao('TODOS')">
+          <i class="bi bi-pie-chart-fill me-1"></i> Consolidado Geral
+        </button>
+        <button class="btn-toggle-tipo" id="btnModoInterno" onclick="alternarModoOperacao('INTERNO')">
+          <i class="bi bi-fuel-pump-fill me-1"></i> Tanques Próprios
+        </button>
+        <button class="btn-toggle-tipo" id="btnModoExterno" onclick="alternarModoOperacao('EXTERNO')">
+          <i class="bi bi-truck me-1"></i> Rota Rodoviária
+        </button>
+        <button class="btn-toggle-tipo" id="btnModoRota" onclick="alternarModoOperacao('ROTEIRIZADOR')">
+          <i class="bi bi-map-fill me-1"></i> Roteirizador de Postos
+        </button>
+        <button class="btn-toggle-tipo" id="btnModoMatrizes" onclick="alternarModoOperacao('MATRIZES')">
+          <i class="bi bi-table me-1"></i> Matrizes Gerenciais
+        </button>
       </div>
     </div>
 
-    <!-- LINHA 2: GRID SIMÉTRICO (KPIS SUPERIORES + CARDS EXTREMOS/TABELA + MINI MAPA ALTURA TOTAL) -->
+    <!-- LINHA 2: GRID SIMÉTRICO (INDICADORES + TABELA SINTÉTICA col-xl-8 vs. MINI MAPA col-xl-4) -->
     <div class="row g-2 mb-3 align-items-stretch">
-      <div class="col-12 col-xl-9">
+      <div class="col-12 col-xl-8">
         <!-- FILEIRA SUPERIOR: 4 KPIS GERAIS -->
         <div class="row g-2 mb-2">
           <div class="col-6 col-md-3">
@@ -573,9 +529,9 @@
           </div>
         </div>
 
-        <!-- FILEIRA INFERIOR: CARDS EXTREMOS (SEM PONDERADA) + TABELA SINTÉTICA -->
+        <!-- FILEIRA INFERIOR: EXTREMOS RECENTES PADRONIZADOS + ANP + TABELA SINTÉTICA -->
         <div class="row g-2">
-          <!-- CARD MAIOR PREÇO (COM DUPLA LINHA NO CONSOLIDADO GERAL) -->
+          <!-- CARD MAIOR PREÇO (PADRONIZADO EM VERMELHO INSTITUCIONAL) -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-alerta">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -585,11 +541,11 @@
               <div id="cardMaiorConteudo" class="my-auto">
                 <div class="kpi-val text-danger" id="cardMaiorUf">--</div>
               </div>
-              <div class="kpi-sub text-truncate" id="cardMaiorUfSub">Últimos 20 dias</div>
+              <div class="kpi-sub text-truncate" id="cardMaiorUfSub">Últimos 20 dias ativos</div>
             </div>
           </div>
 
-          <!-- CARD MENOR PREÇO (COM DUPLA LINHA NO CONSOLIDADO GERAL) -->
+          <!-- CARD MENOR PREÇO (PADRONIZADO EM VERDE INSTITUCIONAL) -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-destaque">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -599,7 +555,7 @@
               <div id="cardMenorConteudo" class="my-auto">
                 <div class="kpi-val text-success" id="cardMenorUf">--</div>
               </div>
-              <div class="kpi-sub text-truncate" id="cardMenorUfSub">Últimos 20 dias</div>
+              <div class="kpi-sub text-truncate" id="cardMenorUfSub">Últimos 20 dias ativos</div>
             </div>
           </div>
 
@@ -653,8 +609,8 @@
         </div>
       </div>
 
-      <!-- COLUNA DIREITA: MINI MAPA INTEGRAL (ALTURA TOTAL 195px SEM VAZIOS) -->
-      <div class="col-12 col-xl-3">
+      <!-- COLUNA DO MINI MAPA AMPLIADO (col-xl-4 COM ALTURA 230px) -->
+      <div class="col-12 col-xl-4">
         <div class="map-container">
           <div class="d-flex justify-content-between align-items-center mb-1">
             <span class="small fw-bold text-dark text-uppercase" style="font-size: 0.68rem;">
@@ -663,7 +619,7 @@
             <span class="text-muted" style="font-size: 0.62rem;" id="lblHoverEstado">Passe o mouse ou clique</span>
           </div>
 
-          <div class="flex-grow-1 position-relative my-1" style="min-height: 195px;">
+          <div class="flex-grow-1 position-relative my-1" style="min-height: 230px;">
             <div id="miniMapaBrasil"></div>
           </div>
 
@@ -686,14 +642,42 @@
       <div class="panel-header">
         <div>
           <strong class="text-dark" id="lblTituloPainel" style="font-size: 0.88rem;"><i class="bi bi-speedometer2 me-1 text-success"></i> Painel Consolidado &bull; Visão Integrada da Frota</strong>
-          <div class="small text-muted" id="lblSubtituloTabela" style="font-size: 0.72rem;">Todas as garagens internas e postos de rodovia consolidados por ranking de litragem</div>
+          <div class="small text-muted" id="lblSubtituloTabela" style="font-size: 0.72rem;">Garagens internas (Barueri, Ribeirão, Eusébio, Colombo, etc.) e postos de rodovia</div>
         </div>
-        <div class="d-flex align-items-center gap-3">
-          <span class="small text-muted font-monospace" id="lblLegendaGrafico" style="font-size: 0.70rem;">
-            <span class="legend-indicator" style="background:#059669;"></span>Referência Oficial ANP
-            <span class="legend-indicator" style="background:#2563eb; margin-left: 8px;"></span>Garagem
-            <span class="legend-indicator" style="background:#c2410c; margin-left: 8px;"></span>Rota
+
+        <!-- FILTROS OPERACIONAIS REALOCADOS JUNTO À LISTA DE POSTOS -->
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <div class="d-flex align-items-center gap-1">
+            <label class="small fw-bold text-muted text-uppercase mb-0" style="font-size: 0.65rem;">Rede:</label>
+            <select id="filtroRede" class="form-select form-select-sm" style="min-width: 145px;" onchange="aplicarFiltroRede()">
+              <option value="">Todas as Redes</option>
+            </select>
+          </div>
+
+          <div class="d-flex align-items-center gap-1">
+            <label class="small fw-bold text-muted text-uppercase mb-0" style="font-size: 0.65rem;">Posto:</label>
+            <select id="filtroPosto" class="form-select form-select-sm" style="min-width: 160px;" onchange="aplicarFiltroPostoSelect()">
+              <option value="">Todos os Postos</option>
+            </select>
+          </div>
+
+          <div style="min-width: 140px;">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-white border-end-0 text-muted px-1"><i class="bi bi-search"></i></span>
+              <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Buscar posto/filial..." oninput="filtrarTabelaTexto()">
+            </div>
+          </div>
+
+          <span id="badgeFiltroUf" class="badge bg-dark text-white px-2 py-1" style="display: none; font-size: 0.65rem; white-space: nowrap;">
+            UF: <span id="lblUfAtiva"></span>
+            <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroUf()"></i>
           </span>
+
+          <span id="badgeFiltroPosto" class="badge bg-primary text-white px-2 py-1" style="display: none; font-size: 0.65rem; white-space: nowrap;">
+            <span id="lblPostoAtivo"></span>
+            <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroPosto()"></i>
+          </span>
+
           <span class="badge bg-white text-dark border px-2 py-1 rounded-pill font-monospace" id="lblListando" style="font-size: 0.72rem;">Carregando...</span>
         </div>
       </div>
@@ -772,7 +756,6 @@
           <div class="col-12 col-md-8">
             <div id="mapLeaflet"></div>
             
-            <!-- ÁREA DE RESUMO PARA IMPRESSÃO -->
             <div id="areaImpressaoRoteiro" class="mt-3 p-3 bg-white border rounded" style="display: none;">
               <h6 class="fw-bold text-dark border-bottom pb-2">📋 Roteiro Oficial de Abastecimento Sugerido - Cargosoft</h6>
               <div id="conteudoRoteiroImpresso"></div>
@@ -790,7 +773,7 @@
     <div class="d-flex justify-content-between align-items-center py-2 px-1 small text-muted border-top mt-3" style="font-size: 0.72rem;">
       <div class="d-flex align-items-center gap-2">
         <span>Cargosoft Transportes &copy; 2026</span>
-        <span class="badge bg-light text-secondary border font-monospace px-2 py-0" style="font-size: 0.65rem;">v2.4.0</span>
+        <span class="badge bg-light text-secondary border font-monospace px-2 py-0" style="font-size: 0.65rem;">v2.5.0</span>
       </div>
       <div class="d-flex align-items-center gap-2">
         Desenvolvido por <strong>VOCTT Inteligência & Consultoria de Frotas</strong>
@@ -817,13 +800,16 @@
     let anpDistribuicao = {};
     let anpRevenda = {};
 
+    /**
+     * Separação estrita de filiais com destaque para SP (Barueri vs. Ribeirão Preto)
+     */
     function identificarNomePonto(posto, municipio, uf, tipo) {
       if (tipo === 'INTERNO') {
         const mun = (municipio || '').toUpperCase();
+        if (mun.includes('BARUERI')) return "Filial Barueri";
+        if (mun.includes('RIBEIRAO') || mun.includes('PRETO')) return "Filial Ribeirão Preto";
         if (mun.includes('COLOMBO') || uf === 'PR') return "Filial Colombo (Matriz)";
         if (mun.includes('EUSEBIO') || mun.includes('FORTALEZA') || uf === 'CE') return "Filial Eusébio";
-        if (mun.includes('BARUERI')) return "Filial Barueri";
-        if (mun.includes('RIBEIRAO')) return "Filial Ribeirão Preto";
         if (mun.includes('SIMOES') || mun.includes('SALVADOR') || uf === 'BA') return "Filial Simões Filho";
         if (mun.includes('GOIANIA') || mun.includes('APARECIDA') || uf === 'GO') return "Filial Goiânia";
         return `Garagem ${municipio || 'Interna'}`;
@@ -984,17 +970,12 @@
 
     function atualizarTextosHeaderPainel() {
       const lblTitulo = document.getElementById('lblTituloPainel');
-      const lblLegenda = document.getElementById('lblLegendaGrafico');
-      
       if (modoAtual === 'INTERNO') {
         lblTitulo.innerHTML = `<i class="bi bi-fuel-pump-fill me-1 text-success"></i> Termômetro de Garagens & Tanques Próprios`;
-        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#059669;"></span>Ref. ANP Distribuição <span class="legend-indicator" style="background:#2563eb; margin-left:8px;"></span>Custo Interno KMM`;
       } else if (modoAtual === 'EXTERNO') {
         lblTitulo.innerHTML = `<i class="bi bi-truck me-1 text-danger"></i> Painel de Negociação de Rota Rodoviária`;
-        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#059669;"></span>Ref. ANP Revenda <span class="legend-indicator" style="background:#c2410c; margin-left:8px;"></span>Preço Bomba KMM`;
       } else {
         lblTitulo.innerHTML = `<i class="bi bi-speedometer2 me-1 text-success"></i> Painel Consolidado &bull; Visão Integrada da Frota`;
-        lblLegenda.innerHTML = `<span class="legend-indicator" style="background:#059669;"></span>Referência ANP <span class="legend-indicator" style="background:#2563eb; margin-left:8px;"></span>Garagem <span class="legend-indicator" style="background:#c2410c; margin-left:8px;"></span>Rota`;
       }
     }
 
@@ -1119,7 +1100,11 @@
       }
 
       baseCalculo.forEach(d => {
-        const chave = d.POSTO + "_" + d.UF_POSTO;
+        // Chave exclusiva incluindo município para separar garagens da mesma UF (SP Barueri vs SP Ribeirão)
+        const chave = d.TIPO_OPERACAO === 'INTERNO' 
+          ? `${d.POSTO}_${d.UF_POSTO}_${d.MUNICIPIO_POSTO}` 
+          : `${d.POSTO}_${d.UF_POSTO}`;
+
         const litros = parseFloat(d.LITROS_MES || 0);
         const valor = parseFloat(d.VALOR_TOTAL_MES || 0);
 
@@ -1156,7 +1141,8 @@
 
         if (mesSel === 'YTD') {
           const regVigente = baseRegistrosMensais.find(r => 
-            r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === p.MES_MAIS_RECENTE
+            r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === p.MES_MAIS_RECENTE &&
+            (p.TIPO_OPERACAO !== 'INTERNO' || r.MUNICIPIO_POSTO === p.MUNICIPIO_POSTO)
           );
           precoMedioExibicao = regVigente ? parseFloat(regVigente.PRECO_MEDIO_MES || 0) : 0;
 
@@ -1166,7 +1152,8 @@
           const chaveMesAntV = `${anoAntV}-${String(mesAntV).padStart(2, '0')}`;
 
           const regAnt = baseRegistrosMensais.find(r => 
-            r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === chaveMesAntV
+            r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === chaveMesAntV &&
+            (p.TIPO_OPERACAO !== 'INTERNO' || r.MUNICIPIO_POSTO === p.MUNICIPIO_POSTO)
           );
 
           if (regAnt) {
@@ -1184,7 +1171,8 @@
           const chaveMesAntS = `${anoAntS}-${String(mesAntS).padStart(2, '0')}`;
 
           const regAnt = baseRegistrosMensais.find(r => 
-            r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === chaveMesAntS
+            r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === chaveMesAntS &&
+            (p.TIPO_OPERACAO !== 'INTERNO' || r.MUNICIPIO_POSTO === p.MUNICIPIO_POSTO)
           );
 
           if (regAnt) {
@@ -1233,7 +1221,7 @@
       document.getElementById('cardPontos').innerText = listaPostos.length.toString();
 
       // =========================================================================
-      // 3. CÁLCULO DOS CARDS DE EXTREMOS (SEM PONDERADA • ÚLTIMOS 20 DIAS REAIS)
+      // 3. CARDS EXTREMOS PADRONIZADOS (SEM PONDERADA • JANELA DE 20 DIAS)
       // =========================================================================
       atualizarCardsExtremosSemPonderada(registros, mesSel);
 
@@ -1244,8 +1232,8 @@
     }
 
     /**
-     * Regra de BI operacional: Localiza o menor e maior valor real nos últimos 20 dias,
-     * eliminando garagens inativas ou históricos mortos sem uso de médias ponderadas.
+     * Determina os extremos vigentes sem agregação ponderada arbitrária,
+     * padronizando cores (Maior Preço 100% vermelho, Menor Preço 100% verde).
      */
     function atualizarCardsExtremosSemPonderada(todosRegistros, mesSel) {
       const containerMaior = document.getElementById('cardMaiorConteudo');
@@ -1258,7 +1246,6 @@
       if (mesSel !== 'YTD') {
         amostra = amostra.filter(d => d.MES_ANO === mesSel);
       } else {
-        // Encontra a data máxima cadastrada na base
         let maxDataStr = "";
         amostra.forEach(d => {
           if (d.ULTIMA_DATA_MES > maxDataStr) maxDataStr = d.ULTIMA_DATA_MES;
@@ -1302,16 +1289,16 @@
         const extRota = extrairExtremos(rotaRegs);
         const extInterno = extrairExtremos(internoRegs);
 
-        // MAIOR PREÇO (DIVIDIDO EM 2 LINHAS NO CONSOLIDADO GERAL)
+        // MAIOR PREÇO (AMBAS AS LINHAS EM VERMELHO DESTAQUE PADRONIZADO)
         if (extRota.max || extInterno.max) {
           containerMaior.innerHTML = `
-            <div class="kpi-val-split text-danger" title="Pico na Rodovia: ${extRota.max ? extRota.max.posto : 'ND'}">
-              <span><span class="badge bg-danger-subtle text-danger p-0 me-1" style="font-size:0.60rem;">ROTA</span>${extRota.max ? extRota.max.uf : '--'}</span>
+            <div class="kpi-val-split text-danger" title="Pico Rota: ${extRota.max ? extRota.max.posto : 'ND'}">
+              <span><span class="badge bg-danger-subtle text-danger border border-danger-subtle p-0 me-1" style="font-size:0.60rem;">ROTA</span>${extRota.max ? extRota.max.uf : '--'}</span>
               <span>R$ ${extRota.max ? extRota.max.preco.toFixed(3) : '--'}</span>
             </div>
-            <div class="kpi-val-split text-dark pt-1" style="border-top: 1px dotted #e2e8f0; font-size:0.75rem;" title="Maior Garagem: ${extInterno.max ? extInterno.max.posto : 'ND'}">
-              <span class="text-muted"><span class="badge bg-light text-dark border p-0 me-1" style="font-size:0.58rem;">GARAGEM</span>${extInterno.max ? extInterno.max.uf : '--'}</span>
-              <span class="fw-bold text-secondary">R$ ${extInterno.max ? extInterno.max.preco.toFixed(3) : '--'}</span>
+            <div class="kpi-val-split text-danger pt-1" style="border-top: 1px dotted #fecaca;" title="Maior Garagem: ${extInterno.max ? extInterno.max.posto : 'ND'}">
+              <span><span class="badge bg-danger-subtle text-danger border border-danger-subtle p-0 me-1" style="font-size:0.60rem;">GARAGEM</span>${extInterno.max ? extInterno.max.uf : '--'}</span>
+              <span>R$ ${extInterno.max ? extInterno.max.preco.toFixed(3) : '--'}</span>
             </div>
           `;
           lblMaiorSub.innerText = mesSel === 'YTD' ? "Últimos 20 dias ativos" : "Extremos da competência";
@@ -1320,16 +1307,16 @@
           lblMaiorSub.innerText = "Sem compras recentes";
         }
 
-        // MENOR PREÇO (DIVIDIDO EM 2 LINHAS NO CONSOLIDADO GERAL)
+        // MENOR PREÇO (AMBAS AS LINHAS EM VERDE DESTAQUE PADRONIZADO)
         if (extInterno.min || extRota.min) {
           containerMenor.innerHTML = `
             <div class="kpi-val-split text-success" title="Menor Garagem Ativa: ${extInterno.min ? extInterno.min.posto : 'ND'}">
-              <span><span class="badge bg-success-subtle text-success p-0 me-1" style="font-size:0.60rem;">GARAGEM</span>${extInterno.min ? extInterno.min.uf : '--'}</span>
+              <span><span class="badge bg-success-subtle text-success border border-success-subtle p-0 me-1" style="font-size:0.60rem;">GARAGEM</span>${extInterno.min ? extInterno.min.uf : '--'}</span>
               <span>R$ ${extInterno.min ? extInterno.min.preco.toFixed(3) : '--'}</span>
             </div>
-            <div class="kpi-val-split text-dark pt-1" style="border-top: 1px dotted #e2e8f0; font-size:0.75rem;" title="Menor Posto Rota: ${extRota.min ? extRota.min.posto : 'ND'}">
-              <span class="text-muted"><span class="badge bg-light text-dark border p-0 me-1" style="font-size:0.58rem;">ROTA</span>${extRota.min ? extRota.min.uf : '--'}</span>
-              <span class="fw-bold text-secondary">R$ ${extRota.min ? extRota.min.preco.toFixed(3) : '--'}</span>
+            <div class="kpi-val-split text-success pt-1" style="border-top: 1px dotted #bbf7d0;" title="Menor Posto Rota: ${extRota.min ? extRota.min.posto : 'ND'}">
+              <span><span class="badge bg-success-subtle text-success border border-success-subtle p-0 me-1" style="font-size:0.60rem;">ROTA</span>${extRota.min ? extRota.min.uf : '--'}</span>
+              <span>R$ ${extRota.min ? extRota.min.preco.toFixed(3) : '--'}</span>
             </div>
           `;
           lblMenorSub.innerText = mesSel === 'YTD' ? "Últimos 20 dias ativos" : "Extremos da competência";
@@ -1339,7 +1326,7 @@
         }
 
       } else {
-        // FILTRO ESPECÍFICO (TANQUES PRÓPRIOS OU ROTA)
+        // MODO ISOLADO (TANQUES PRÓPRIOS OU ROTA)
         const registrosModo = amostra.filter(d => d.TIPO_OPERACAO === modoAtual);
         const ext = extrairExtremos(registrosModo);
         const rotuloTipo = modoAtual === 'INTERNO' ? 'Garagem' : 'Rota';
@@ -1409,12 +1396,22 @@
           gapHtml = `<span class="${corGap} fw-bold small">${sinal}R$ ${Math.abs(p.GAP_MERCADO).toFixed(3)} (${sinal}${Math.abs(p.GAP_PERC).toFixed(1)}%)</span>`;
         }
 
+        // Formatação discreta da data do último abastecimento (DD/MM)
+        let dataUltimoFormatada = "--/--";
+        if (p.DATA_MAIS_RECENTE && p.DATA_MAIS_RECENTE.length >= 10) {
+          const partes = p.DATA_MAIS_RECENTE.split('-');
+          dataUltimoFormatada = `${partes[2]}/${partes[1]}`;
+        }
+
         const indicesAbastecidos = [];
         const dadosKmmMes = [];
         const dadosAnpMes = [];
 
         mesesDisponiveis.forEach((m, mIdx) => {
-          const reg = baseRegistrosMensais.find(r => r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === m);
+          const reg = baseRegistrosMensais.find(r => 
+            r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === m &&
+            (p.TIPO_OPERACAO !== 'INTERNO' || r.MUNICIPIO_POSTO === p.MUNICIPIO_POSTO)
+          );
           const precoKmm = reg ? parseFloat(reg.PRECO_MEDIO_MES || 0) : null;
           if (precoKmm > 0) {
             indicesAbastecidos.push(mIdx);
@@ -1463,7 +1460,7 @@
             <div id="${chartDomId}" style="width: 100%; height: 100%;"></div>
           </div>
 
-          <!-- COLUNA 3: MÉTRICAS ALINHADAS E TRATATIVA COM ESPAÇAMENTO PROTEGIDO -->
+          <!-- COLUNA 3: MÉTRICAS ALINHADAS COM DATA COMPACTA (DD/MM) E BOTÃO TRATATIVA -->
           <div class="col-posto-metricas">
             <div class="col-m-vol">
               <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">Volume</div>
@@ -1489,9 +1486,11 @@
               <div class="font-monospace" style="font-size: 0.74rem;">${gapHtml}</div>
             </div>
 
+            <!-- ÚLTIMO PAGO COM DATA NO FORMATO DD/MM LOGO ABAIXO -->
             <div class="col-m-ult">
               <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">Último Pago</div>
               <div class="font-monospace fw-bold" style="font-size: 0.78rem;">R$ ${p.ULTIMO_PRECO.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</div>
+              <div class="font-monospace text-muted" style="font-size: 0.58rem; line-height: 1;">em ${dataUltimoFormatada}</div>
             </div>
 
             <div class="col-m-var">
