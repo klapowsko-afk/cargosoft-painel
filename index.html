@@ -38,7 +38,7 @@
       background-size: 500px auto;
       color: var(--text-dark);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      padding: 12px 18px;
+      padding: 10px 16px;
       margin: 0;
       min-height: 100vh;
     }
@@ -52,10 +52,10 @@
       margin-bottom: 10px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     }
-    .brand-logo-cargo { height: 42px; width: auto; object-fit: contain; }
-    .brand-logo-voctt { height: 42px; width: auto; border-radius: 50%; border: 2px solid var(--border-color); }
+    .brand-logo-cargo { height: 40px; width: auto; object-fit: contain; }
+    .brand-logo-voctt { height: 40px; width: auto; border-radius: 50%; border: 2px solid var(--border-color); }
 
-    /* BARRA SUPERIOR COCKPIT (VERDE ESCURA INSTITUCIONAL) */
+    /* BARRA SUPERIOR INTEGRADA (COCKPIT TOTALMENTE UNIFICADO) */
     .cockpit-bar {
       background: linear-gradient(135deg, #062316 0%, #0f3d26 50%, #144e31 100%);
       border-radius: 10px;
@@ -66,7 +66,7 @@
       background-color: rgba(255, 255, 255, 0.12);
       border: 1px solid rgba(255, 255, 255, 0.25);
       color: #ffffff;
-      font-size: 0.80rem;
+      font-size: 0.78rem;
       font-weight: 600;
     }
     .cockpit-bar .form-select option {
@@ -78,13 +78,14 @@
       border: 1px solid rgba(255, 255, 255, 0.22);
       background: rgba(255, 255, 255, 0.08);
       color: #e2e8f0;
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       font-weight: 700;
-      padding: 4px 11px;
+      padding: 4px 10px;
       border-radius: 20px;
       transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
+      white-space: nowrap;
     }
     .btn-toggle-tipo.active {
       background: #22c55e !important;
@@ -101,11 +102,11 @@
       background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 10px;
-      padding: 6px 10px;
+      padding: 5px 10px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
     }
 
-    /* CARDS KPIS COMPACTOS */
+    /* CARDS KPIS COM ALTURA SIMÉTRICA */
     .card-kpi {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -113,8 +114,8 @@
       padding: 8px 12px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
       border-left: 4px solid var(--cargosoft-green);
-      min-height: 76px;
-      max-height: 86px;
+      min-height: 82px;
+      height: 100%;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -150,37 +151,38 @@
       line-height: 1.15;
     }
     .kpi-sub {
-      font-size: 0.62rem;
+      font-size: 0.60rem;
       color: var(--text-muted);
       margin-top: 1px;
     }
 
-    /* TABELA SINTÉTICA DISCRETA */
+    /* TABELA SINTÉTICA DE CONFERÊNCIA */
     .card-tabela-resumo {
       background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      padding: 6px 10px;
+      padding: 6px 8px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
       height: 100%;
+      min-height: 82px;
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
     .tabela-sintetica {
-      font-size: 0.68rem;
+      font-size: 0.66rem;
       margin-bottom: 0;
     }
     .tabela-sintetica th {
-      font-size: 0.60rem;
+      font-size: 0.58rem;
       font-weight: 800;
       color: var(--text-muted);
       text-transform: uppercase;
       border-bottom: 1px solid var(--border-color);
-      padding: 2px 4px;
+      padding: 1px 3px;
     }
     .tabela-sintetica td {
-      padding: 3px 4px;
+      padding: 2px 3px;
       vertical-align: middle;
       border-bottom: 1px solid #f1f5f9;
     }
@@ -203,7 +205,7 @@
       align-items: center;
     }
 
-    /* CARD DO POSTO: 3 COLUNAS ISOLADAS */
+    /* CARD DO POSTO: 3 COLUNAS SEM ENCAVALAMENTO */
     .card-posto-termometro {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -224,9 +226,9 @@
 
     /* COLUNA 1: IDENTIFICAÇÃO */
     .col-posto-identificacao {
-      width: 320px;
-      min-width: 320px;
-      max-width: 340px;
+      width: 310px;
+      min-width: 310px;
+      max-width: 320px;
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -244,33 +246,33 @@
       word-break: break-word;
     }
 
-    /* COLUNA 2: GRÁFICO COM LINHA DO TEMPO */
+    /* COLUNA 2: LINHA DO TEMPO */
     .col-posto-grafico {
       flex: 1;
       height: 48px;
       position: relative;
       overflow: hidden;
-      min-width: 140px;
-      -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.8) 8%, rgba(0,0,0,0.95) 92%, transparent 100%);
-      mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.8) 8%, rgba(0,0,0,0.95) 92%, transparent 100%);
+      min-width: 130px;
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.85) 6%, rgba(0,0,0,0.95) 94%, transparent 100%);
+      mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.85) 6%, rgba(0,0,0,0.95) 94%, transparent 100%);
     }
 
     .linha-corte-tempo {
       position: absolute;
-      top: 4px;
-      bottom: 4px;
+      top: 3px;
+      bottom: 3px;
       width: 2px;
-      background-color: #94a3b8;
+      background-color: #64748b;
       z-index: 4;
       pointer-events: none;
     }
 
-    /* COLUNA 3: MÉTRICAS */
+    /* COLUNA 3: MÉTRICAS REDIMENSIONADAS (PROTEGENDO O BOTÃO TRATATIVA) */
     .col-posto-metricas {
-      width: 580px;
-      min-width: 580px;
+      width: 640px;
+      min-width: 640px;
       flex-shrink: 0;
-      background: rgba(255, 255, 255, 0.88);
+      background: rgba(255, 255, 255, 0.90);
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
       border: 1px solid rgba(226, 232, 240, 0.95);
@@ -283,12 +285,13 @@
       text-align: right;
     }
 
-    .col-m-vol { width: 75px; }
-    .col-m-pm { width: 85px; }
-    .col-m-anp { width: 75px; }
-    .col-m-gap { width: 105px; }
-    .col-m-ult { width: 80px; }
-    .col-m-var { width: 70px; }
+    .col-m-vol { width: 75px; flex-shrink: 0; }
+    .col-m-pm { width: 85px; flex-shrink: 0; }
+    .col-m-anp { width: 75px; flex-shrink: 0; }
+    .col-m-gap { width: 110px; flex-shrink: 0; }
+    .col-m-ult { width: 80px; flex-shrink: 0; }
+    .col-m-var { width: 80px; flex-shrink: 0; }
+    .col-m-btn { width: 85px; flex-shrink: 0; text-align: right; }
 
     .clickable-posto {
       cursor: pointer;
@@ -335,9 +338,9 @@
       background: #ffffff;
       border: 1px solid var(--border-color);
       color: var(--cargosoft-green);
-      font-size: 0.70rem;
+      font-size: 0.68rem;
       font-weight: 700;
-      padding: 3px 7px;
+      padding: 3px 6px;
       border-radius: 4px;
       white-space: nowrap;
     }
@@ -351,7 +354,7 @@
       margin-right: 3px;
     }
 
-    /* MINI MAPA LEAFLET: MALHA OFICIAL DOS 27 ESTADOS */
+    /* CONTENTOR DO MAPA ALINHADO ÀS DUAS FILEIRAS */
     .map-container {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -359,10 +362,15 @@
       padding: 8px 10px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
       height: 100%;
+      min-height: 172px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     #miniMapaBrasil {
       width: 100%;
-      height: 150px;
+      height: 100%;
+      min-height: 125px;
       background: #ffffff;
       border-radius: 6px;
       z-index: 2;
@@ -434,60 +442,55 @@
       </div>
     </div>
 
-    <!-- LINHA 1: BARRA SUPERIOR INTEGRADA (COMPETÊNCIA, FILTROS E MODOS) -->
-    <div class="row g-2 mb-2">
-      <!-- FILTRO DE COMPETÊNCIA -->
-      <div class="col-12 col-md-auto">
+    <!-- LINHA 1: BARRA SUPERIOR INTEGRADA (COMPETÊNCIA, FILTROS E MODOS UNIFICADOS NO TOPO) -->
+    <div class="row g-2 mb-2 align-items-stretch">
+      <div class="col-12 col-xl-3">
         <div class="cockpit-bar d-flex align-items-center gap-2 h-100">
           <label class="small fw-bold text-white-50 text-uppercase" style="font-size: 0.68rem; white-space: nowrap;">
             <i class="bi bi-calendar3 me-1"></i> Competência:
           </label>
-          <select id="filtroMesAno" class="form-select form-select-sm" style="min-width: 200px;" onchange="processarPainel()">
+          <select id="filtroMesAno" class="form-select form-select-sm" onchange="processarPainel()">
           </select>
         </div>
       </div>
 
-      <!-- FILTROS DE PESQUISA RÁPIDA -->
-      <div class="col-12 col-md">
-        <div class="control-sub-bar d-flex align-items-center justify-content-between flex-wrap gap-2 h-100">
-          <div class="d-flex align-items-center gap-2 flex-wrap">
-            <div class="d-flex align-items-center gap-1">
-              <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.66rem;">Rede:</label>
-              <select id="filtroRede" class="form-select form-select-sm" style="width: 165px;" onchange="aplicarFiltroRede()">
-                <option value="">Todas as Redes</option>
-              </select>
-            </div>
-
-            <div class="d-flex align-items-center gap-1">
-              <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.66rem;">Posto:</label>
-              <select id="filtroPosto" class="form-select form-select-sm" style="width: 165px;" onchange="aplicarFiltroPostoSelect()">
-                <option value="">Todos os Postos</option>
-              </select>
-            </div>
-
-            <span id="badgeFiltroUf" class="badge bg-dark text-white px-2 py-1" style="display: none; font-size: 0.68rem;">
-              UF: <span id="lblUfAtiva"></span>
-              <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroUf()"></i>
-            </span>
-
-            <span id="badgeFiltroPosto" class="badge bg-primary text-white px-2 py-1" style="display: none; font-size: 0.68rem;">
-              Filtro: <span id="lblPostoAtivo"></span>
-              <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroPosto()"></i>
-            </span>
+      <div class="col-12 col-xl-4">
+        <div class="control-sub-bar d-flex align-items-center justify-content-between gap-2 h-100 flex-wrap">
+          <div class="d-flex align-items-center gap-1">
+            <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.65rem;">Rede:</label>
+            <select id="filtroRede" class="form-select form-select-sm" style="width: 130px;" onchange="aplicarFiltroRede()">
+              <option value="">Todas as Redes</option>
+            </select>
           </div>
 
-          <div style="min-width: 170px; max-width: 240px; flex-grow: 1;">
+          <div class="d-flex align-items-center gap-1">
+            <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.65rem;">Posto:</label>
+            <select id="filtroPosto" class="form-select form-select-sm" style="width: 130px;" onchange="aplicarFiltroPostoSelect()">
+              <option value="">Todos os Postos</option>
+            </select>
+          </div>
+
+          <div style="min-width: 130px; flex-grow: 1;">
             <div class="input-group input-group-sm">
-              <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-              <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Buscar posto ou cidade..." oninput="filtrarTabelaTexto()">
+              <span class="input-group-text bg-white border-end-0 text-muted px-1"><i class="bi bi-search"></i></span>
+              <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Buscar..." oninput="filtrarTabelaTexto()">
             </div>
           </div>
+
+          <span id="badgeFiltroUf" class="badge bg-dark text-white px-2 py-1" style="display: none; font-size: 0.65rem;">
+            UF: <span id="lblUfAtiva"></span>
+            <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroUf()"></i>
+          </span>
+
+          <span id="badgeFiltroPosto" class="badge bg-primary text-white px-2 py-1" style="display: none; font-size: 0.65rem;">
+            <span id="lblPostoAtivo"></span>
+            <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroPosto()"></i>
+          </span>
         </div>
       </div>
 
-      <!-- BOTÕES DE SELEÇÃO DE MODO (ROTEIRIZADOR DE POSTOS ATUALIZADO) -->
-      <div class="col-12 col-xl-auto">
-        <div class="cockpit-bar d-flex align-items-center gap-1 h-100 flex-wrap">
+      <div class="col-12 col-xl-5">
+        <div class="cockpit-bar d-flex align-items-center justify-content-end gap-1 h-100 flex-wrap">
           <button class="btn-toggle-tipo active" id="btnModoGeral" onclick="alternarModoOperacao('TODOS')">
             <i class="bi bi-pie-chart-fill me-1"></i> Consolidado Geral
           </button>
@@ -507,12 +510,11 @@
       </div>
     </div>
 
-    <!-- LINHA 2: CARDS KPIS + TABELA SINTÉTICA + EXTREMOS UF + MINI MAPA LEAFLET -->
-    <div class="row g-2 mb-3">
-      <!-- ÁREA DOS CARDS E TABELA SINTÉTICA -->
-      <div class="col-12 col-xl-8 d-flex flex-column justify-content-center">
-        <div class="row g-2">
-          
+    <!-- LINHA 2: GRID SIMÉTRICO (KPIS SUPERIORES + CARDS/TABELA INFERIORES + MINI MAPA ALTURA TOTAL) -->
+    <div class="row g-2 mb-3 align-items-stretch">
+      <div class="col-12 col-xl-9">
+        <!-- FILEIRA SUPERIOR: 4 KPIS GERAIS -->
+        <div class="row g-2 mb-2">
           <div class="col-6 col-md-3">
             <div class="card-kpi">
               <div class="kpi-label">VOLUME ENTREGUE</div>
@@ -544,8 +546,10 @@
               <div class="kpi-sub">Unidades ativas</div>
             </div>
           </div>
+        </div>
 
-          <!-- CARD: MAIOR PREÇO POR UF -->
+        <!-- FILEIRA INFERIOR: 3 CARDS COMPLEMENTARES + TABELA SINTÉTICA -->
+        <div class="row g-2">
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-alerta">
               <div class="d-flex justify-content-between align-items-center">
@@ -557,7 +561,6 @@
             </div>
           </div>
 
-          <!-- CARD: MENOR PREÇO POR UF -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-destaque">
               <div class="d-flex justify-content-between align-items-center">
@@ -569,22 +572,20 @@
             </div>
           </div>
 
-          <!-- CARD: OFICIAL ANP / ANTT BRASIL -->
-          <div class="col-12 col-md-3">
+          <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-anp">
               <div class="d-flex justify-content-between align-items-center">
                 <div class="kpi-label text-primary">ANP / ANTT BRASIL</div>
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.52rem;">OFICIAL</span>
               </div>
               <div class="kpi-val text-primary" id="cardAnpAntt">Indisponível</div>
-              <div class="kpi-sub text-truncate" id="cardAnpAnttSub" style="font-size: 0.60rem;">
+              <div class="kpi-sub text-truncate" id="cardAnpAnttSub" style="font-size: 0.58rem;">
                 <i class="bi bi-clock-history me-1"></i>Aguardando publicação
               </div>
             </div>
           </div>
 
-          <!-- MINI TABELA SINTÉTICA DE CONFERÊNCIA -->
-          <div class="col-12 col-md-3">
+          <div class="col-6 col-md-3">
             <div class="card-tabela-resumo">
               <table class="table tabela-sintetica text-end">
                 <thead>
@@ -618,25 +619,24 @@
               </table>
             </div>
           </div>
-
         </div>
       </div>
 
-      <!-- MINI MAPA LEAFLET DO BRASIL: MALHA DOS 27 ESTADOS -->
-      <div class="col-12 col-xl-4">
-        <div class="map-container d-flex flex-column justify-content-between">
+      <!-- COLUNA DIREITA: MINI MAPA INTEGRAL DOS 27 ESTADOS (ALINHADO ÀS DUAS FILEIRAS) -->
+      <div class="col-12 col-xl-3">
+        <div class="map-container">
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="small fw-bold text-dark text-uppercase" style="font-size: 0.70rem;">
+            <span class="small fw-bold text-dark text-uppercase" style="font-size: 0.68rem;">
               <i class="bi bi-geo-alt-fill me-1 text-success"></i> FILTRO POR ESTADO
             </span>
-            <span class="text-muted" style="font-size: 0.65rem;" id="lblHoverEstado">Passe o mouse ou clique</span>
+            <span class="text-muted" style="font-size: 0.62rem;" id="lblHoverEstado">Passe o mouse ou clique</span>
           </div>
 
-          <div class="d-flex justify-content-center align-items-center flex-grow-1" style="min-height: 150px; position: relative;">
+          <div class="flex-grow-1 position-relative my-1" style="min-height: 115px;">
             <div id="miniMapaBrasil"></div>
           </div>
 
-          <div class="d-flex justify-content-between align-items-center pt-1 border-top" style="font-size: 0.65rem;">
+          <div class="d-flex justify-content-between align-items-center pt-1 border-top" style="font-size: 0.62rem;">
             <span class="text-muted"><span class="legend-indicator" style="background:#e2e8f0;"></span>Sem Base</span>
             <div class="d-flex align-items-center gap-1">
               <span class="text-muted">Concentração:</span>
@@ -690,10 +690,8 @@
       </div>
       <div class="p-3">
         <div class="row g-3">
-          
           <div class="col-12 col-md-4">
             <div class="card p-3 border-0 bg-light position-relative">
-              
               <div class="alert alert-info py-2 px-3 small mb-3">
                 <i class="bi bi-info-circle me-1"></i> Digite a cidade (busca instantânea) ou clique no campo e <strong>clique direto no mapa</strong>.
               </div>
@@ -1035,7 +1033,7 @@
         baseCalculoGeral = registros.filter(d => d.MES_ANO === mesSel);
       }
 
-      // 1. Cálculo da Tabela Sintética (Conferência Interno vs Rota)
+      // 1. Tabela Sintética de Conferência (Separada por Operação)
       let qtdRota = 0, volRota = 0, gastoRota = 0;
       let qtdInterno = 0, volInterno = 0, gastoInterno = 0;
 
@@ -1071,7 +1069,7 @@
       document.getElementById('tbResumoVolTotal').innerText = Math.round(volTotal).toLocaleString('pt-BR');
       document.getElementById('tbResumoGastoTotal').innerText = "R$ " + Math.round(gastoTotal).toLocaleString('pt-BR');
 
-      // 2. Aplicação do filtro de modo operacional para a lista e KPIs
+      // 2. Filtro dos postos e cards de acordo com o modo
       let registrosModo = registros;
       if (modoAtual !== 'TODOS' && modoAtual !== 'ROTEIRIZADOR' && modoAtual !== 'MATRIZES') {
         registrosModo = registros.filter(d => d.TIPO_OPERACAO === modoAtual);
@@ -1347,7 +1345,7 @@
             <div id="${chartDomId}" style="width: 100%; height: 100%;"></div>
           </div>
 
-          <!-- COLUNA 3: MÉTRICAS ALINHADAS E TRATATIVA LIVRES DE GRÁFICO -->
+          <!-- COLUNA 3: MÉTRICAS ALINHADAS E TRATATIVA COM ESPAÇAMENTO PROTEGIDO -->
           <div class="col-posto-metricas">
             <div class="col-m-vol">
               <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">Volume</div>
@@ -1383,7 +1381,7 @@
               <div class="font-monospace">${variacaoHtml}</div>
             </div>
 
-            <div>
+            <div class="col-m-btn">
               <button class="btn-tratativa" onclick="alert('Registro de tratativa comercial para: ${p.NOME_EXIBICAO}')">
                 <i class="bi bi-journal-check"></i> Tratativa
               </button>
