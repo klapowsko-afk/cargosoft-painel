@@ -51,7 +51,7 @@ function extrairSiglaUf(props) {
 }
 
 /**
- * Inicializa a instância do Mini Mapa Leaflet do Brasil.
+ * Inicializa a instância do Mini Mapa Leaflet do Brasil com suporte a zoom fracionário.
  */
 async function inicializarMiniMapaBrasil() {
   const mapContainer = document.getElementById('miniMapaBrasil');
@@ -64,8 +64,10 @@ async function inicializarMiniMapaBrasil() {
     scrollWheelZoom: false,
     doubleClickZoom: false,
     boxZoom: false,
-    touchZoom: false
-  }).setView([-14.235, -51.925], 3);
+    touchZoom: false,
+    zoomSnap: 0.05,
+    zoomDelta: 0.1
+  }).setView([-14.235, -51.925], 3.8);
 
   try {
     const resp = await fetch(GEOJSON_BR_URL);
@@ -89,7 +91,7 @@ function obterCorPorVolume(vol) {
 }
 
 /**
- * Monta o conteúdo HTML do resumo de abastecimento para o tooltip.
+ * Monta o conteúdo HTML do resumo de abastecimento para o tooltip nativo.
  */
 function gerarConteudoTooltipUf(uf) {
   const mesSel = document.getElementById('filtroMesAno') ? document.getElementById('filtroMesAno').value : 'YTD';
@@ -164,7 +166,6 @@ function atualizarCoresMiniMapa() {
     onEachFeature: function(feature, layer) {
       const sigla = extrairSiglaUf(feature.properties);
 
-      // Tooltip nativo e robusto do próprio Leaflet
       layer.bindTooltip(() => gerarConteudoTooltipUf(sigla), {
         sticky: true,
         direction: 'auto',
@@ -208,11 +209,14 @@ function atualizarCoresMiniMapa() {
     }
   }).addTo(miniMapaLeaflet);
 
-  // Redimensiona o Leaflet e enquadra o território brasileiro preenchendo o contentor
+  // Redimensionamento sem margens brancas para preenchimento máximo
   setTimeout(() => {
     if (miniMapaLeaflet && camadaGeoJsonBrasil) {
       miniMapaLeaflet.invalidateSize();
-      miniMapaLeaflet.fitBounds(camadaGeoJsonBrasil.getBounds(), { padding: [2, 2] });
+      miniMapaLeaflet.fitBounds(camadaGeoJsonBrasil.getBounds(), {
+        padding: [0, 0],
+        maxZoom: 5.5
+      });
     }
   }, 100);
 }
@@ -221,16 +225,10 @@ function atualizarCoresMiniMapa() {
 // 2. ROTEIRIZADOR DE POSTOS (LEAFLET + AUTOCOMPLETE + CORREDORES DE ABASTECIMENTO)
 // =========================================================================
 
-/**
- * Normaliza textos para comparação e buscas sem acento.
- */
 function normalizarTextoBusca(txt) {
   return (txt || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
 
-/**
- * Calcula distância geográfica aproximada em linha reta (fórmula de Haversine).
- */
 function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -241,9 +239,6 @@ function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
-/**
- * Configura o comportamento de autocompletar e foco dos campos de cidades na rota.
- */
 function configurarAutocompletarItem(itemEl) {
   const input = itemEl.querySelector('.input-cidade-rota');
   const hiddenCoord = itemEl.querySelector('.hidden-coord-rota');
@@ -296,9 +291,6 @@ function configurarAutocompletarItem(itemEl) {
   });
 }
 
-/**
- * Adiciona um ponto intermediário de parada na rota.
- */
 function adicionarCampoParada() {
   const container = document.getElementById('containerPontosRota');
   const itens = container.querySelectorAll('.ponto-rota-item');
@@ -327,9 +319,6 @@ function adicionarCampoParada() {
   renumerarRotulos();
 }
 
-/**
- * Remove um ponto intermediário de parada da rota.
- */
 function removerCampoParada(btnEl) {
   const item = btnEl.closest('.ponto-rota-item');
   item.remove();
@@ -337,9 +326,6 @@ function removerCampoParada(btnEl) {
   atualizarMarcadoresWaypoints();
 }
 
-/**
- * Atualiza os rótulos ordinais dos campos de rota.
- */
 function renumerarRotulos() {
   const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
   itens.forEach((el, idx) => {
@@ -354,7 +340,6 @@ function renumerarRotulos() {
   });
 }
 
-// Fecha autocompletes ao clicar fora
 document.addEventListener("click", (e) => {
   document.querySelectorAll('.autocomplete-list').forEach(list => {
     if (!list.closest('.ponto-rota-item').contains(e.target)) {
@@ -363,9 +348,6 @@ document.addEventListener("click", (e) => {
   });
 });
 
-/**
- * Inicializa a instância do mapa Leaflet principal para roteirização.
- */
 function inicializarMapaLeaflet() {
   if (!leafletMapInstance) {
     leafletMapInstance = L.map('mapLeaflet').setView([-20.0, -48.0], 5);
@@ -412,9 +394,6 @@ function inicializarMapaLeaflet() {
   }, 250);
 }
 
-/**
- * Move o foco automaticamente para o próximo campo de parada vazio.
- */
 function avancarParaProximoCampo() {
   const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
   for (const it of itens) {
@@ -428,9 +407,6 @@ function avancarParaProximoCampo() {
   }
 }
 
-/**
- * Atualiza os marcadores de cidades selecionadas na tela do mapa.
- */
 function atualizarMarcadoresWaypoints() {
   if (!leafletMapInstance) return;
   markersWaypoints.forEach(m => leafletMapInstance.removeLayer(m));
@@ -456,9 +432,6 @@ function atualizarMarcadoresWaypoints() {
   });
 }
 
-/**
- * Obtém coordenadas geográficas a partir de campo oculto ou do cadastro de cidades.
- */
 function obterCoordenadasItem(itemEl) {
   const hidden = itemEl.querySelector('.hidden-coord-rota');
   const input = itemEl.querySelector('.input-cidade-rota');
@@ -479,9 +452,6 @@ function obterCoordenadasItem(itemEl) {
   return null;
 }
 
-/**
- * Calcula e desenha o traçado da rota no Leaflet e chama o mapeamento dos postos.
- */
 function calcularRotaLeaflet() {
   if (!leafletMapInstance) return;
 
@@ -520,9 +490,6 @@ function calcularRotaLeaflet() {
   });
 }
 
-/**
- * Mapeia os postos de combustível da base ao longo da rota em duplo raio (200 km direto / 600 km apoio).
- */
 function plotarPostosComDuploRaio(routeCoords) {
   if (!leafletMapInstance) return;
   markersPostosLeaflet.forEach(m => leafletMapInstance.removeLayer(m));
@@ -605,9 +572,6 @@ function plotarPostosComDuploRaio(routeCoords) {
   postosSugeridosUltimaRota.sort((a, b) => a.preco - b.preco);
 }
 
-/**
- * Prepara e aciona a impressão do roteiro gerado para a viagem.
- */
 function imprimirRoteiroViagem() {
   if (postosSugeridosUltimaRota.length === 0) {
     alert("Trace uma rota primeiro para mapear os postos antes de imprimir.");
