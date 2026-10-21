@@ -14,6 +14,10 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
+  <!-- FIREBASE WEB SDK (COMPATÍVEL PARA CDN EM NAVEGADOR) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
   <!-- MÓDULOS EXTERNOS DE DADOS E INTELIGÊNCIA -->
   <script src="cidades.js"></script>
   <script src="matrizes.js"></script>
@@ -791,6 +795,23 @@
   <div id="mapTooltip"></div>
 
   <script>
+    // =========================================================================
+    // INICIALIZAÇÃO FIREBASE (SDK COMPAT)
+    // =========================================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyDT2fbjOk1TvkzJhiw_Wm5Xf9sIO1WH-PA",
+      authDomain: "cargosoft-diesel.firebaseapp.com",
+      projectId: "cargosoft-diesel",
+      storageBucket: "cargosoft-diesel.firebasestorage.app",
+      messagingSenderId: "403028241165",
+      appId: "1:403028241165:web:586dba34713ed7c63b9e44"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
     const WORKER_URL = "https://api-abastecimentos.klapowsko.workers.dev";
     let baseRegistrosMensais = [];
     let dadosAnpBaseGlobal = null;
@@ -840,7 +861,6 @@
         '09': 'Set', '10': 'Out', '11': 'Nov', '12': 'Dez'
       };
 
-      // Tenta extrair YYYY-MM-DD
       const match = dataStr.match(/(\d{4})-(\d{2})-(\d{2})/);
       if (match) {
         const dia = match[3];
@@ -848,7 +868,6 @@
         return `${dia}/${nomesMesesAbrev[mes] || mes}`;
       }
 
-      // Se já vier com barra DD/MM/YYYY
       const matchBarra = dataStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
       if (matchBarra) {
         const dia = matchBarra[1];
@@ -865,10 +884,11 @@
       btn.disabled = true;
 
       try {
+        // LEITURA DIRETA DO FIRESTORE (SEM ARQUIVOS JSON ESTÁTICOS)
         try {
-          const respAnp = await fetch('anp_base.json');
-          if (respAnp.ok) {
-            dadosAnpBaseGlobal = await respAnp.json();
+          const docSnap = await db.collection('anp_consolidada').document('mensal_2026').get();
+          if (docSnap.exists) {
+            dadosAnpBaseGlobal = docSnap.data();
             if (dadosAnpBaseGlobal.revenda) anpRevenda = dadosAnpBaseGlobal.revenda;
             if (dadosAnpBaseGlobal.distribuicao) anpDistribuicao = dadosAnpBaseGlobal.distribuicao;
             atualizarCardAnttOficial();
@@ -876,6 +896,7 @@
             definirCardAnttIndisponivel();
           }
         } catch (e) {
+          console.error("Falha ao consultar Firestore:", e);
           definirCardAnttIndisponivel();
         }
 
@@ -910,7 +931,8 @@
         const precoNum = parseFloat(ref.valor);
         if (!isNaN(precoNum) && precoNum > 0) {
           document.getElementById('cardAnpAntt').innerText = 'R$ ' + precoNum.toFixed(2).replace('.', ',');
-          document.getElementById('cardAnpAnttSub').innerHTML = `<i class="bi bi-file-earmark-check me-1"></i>${ref.ato_oficial} (${ref.vigencia})`;
+          const periodo = ref.periodo || 'Publicação Vigente';
+          document.getElementById('cardAnpAnttSub').innerHTML = `<i class="bi bi-file-earmark-check me-1"></i>${periodo}`;
           return;
         }
       }
@@ -1142,7 +1164,6 @@
       }
 
       baseCalculo.forEach(d => {
-        // Separação de garagens da mesma UF (SP Barueri vs SP Ribeirão)
         const chave = d.TIPO_OPERACAO === 'INTERNO' 
           ? `${d.POSTO}_${d.UF_POSTO}_${d.MUNICIPIO_POSTO}` 
           : `${d.POSTO}_${d.UF_POSTO}`;
@@ -1263,7 +1284,7 @@
       document.getElementById('cardPontos').innerText = listaPostos.length.toString();
 
       // =========================================================================
-      // 3. CARDS EXTREMOS PADRONIZADOS (SEM PONDERADA • JANELA DE 20 DIAS)
+      // CARDS EXTREMOS (SEM PONDERADA • JANELA DE 20 DIAS)
       // =========================================================================
       atualizarCardsExtremosSemPonderada(registros, mesSel);
 
@@ -1273,10 +1294,6 @@
       }
     }
 
-    /**
-     * Determina os extremos vigentes sem ponderada.
-     * Padroniza a ordem visual: 1ª linha ROTA / 2ª linha GARAGEM em ambos os cards.
-     */
     function atualizarCardsExtremosSemPonderada(todosRegistros, mesSel) {
       const containerMaior = document.getElementById('cardMaiorConteudo');
       const containerMenor = document.getElementById('cardMenorConteudo');
@@ -1334,7 +1351,6 @@
         const extRota = extrairExtremos(rotaRegs);
         const extInterno = extrairExtremos(internoRegs);
 
-        // MAIOR PREÇO (1º ROTA / 2º GARAGEM - 100% VERMELHO INSTITUCIONAL)
         if (extRota.max || extInterno.max) {
           containerMaior.innerHTML = `
             <div class="kpi-val-split text-danger" title="Pico Rota: ${extRota.max ? extRota.max.posto : 'ND'}">
@@ -1352,7 +1368,6 @@
           lblMaiorSub.innerText = "Sem compras recentes";
         }
 
-        // MENOR PREÇO (PADRONIZADO NA MESMA ORDEM: 1º ROTA / 2º GARAGEM - 100% VERDE INSTITUCIONAL)
         if (extRota.min || extInterno.min) {
           containerMenor.innerHTML = `
             <div class="kpi-val-split text-success" title="Menor Posto Rota: ${extRota.min ? extRota.min.posto : 'ND'}">
@@ -1371,7 +1386,6 @@
         }
 
       } else {
-        // FILTROS ISOLADOS (TANQUES PRÓPRIOS OU ROTA)
         const registrosModo = amostra.filter(d => d.TIPO_OPERACAO === modoAtual);
         const ext = extrairExtremos(registrosModo);
         const rotuloTipo = modoAtual === 'INTERNO' ? 'Garagem' : 'Rota';
@@ -1441,7 +1455,6 @@
           gapHtml = `<span class="${corGap} fw-bold small">${sinal}R$ ${Math.abs(p.GAP_MERCADO).toFixed(3)} (${sinal}${Math.abs(p.GAP_PERC).toFixed(1)}%)</span>`;
         }
 
-        // Formatação limpa da data no padrão: 20/Out, 14/Ago
         const dataUltimoFormatada = formatarDataDiaMes(p.DATA_MAIS_RECENTE);
 
         const indicesAbastecidos = [];
@@ -1486,7 +1499,7 @@
         const card = document.createElement('div');
         card.className = `card-posto-termometro ${ehZebrado}`;
         card.innerHTML = `
-          <!-- COLUNA 1: IDENTIFICAÇÃO DO POSTO (NOME COMPLETO) -->
+          <!-- COLUNA 1: IDENTIFICAÇÃO DO POSTO -->
           <div class="col-posto-identificacao">
             <span class="badge-uf">${p.UF_POSTO || '--'}</span>
             <div style="min-width: 0;">
@@ -1503,7 +1516,7 @@
             <div id="${chartDomId}" style="width: 100%; height: 100%;"></div>
           </div>
 
-          <!-- COLUNA 3: MÉTRICAS INTEGRADAS (SEM BORDAS DUPLICADAS) -->
+          <!-- COLUNA 3: MÉTRICAS INTEGRADAS -->
           <div class="col-posto-metricas">
             <div class="col-m-vol">
               <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">Volume</div>
@@ -1529,7 +1542,6 @@
               <div class="font-monospace" style="font-size: 0.74rem;">${gapHtml}</div>
             </div>
 
-            <!-- ÚLTIMO PAGO COM DATA NO PADRÃO DD/Mês (ex: 20/Out, 14/Ago) -->
             <div class="col-m-ult">
               <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">Último Pago</div>
               <div class="font-monospace fw-bold" style="font-size: 0.78rem;">R$ ${p.ULTIMO_PRECO.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</div>
