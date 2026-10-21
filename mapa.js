@@ -18,12 +18,12 @@ const DE_PARA_NOMES_UFS = {
   "SERGIPE": "SE", "TOCANTINS": "TO"
 };
 
-// Variáveis de controle do Mini Mapa do Brasil
+// Variáveis de controlo do Mini Mapa do Brasil
 let miniMapaLeaflet = null;
 let camadaGeoJsonBrasil = null;
 let dadosGeoJsonBr = null;
 
-// Variáveis de controle do Roteirizador de Postos
+// Variáveis de controlo do Roteirizador de Postos
 let leafletMapInstance = null;
 let routingControlInstance = null;
 let markersPostosLeaflet = [];
@@ -32,7 +32,7 @@ let campoFocoAtivo = null;
 let postosSugeridosUltimaRota = [];
 
 // =========================================================================
-// 1. MINI MAPA LEAFLET: MALHA OFICIAL DOS 27 ESTADOS (FILTRO POR UF)
+// 1. MINI MAPA LEAFLET: MALHA OFICIAL DOS 27 ESTADOS (AMPLIADO & TOOLTIP INTELIGENTE)
 // =========================================================================
 
 /**
@@ -51,7 +51,7 @@ function extrairSiglaUf(props) {
 }
 
 /**
- * Inicializa a instância do Mini Mapa Leaflet do Brasil com suporte a zoom fracionário.
+ * Inicializa a instância do Mini Mapa Leaflet do Brasil com escala expandida.
  */
 async function inicializarMiniMapaBrasil() {
   const mapContainer = document.getElementById('miniMapaBrasil');
@@ -91,7 +91,8 @@ function obterCorPorVolume(vol) {
 }
 
 /**
- * Monta o conteúdo HTML do resumo de abastecimento para o tooltip nativo.
+ * Monta o conteúdo HTML do resumo de abastecimento para o tooltip.
+ * Trata São Paulo (SP) discriminando Barueri e Ribeirão Preto individualmente.
  */
 function gerarConteudoTooltipUf(uf) {
   const mesSel = document.getElementById('filtroMesAno') ? document.getElementById('filtroMesAno').value : 'YTD';
@@ -102,13 +103,43 @@ function gerarConteudoTooltipUf(uf) {
     regs = regs.filter(d => d.MES_ANO === mesSel);
   }
 
-  const litInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
-  const valInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
-  const medInterno = litInterno > 0 ? (valInterno / litInterno) : 0;
-
   const litExterno = regs.filter(d => d.TIPO_OPERACAO === 'EXTERNO').reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
   const valExterno = regs.filter(d => d.TIPO_OPERACAO === 'EXTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
   const medExterno = litExterno > 0 ? (valExterno / litExterno) : 0;
+
+  // Tratamento específico de discriminação para São Paulo (Barueri vs. Ribeirão Preto)
+  if (uf === 'SP') {
+    const regsBarueri = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO' && (d.MUNICIPIO_POSTO || '').toUpperCase().includes('BARUERI'));
+    const litBarueri = regsBarueri.reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
+    const valBarueri = regsBarueri.reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
+    const medBarueri = litBarueri > 0 ? (valBarueri / litBarueri) : 0;
+
+    const regsRibeirao = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO' && (d.MUNICIPIO_POSTO || '').toUpperCase().includes('RIBEIRAO'));
+    const litRibeirao = regsRibeirao.reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
+    const valRibeirao = regsRibeirao.reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
+    const medRibeirao = litRibeirao > 0 ? (valRibeirao / litRibeirao) : 0;
+
+    const totalSp = litBarueri + litRibeirao + litExterno;
+
+    if (totalSp === 0) {
+      return `<div style="font-size:0.75rem; padding: 2px;"><strong>SP &bull; São Paulo</strong><br><span style="color:#94a3b8;">Sem movimento no período</span></div>`;
+    }
+
+    return `
+      <div style="font-size:0.75rem; line-height: 1.35; padding: 2px; min-width: 175px;">
+        <strong style="color: #22c55e;">SP &bull; Resumo Operacional</strong><br>
+        Total: <b>${Math.round(totalSp).toLocaleString('pt-BR')} L</b><br>
+        <span style="color:#86efac;">Barueri (Garagem):</span> ${Math.round(litBarueri).toLocaleString('pt-BR')} L ${medBarueri > 0 ? '(R$ ' + medBarueri.toFixed(3) + ')' : ''}<br>
+        <span style="color:#86efac;">Ribeirão (Garagem):</span> ${Math.round(litRibeirao).toLocaleString('pt-BR')} L ${medRibeirao > 0 ? '(R$ ' + medRibeirao.toFixed(3) + ')' : ''}<br>
+        <span style="color:#fdba74;">Rota Rodoviária:</span> ${Math.round(litExterno).toLocaleString('pt-BR')} L ${medExterno > 0 ? '(R$ ' + medExterno.toFixed(3) + ')' : ''}
+      </div>
+    `;
+  }
+
+  // Demais estados do Brasil
+  const litInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
+  const valInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
+  const medInterno = litInterno > 0 ? (valInterno / litInterno) : 0;
 
   const totalL = litInterno + litExterno;
 
@@ -117,7 +148,7 @@ function gerarConteudoTooltipUf(uf) {
   }
 
   return `
-    <div style="font-size:0.75rem; line-height: 1.35; padding: 2px;">
+    <div style="font-size:0.75rem; line-height: 1.35; padding: 2px; min-width: 175px;">
       <strong style="color: #22c55e;">${uf} &bull; Resumo Operacional</strong><br>
       Total: <b>${Math.round(totalL).toLocaleString('pt-BR')} L</b><br>
       <span style="color:#86efac;">Tanques Próprios:</span> ${Math.round(litInterno).toLocaleString('pt-BR')} L ${medInterno > 0 ? '(R$ ' + medInterno.toFixed(3) + ')' : ''}<br>
@@ -127,7 +158,7 @@ function gerarConteudoTooltipUf(uf) {
 }
 
 /**
- * Atualiza os polígonos, contornos, tooltips nativos e cores do Mini Mapa do Brasil.
+ * Atualiza os polígonos, contornos e o posicionamento seguro dos tooltips.
  */
 function atualizarCoresMiniMapa() {
   if (!miniMapaLeaflet || !dadosGeoJsonBr) return;
@@ -166,10 +197,15 @@ function atualizarCoresMiniMapa() {
     onEachFeature: function(feature, layer) {
       const sigla = extrairSiglaUf(feature.properties);
 
+      // Direção inteligente: Estados do Sul/Sudeste abrem para o topo/esquerda evitando transbordar
+      const estadosSulSudeste = ['PR', 'SC', 'RS', 'SP', 'RJ', 'ES', 'MG', 'MS'];
+      const direcaoTooltip = estadosSulSudeste.includes(sigla) ? 'top' : 'auto';
+
       layer.bindTooltip(() => gerarConteudoTooltipUf(sigla), {
         sticky: true,
-        direction: 'auto',
-        className: 'custom-leaflet-tooltip'
+        direction: direcaoTooltip,
+        className: 'custom-leaflet-tooltip',
+        offset: [0, -5]
       });
 
       layer.on('mouseover', function(e) {
@@ -209,7 +245,7 @@ function atualizarCoresMiniMapa() {
     }
   }).addTo(miniMapaLeaflet);
 
-  // Redimensionamento sem margens brancas para preenchimento máximo
+  // Expansão máxima do mapa na altura útil sem cortes ou margens excessivas
   setTimeout(() => {
     if (miniMapaLeaflet && camadaGeoJsonBrasil) {
       miniMapaLeaflet.invalidateSize();
