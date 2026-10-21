@@ -187,13 +187,13 @@ let postoAtivoTratativa = null;
                     </div>
                   </div>
 
-                  <!-- CONTROLOS MANUAIS CASO NÃO QUEIRA USAR O SCROLL DO RATO -->
+                  <!-- CONTROLES MANUAIS COM NAVEGAÇÃO CORRETA -->
                   <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary">
-                    <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.68rem;" onclick="avancarRolodex(-1)">
+                    <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.68rem;" onclick="avancarRolodex(1)">
                       <i class="bi bi-chevron-up me-1"></i> Mais Antigo
                     </button>
                     <span class="text-white-50" style="font-size: 0.58rem;">Role o mouse sobre o leque</span>
-                    <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.68rem;" onclick="avancarRolodex(1)">
+                    <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.68rem;" onclick="avancarRolodex(-1)">
                       Mais Recente <i class="bi bi-chevron-down ms-1"></i>
                     </button>
                   </div>
@@ -208,20 +208,23 @@ let postoAtivoTratativa = null;
                   <div class="row g-2 mb-2">
                     <div class="col-4">
                       <div class="bg-light p-2 rounded border text-center">
-                        <div class="text-muted text-uppercase fw-bold" style="font-size: 0.58rem;">Preço Médio Pago</div>
+                        <div class="text-muted text-uppercase fw-bold" style="font-size: 0.58rem;">Último Pago na Bomba</div>
                         <div class="fw-bold font-monospace text-dark" style="font-size: 0.88rem;" id="modalCtxPrecoMedio">R$ --</div>
+                        <div class="text-muted font-monospace" style="font-size: 0.55rem;" id="modalCtxDataUltimo">--/--</div>
                       </div>
                     </div>
                     <div class="col-4">
                       <div class="bg-light p-2 rounded border text-center">
                         <div class="text-muted text-uppercase fw-bold" style="font-size: 0.58rem;">Ref. ANP (Oficial)</div>
                         <div class="fw-bold font-monospace text-primary" style="font-size: 0.88rem;" id="modalCtxRefAnp">R$ --</div>
+                        <div class="text-muted" style="font-size: 0.55rem;">Mensal Vigente</div>
                       </div>
                     </div>
                     <div class="col-4">
                       <div class="bg-light p-2 rounded border text-center">
-                        <div class="text-muted text-uppercase fw-bold" style="font-size: 0.58rem;">Volume Mensal</div>
+                        <div class="text-muted text-uppercase fw-bold" style="font-size: 0.58rem;">Vol. Médio Recente</div>
                         <div class="fw-bold font-monospace text-success" style="font-size: 0.88rem;" id="modalCtxVolumeMensal">-- L</div>
+                        <div class="text-muted" style="font-size: 0.55rem;" id="modalCtxSubVolume">Média 3 meses ativos</div>
                       </div>
                     </div>
                   </div>
@@ -287,7 +290,7 @@ let postoAtivoTratativa = null;
                         </div>
                       </div>
 
-                      <!-- CONTACTOS -->
+                      <!-- CONTATOS -->
                       <div class="col-md-6">
                         <label class="form-label fw-bold text-dark small mb-1">Responsável / Contato:</label>
                         <input type="text" id="campoTratativaContato" class="form-control form-control-sm" placeholder="Nome do gerente comercial">
@@ -413,12 +416,56 @@ function obterTratativaPosto(posto, uf) {
 let listaHistoricoAtiva = [];
 let indiceRolodexAtivo = 0;
 
-// 6. Abertura do Cockpit de Decisão com busca pontual de salvaguarda
+// 6. Abertura do Cockpit de Decisão com regras de negócio calibradas
 async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp, ultimoPago) {
+  const mesFiltroAtivo = document.getElementById('filtroMesAno') ? document.getElementById('filtroMesAno').value : 'YTD';
+  
   let volumeMesCalculo = 0;
+  let subVolumeTexto = "Média 3 meses ativos";
+  let ultimoPrecoNaBomba = ultimoPago || precoMedio || 0;
+  let dataUltimoNaBomba = "--/--";
+
   if (typeof baseRegistrosMensais !== 'undefined' && Array.isArray(baseRegistrosMensais)) {
-    const registrosPosto = baseRegistrosMensais.filter(d => d.POSTO === nomePosto && d.UF_POSTO === uf);
-    volumeMesCalculo = registrosPosto.reduce((acc, c) => acc + parseFloat(c.LITROS_MES || 0), 0);
+    const registrosDoPosto = baseRegistrosMensais.filter(d => d.POSTO === nomePosto && d.UF_POSTO === uf);
+
+    if (mesFiltroAtivo !== 'YTD') {
+      // Competência específica selecionada: pega o volume e o último preço daquele mês
+      const regMes = registrosDoPosto.find(d => d.MES_ANO === mesFiltroAtivo);
+      if (regMes) {
+        volumeMesCalculo = parseFloat(regMes.LITROS_MES || 0);
+        ultimoPrecoNaBomba = parseFloat(regMes.ULTIMO_PRECO_MES || regMes.PRECO_MEDIO_MES || 0);
+        if (typeof formatarDataDiaMes === 'function') {
+          dataUltimoNaBomba = formatarDataDiaMes(regMes.ULTIMA_DATA_MES);
+        } else {
+          dataUltimoNaBomba = (regMes.ULTIMA_DATA_MES || '').substring(0, 10);
+        }
+      }
+      subVolumeTexto = `Litragem em ${mesFiltroAtivo}`;
+    } else {
+      // Ano Completo (YTD): Média cirúrgica dos últimos até 3 meses ativos do posto
+      const mesesComConsumo = registrosDoPosto
+        .filter(d => parseFloat(d.LITROS_MES || 0) > 0)
+        .sort((a, b) => (b.MES_ANO || '').localeCompare(a.MES_ANO || ''))
+        .slice(0, 3);
+
+      if (mesesComConsumo.length > 0) {
+        const somaVolUltimos3 = mesesComConsumo.reduce((acc, c) => acc + parseFloat(c.LITROS_MES || 0), 0);
+        volumeMesCalculo = somaVolUltimos3 / mesesComConsumo.length;
+        subVolumeTexto = `Média de ${mesesComConsumo.length} ${mesesComConsumo.length === 1 ? 'mês ativo' : 'meses ativos'}`;
+      }
+
+      // Último preço absoluto do posto na base inteira
+      let maxData = "";
+      registrosDoPosto.forEach(d => {
+        if (d.ULTIMA_DATA_MES && d.ULTIMA_DATA_MES > maxData) {
+          maxData = d.ULTIMA_DATA_MES;
+          ultimoPrecoNaBomba = parseFloat(d.ULTIMO_PRECO_MES || d.PRECO_MEDIO_MES || 0);
+        }
+      });
+      if (maxData) {
+        dataUltimoNaBomba = (typeof formatarDataDiaMes === 'function') ? formatarDataDiaMes(maxData) : maxData.substring(0, 10);
+      }
+    }
   }
 
   postoAtivoTratativa = { 
@@ -427,33 +474,35 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
     municipio, 
     precoMedio: precoMedio || 0, 
     refAnp: refAnp || 0, 
-    ultimoPago: ultimoPago || 0,
+    ultimoPago: ultimoPrecoNaBomba,
     volumeMes: volumeMesCalculo
   };
 
+  // Preenchimento dos dados visuais no cabeçalho
   document.getElementById('modalTratativaPostoNome').innerText = nomePosto;
   document.getElementById('modalTratativaUf').innerText = uf || '--';
   document.getElementById('modalTratativaSub').innerText = `Município: ${municipio || 'Não Identificado'} | Operação: ROTA`;
 
-  document.getElementById('modalCtxPrecoMedio').innerText = precoMedio > 0 ? `R$ ${precoMedio.toFixed(3)}` : '--';
+  document.getElementById('modalCtxPrecoMedio').innerText = ultimoPrecoNaBomba > 0 ? `R$ ${ultimoPrecoNaBomba.toFixed(3)}` : '--';
+  document.getElementById('modalCtxDataUltimo').innerText = `em ${dataUltimoNaBomba}`;
   document.getElementById('modalCtxRefAnp').innerText = refAnp > 0 ? `R$ ${refAnp.toFixed(3)}` : '--';
   document.getElementById('modalCtxVolumeMensal').innerText = volumeMesCalculo > 0 ? `${Math.round(volumeMesCalculo).toLocaleString('pt-BR')} L` : '--';
+  document.getElementById('modalCtxSubVolume').innerText = subVolumeTexto;
 
   popularSeletorPostosDestino(nomePosto, uf);
 
-  // Data de vigência padrão = Hoje (formato YYYY-MM-DD)
+  // Data de vigência padrão = Hoje
   const hojeStr = new Date().toISOString().substring(0, 10);
   document.getElementById('campoTratativaVigencia').value = hojeStr;
 
-  // Mostra o modal Bootstrap de imediato
+  // Mostra o modal de imediato
   const modalEl = document.getElementById('modalTratativaComercial');
   const bsModal = new bootstrap.Modal(modalEl);
   bsModal.show();
 
-  // Verifica se o posto já está no cache local
   let trat = obterTratativaPosto(nomePosto, uf);
 
-  // SALVAGUARDA: Se não estiver no cache, faz requisição GET direta no Firestore pelo documento do posto
+  // Consulta pontual de salvaguarda caso o posto não esteja no cache em memória
   if (!trat) {
     const docId = gerarDocumentIdPosto(nomePosto, uf);
     try {
@@ -482,7 +531,6 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
             };
           });
         } else if (f.atualizado_em || f.preco_acordado) {
-          // Recupera dados gravados na versão plana anterior
           historicoResgatado.push({
             data: f.atualizado_em?.timestampValue || new Date().toISOString(),
             vigencia: f.vigencia?.stringValue || (f.atualizado_em?.timestampValue ? f.atualizado_em.timestampValue.substring(0, 10) : hojeStr),
@@ -673,9 +721,9 @@ function rolarLequeRolodex(event) {
   if (listaHistoricoAtiva.length <= 1) return;
 
   if (event.deltaY > 0) {
-    avancarRolodex(1);
+    avancarRolodex(1); // Desce para os mais antigos
   } else {
-    avancarRolodex(-1);
+    avancarRolodex(-1); // Sobe para os mais recentes
   }
 }
 
