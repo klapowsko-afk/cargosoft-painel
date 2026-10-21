@@ -89,7 +89,43 @@ function obterCorPorVolume(vol) {
 }
 
 /**
- * Atualiza os polígonos, contornos e cores do Mini Mapa do Brasil conforme o filtro atual.
+ * Monta o conteúdo HTML do resumo de abastecimento para o tooltip.
+ */
+function gerarConteudoTooltipUf(uf) {
+  const mesSel = document.getElementById('filtroMesAno') ? document.getElementById('filtroMesAno').value : 'YTD';
+  let regs = (typeof baseRegistrosMensais !== 'undefined' && Array.isArray(baseRegistrosMensais)) ? baseRegistrosMensais : [];
+  regs = regs.filter(d => d.UF_POSTO === uf);
+
+  if (mesSel !== 'YTD') {
+    regs = regs.filter(d => d.MES_ANO === mesSel);
+  }
+
+  const litInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
+  const valInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
+  const medInterno = litInterno > 0 ? (valInterno / litInterno) : 0;
+
+  const litExterno = regs.filter(d => d.TIPO_OPERACAO === 'EXTERNO').reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
+  const valExterno = regs.filter(d => d.TIPO_OPERACAO === 'EXTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
+  const medExterno = litExterno > 0 ? (valExterno / litExterno) : 0;
+
+  const totalL = litInterno + litExterno;
+
+  if (totalL === 0) {
+    return `<div style="font-size:0.75rem; padding: 2px;"><strong>${uf}</strong><br><span style="color:#94a3b8;">Sem movimento no período</span></div>`;
+  }
+
+  return `
+    <div style="font-size:0.75rem; line-height: 1.35; padding: 2px;">
+      <strong style="color: #22c55e;">${uf} &bull; Resumo Operacional</strong><br>
+      Total: <b>${Math.round(totalL).toLocaleString('pt-BR')} L</b><br>
+      <span style="color:#86efac;">Tanques Próprios:</span> ${Math.round(litInterno).toLocaleString('pt-BR')} L ${medInterno > 0 ? '(R$ ' + medInterno.toFixed(3) + ')' : ''}<br>
+      <span style="color:#fdba74;">Rota Rodoviária:</span> ${Math.round(litExterno).toLocaleString('pt-BR')} L ${medExterno > 0 ? '(R$ ' + medExterno.toFixed(3) + ')' : ''}
+    </div>
+  `;
+}
+
+/**
+ * Atualiza os polígonos, contornos, tooltips nativos e cores do Mini Mapa do Brasil.
  */
 function atualizarCoresMiniMapa() {
   if (!miniMapaLeaflet || !dadosGeoJsonBr) return;
@@ -128,13 +164,21 @@ function atualizarCoresMiniMapa() {
     onEachFeature: function(feature, layer) {
       const sigla = extrairSiglaUf(feature.properties);
 
+      // Tooltip nativo e robusto do próprio Leaflet
+      layer.bindTooltip(() => gerarConteudoTooltipUf(sigla), {
+        sticky: true,
+        direction: 'auto',
+        className: 'custom-leaflet-tooltip'
+      });
+
       layer.on('mouseover', function(e) {
         const l = e.target;
         l.setStyle({
           weight: 2,
           color: '#0f172a'
         });
-        mostrarTooltipMiniMapa(e.originalEvent, sigla);
+        const lblHover = document.getElementById('lblHoverEstado');
+        if (lblHover) lblHover.innerText = `Estado: ${sigla}`;
       });
 
       layer.on('mouseout', function(e) {
@@ -142,7 +186,10 @@ function atualizarCoresMiniMapa() {
         if (typeof ufFiltrada !== 'undefined' && ufFiltrada === sigla) {
           e.target.setStyle({ weight: 2.5, color: '#f59e0b' });
         }
-        esconderTooltipMiniMapa();
+        const lblHover = document.getElementById('lblHoverEstado');
+        if (lblHover) {
+          lblHover.innerText = (typeof ufFiltrada !== 'undefined' && ufFiltrada) ? `Filtrando por ${ufFiltrada}` : 'Passe o mouse ou clique';
+        }
       });
 
       layer.on('click', function() {
@@ -161,65 +208,13 @@ function atualizarCoresMiniMapa() {
     }
   }).addTo(miniMapaLeaflet);
 
-  miniMapaLeaflet.fitBounds(camadaGeoJsonBrasil.getBounds(), { padding: [4, 4] });
-}
-
-/**
- * Exibe o tooltip flutuante do estado com dados reais de litragem e preços.
- */
-function mostrarTooltipMiniMapa(e, uf) {
-  const tooltip = document.getElementById('mapTooltip');
-  if (!tooltip) return;
-
-  const mesSel = document.getElementById('filtroMesAno') ? document.getElementById('filtroMesAno').value : 'YTD';
-  const lblHover = document.getElementById('lblHoverEstado');
-  if (lblHover) lblHover.innerText = `Estado: ${uf}`;
-
-  let regs = (typeof baseRegistrosMensais !== 'undefined' && Array.isArray(baseRegistrosMensais)) ? baseRegistrosMensais : [];
-  regs = regs.filter(d => d.UF_POSTO === uf);
-
-  if (mesSel !== 'YTD') {
-    regs = regs.filter(d => d.MES_ANO === mesSel);
-  }
-
-  const litInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
-  const valInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
-  const medInterno = litInterno > 0 ? (valInterno / litInterno) : 0;
-
-  const litExterno = regs.filter(d => d.TIPO_OPERACAO === 'EXTERNO').reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
-  const valExterno = regs.filter(d => d.TIPO_OPERACAO === 'EXTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
-  const medExterno = litExterno > 0 ? (valExterno / litExterno) : 0;
-
-  const totalL = litInterno + litExterno;
-
-  if (totalL === 0) {
-    tooltip.innerHTML = `<strong>${uf}</strong><br><span class="text-muted">Sem movimento no período</span>`;
-  } else {
-    tooltip.innerHTML = `
-      <strong>${uf} &bull; Resumo Operacional</strong><br>
-      <div style="font-size:0.68rem; margin-top:2px;">
-        Total: <b>${Math.round(totalL).toLocaleString('pt-BR')} L</b><br>
-        Tanques Próprios: ${Math.round(litInterno).toLocaleString('pt-BR')} L ${medInterno > 0 ? '(R$ ' + medInterno.toFixed(3) + ')' : ''}<br>
-        Rota Rodoviária: ${Math.round(litExterno).toLocaleString('pt-BR')} L ${medExterno > 0 ? '(R$ ' + medExterno.toFixed(3) + ')' : ''}
-      </div>
-    `;
-  }
-
-  tooltip.style.left = (e.pageX + 15) + "px";
-  tooltip.style.top = (e.pageY + 10) + "px";
-  tooltip.style.display = "block";
-}
-
-/**
- * Esconde o tooltip flutuante do mapa.
- */
-function esconderTooltipMiniMapa() {
-  const tooltip = document.getElementById('mapTooltip');
-  if (tooltip) tooltip.style.display = "none";
-  const lblHover = document.getElementById('lblHoverEstado');
-  if (lblHover) {
-    lblHover.innerText = (typeof ufFiltrada !== 'undefined' && ufFiltrada) ? `Filtrando por ${ufFiltrada}` : 'Passe o mouse ou clique';
-  }
+  // Redimensiona o Leaflet e enquadra o território brasileiro preenchendo o contentor
+  setTimeout(() => {
+    if (miniMapaLeaflet && camadaGeoJsonBrasil) {
+      miniMapaLeaflet.invalidateSize();
+      miniMapaLeaflet.fitBounds(camadaGeoJsonBrasil.getBounds(), { padding: [2, 2] });
+    }
+  }, 100);
 }
 
 // =========================================================================
