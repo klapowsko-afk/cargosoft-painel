@@ -21,7 +21,7 @@
   overflow: hidden;
 }
 
-/* Camada suave para garantir leitura do card sem esconder a fotografia de fundo */
+/* Camada de desfoque acentuado no fundo com gradiente escuro executivo */
 #telaBloqueioLogin::before {
   content: "";
   position: absolute;
@@ -29,7 +29,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.45) 0%, rgba(2, 6, 23, 0.75) 100%);
+  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.50) 0%, rgba(2, 6, 23, 0.82) 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 1;
 }
 
@@ -38,30 +40,33 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 420px;
+  max-width: 410px;
   margin: 16px;
-  background: rgba(15, 23, 42, 0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(15, 23, 42, 0.84);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 16px;
-  padding: 34px 30px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  padding: 30px 28px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   color: #f8fafc;
 }
 
+/* Logo VOCTT calibrada em 54px para nitidez máxima */
 .card-login-voctt .brand-logo-central {
-  width: 72px;
-  height: 72px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
-  border: 2px solid rgba(34, 197, 94, 0.6);
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.25);
+  border: 1.5px solid rgba(34, 197, 94, 0.7);
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.3);
   object-fit: cover;
-  margin-bottom: 14px;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  margin-bottom: 12px;
 }
 
 .login-titulo-marca {
-  font-size: 1.25rem;
+  font-size: 1.20rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   color: #ffffff;
@@ -70,12 +75,12 @@
 }
 
 .login-subtitulo-marca {
-  font-size: 0.70rem;
+  font-size: 0.68rem;
   font-weight: 600;
   color: #94a3b8;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 /* Estilização dos campos de input */
@@ -162,7 +167,7 @@
 .login-rodape-privacidade {
   font-size: 0.62rem;
   color: #64748b;
-  margin-top: 22px;
+  margin-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 14px;
+  padding-top: 12px;
 }
