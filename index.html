@@ -99,7 +99,7 @@
       color: #ffffff;
     }
 
-    /* CARDS KPIS */
+    /* CARDS KPIS COM ENCAIXE PRECISO DE ALTURA */
     .card-kpi {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -107,7 +107,7 @@
       padding: 8px 12px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
       border-left: 4px solid var(--cargosoft-green);
-      min-height: 84px;
+      min-height: 98px;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -144,7 +144,7 @@
       line-height: 1.15;
     }
     .kpi-val-split {
-      font-size: 0.82rem;
+      font-size: 0.80rem;
       font-weight: 800;
       letter-spacing: -0.01em;
       line-height: 1.35;
@@ -158,7 +158,7 @@
       margin-top: 1px;
     }
 
-    /* TABELA SINTÉTICA DE CONFERÊNCIA COM RESPIRO */
+    /* TABELA SINTÉTICA DE CONFERÊNCIA COM RESPIRO TOTAL */
     .card-tabela-resumo {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -166,7 +166,7 @@
       padding: 6px 10px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
       height: 100%;
-      min-height: 84px;
+      min-height: 98px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -211,7 +211,7 @@
       gap: 8px;
     }
 
-    /* CARD DO POSTO: 3 COLUNAS SEM ENCAVALAMENTO */
+    /* CARD DO POSTO: EFEITO ZEBRADO ESMAECIDO E SEM BORDAS DUPLICADAS */
     .card-posto-termometro {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -228,6 +228,9 @@
     .card-posto-termometro:hover {
       box-shadow: 0 4px 14px rgba(0,0,0,0.06);
       border-color: #cbd5e1;
+    }
+    .card-posto-termometro.zebrado-sutil {
+      background: linear-gradient(to right, #f8fafc 0%, #f1f5f9 60%, #ffffff 100%);
     }
 
     /* COLUNA 1: IDENTIFICAÇÃO */
@@ -273,17 +276,14 @@
       pointer-events: none;
     }
 
-    /* COLUNA 3: MÉTRICAS REDIMENSIONADAS COM DATA DO ÚLTIMO PAGO */
+    /* COLUNA 3: MÉTRICAS INTEGRADAS (SEM BORDA DUPLICADA) */
     .col-posto-metricas {
       width: 650px;
       min-width: 650px;
       flex-shrink: 0;
-      background: rgba(255, 255, 255, 0.90);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      border: 1px solid rgba(226, 232, 240, 0.95);
-      border-radius: 6px;
-      padding: 4px 10px;
+      background: transparent;
+      border: none;
+      padding: 2px 6px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -340,17 +340,22 @@
     .btn-tratativa {
       display: inline-flex;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
       background: #ffffff;
       border: 1px solid var(--border-color);
       color: var(--cargosoft-green);
-      font-size: 0.68rem;
+      font-size: 0.70rem;
       font-weight: 700;
-      padding: 3px 6px;
-      border-radius: 4px;
+      padding: 4px 8px;
+      border-radius: 5px;
       white-space: nowrap;
+      transition: all 0.15s ease;
     }
-    .btn-tratativa:hover { background: var(--cargosoft-green); color: #ffffff; }
+    .btn-tratativa:hover {
+      background: var(--cargosoft-green);
+      color: #ffffff;
+      border-color: var(--cargosoft-green);
+    }
 
     .legend-indicator {
       display: inline-block;
@@ -360,7 +365,7 @@
       margin-right: 3px;
     }
 
-    /* CONTENTOR DO MAPA PREENCHENDO ALTURA DE 230px */
+    /* CONTENTOR DO MAPA PREENCHENDO ALTURA INTEGRAL (230px) */
     .map-container {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -386,7 +391,7 @@
       display: none !important;
     }
 
-    /* ESTILO VISUAL DO TOOLTIP NATIVO DO LEAFLET */
+    /* TOOLTIP NATIVO DO LEAFLET */
     .custom-leaflet-tooltip {
       background: rgba(15, 23, 42, 0.96) !important;
       border: 1px solid #334155 !important;
@@ -493,7 +498,7 @@
 
     <!-- LINHA 2: GRID SIMÉTRICO (INDICADORES + TABELA SINTÉTICA col-xl-8 vs. MINI MAPA col-xl-4) -->
     <div class="row g-2 mb-3 align-items-stretch">
-      <div class="col-12 col-xl-8">
+      <div class="col-12 col-xl-8 d-flex flex-column justify-content-between">
         <!-- FILEIRA SUPERIOR: 4 KPIS GERAIS -->
         <div class="row g-2 mb-2">
           <div class="col-6 col-md-3">
@@ -529,9 +534,9 @@
           </div>
         </div>
 
-        <!-- FILEIRA INFERIOR: EXTREMOS RECENTES PADRONIZADOS + ANP + TABELA SINTÉTICA -->
+        <!-- FILEIRA INFERIOR: EXTREMOS PADRONIZADOS + ANP + TABELA SINTÉTICA -->
         <div class="row g-2">
-          <!-- CARD MAIOR PREÇO (PADRONIZADO EM VERMELHO INSTITUCIONAL) -->
+          <!-- CARD MAIOR PREÇO (PADRONIZADO EM VERMELHO: 1º ROTA / 2º GARAGEM) -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-alerta">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -545,7 +550,7 @@
             </div>
           </div>
 
-          <!-- CARD MENOR PREÇO (PADRONIZADO EM VERDE INSTITUCIONAL) -->
+          <!-- CARD MENOR PREÇO (PADRONIZADO EM VERDE: 1º ROTA / 2º GARAGEM) -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-destaque">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -609,7 +614,7 @@
         </div>
       </div>
 
-      <!-- COLUNA DO MINI MAPA AMPLIADO (col-xl-4 COM ALTURA 230px) -->
+      <!-- COLUNA DO MINI MAPA AMPLIADO (col-xl-4 COM ALTURA EXATA DE 230px) -->
       <div class="col-12 col-xl-4">
         <div class="map-container">
           <div class="d-flex justify-content-between align-items-center mb-1">
@@ -628,9 +633,9 @@
             <div class="d-flex align-items-center gap-1">
               <span class="text-muted">Concentração:</span>
               <span class="legend-indicator" style="background:#4ade80;" title="Baixo"></span>
-              <span class="legend-indicator" style="background:#16a34a;" title="Médio"></span>
-              <span class="legend-indicator" style="background:#15803d;" title="Alto"></span>
-              <span class="legend-indicator" style="background:#052e16;" title="Muito Alto"></span>
+              <span class="legend-indicator" style="background:#22c55e;" title="Médio"></span>
+              <span class="legend-indicator" style="background:#1c483a;" title="Alto"></span>
+              <span class="legend-indicator" style="background:#062316;" title="Muito Alto"></span>
             </div>
           </div>
         </div>
@@ -645,7 +650,7 @@
           <div class="small text-muted" id="lblSubtituloTabela" style="font-size: 0.72rem;">Garagens internas (Barueri, Ribeirão, Eusébio, Colombo, etc.) e postos de rodovia</div>
         </div>
 
-        <!-- FILTROS OPERACIONAIS REALOCADOS JUNTO À LISTA DE POSTOS -->
+        <!-- FILTROS OPERACIONAIS JUNTO À LISTA DE POSTOS -->
         <div class="d-flex align-items-center gap-2 flex-wrap">
           <div class="d-flex align-items-center gap-1">
             <label class="small fw-bold text-muted text-uppercase mb-0" style="font-size: 0.65rem;">Rede:</label>
@@ -773,7 +778,7 @@
     <div class="d-flex justify-content-between align-items-center py-2 px-1 small text-muted border-top mt-3" style="font-size: 0.72rem;">
       <div class="d-flex align-items-center gap-2">
         <span>Cargosoft Transportes &copy; 2026</span>
-        <span class="badge bg-light text-secondary border font-monospace px-2 py-0" style="font-size: 0.65rem;">v2.5.0</span>
+        <span class="badge bg-light text-secondary border font-monospace px-2 py-0" style="font-size: 0.65rem;">v2.6.0</span>
       </div>
       <div class="d-flex align-items-center gap-2">
         Desenvolvido por <strong>VOCTT Inteligência & Consultoria de Frotas</strong>
@@ -800,14 +805,20 @@
     let anpDistribuicao = {};
     let anpRevenda = {};
 
+    function normalizarTexto(txt) {
+      return (txt || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    }
+
     /**
-     * Separação estrita de filiais com destaque para SP (Barueri vs. Ribeirão Preto)
+     * Identificação de postos e garagens, discriminando SP entre Barueri e Ribeirão Preto
      */
     function identificarNomePonto(posto, municipio, uf, tipo) {
       if (tipo === 'INTERNO') {
-        const mun = (municipio || '').toUpperCase();
-        if (mun.includes('BARUERI')) return "Filial Barueri";
-        if (mun.includes('RIBEIRAO') || mun.includes('PRETO')) return "Filial Ribeirão Preto";
+        const mun = normalizarTexto(municipio);
+        const pos = normalizarTexto(posto);
+
+        if (mun.includes('BARUERI') || pos.includes('BARUERI')) return "Filial Barueri";
+        if (mun.includes('RIBEIRAO') || pos.includes('RIBEIRAO') || pos.includes('RP')) return "Filial Ribeirão Preto";
         if (mun.includes('COLOMBO') || uf === 'PR') return "Filial Colombo (Matriz)";
         if (mun.includes('EUSEBIO') || mun.includes('FORTALEZA') || uf === 'CE') return "Filial Eusébio";
         if (mun.includes('SIMOES') || mun.includes('SALVADOR') || uf === 'BA') return "Filial Simões Filho";
@@ -815,6 +826,37 @@
         return `Garagem ${municipio || 'Interna'}`;
       }
       return posto || 'NÃO IDENTIFICADO';
+    }
+
+    /**
+     * Formata a data com segurança para o formato DD/Mês (ex: 20/Out, 14/Ago)
+     */
+    function formatarDataDiaMes(dataStr) {
+      if (!dataStr) return "--/--";
+      
+      const nomesMesesAbrev = {
+        '01': 'Jan', '02': 'Fev', '03': 'Mar', '04': 'Abr',
+        '05': 'Mai', '06': 'Jun', '07': 'Jul', '08': 'Ago',
+        '09': 'Set', '10': 'Out', '11': 'Nov', '12': 'Dez'
+      };
+
+      // Tenta extrair YYYY-MM-DD
+      const match = dataStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+      if (match) {
+        const dia = match[3];
+        const mes = match[2];
+        return `${dia}/${nomesMesesAbrev[mes] || mes}`;
+      }
+
+      // Se já vier com barra DD/MM/YYYY
+      const matchBarra = dataStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+      if (matchBarra) {
+        const dia = matchBarra[1];
+        const mes = matchBarra[2];
+        return `${dia}/${nomesMesesAbrev[mes] || mes}`;
+      }
+
+      return dataStr.substring(0, 5);
     }
 
     async function carregarDados() {
@@ -908,8 +950,8 @@
       };
 
       baseRegistrosMensais.forEach(d => {
-        const p = (d.POSTO || '').toUpperCase();
-        if (p.includes('MARAJO') || p.includes('MARAJÓ')) contagemRedes['MARAJO'].add(d.POSTO);
+        const p = normalizarTexto(d.POSTO);
+        if (p.includes('MARAJO')) contagemRedes['MARAJO'].add(d.POSTO);
         else if (p.includes('GRAAL')) contagemRedes['GRAAL'].add(d.POSTO);
         else if (p.includes('SIM ') || p.includes('REDE SIM')) contagemRedes['SIM'].add(d.POSTO);
         else if (p.startsWith('HG ') || p.includes(' REDE HG')) contagemRedes['HG'].add(d.POSTO);
@@ -1032,11 +1074,11 @@
       if (redeFiltrada) {
         if (redeFiltrada === 'OUTROS') {
           registros = registros.filter(d => {
-            const p = (d.POSTO || '').toUpperCase();
-            return !p.includes('MARAJO') && !p.includes('MARAJÓ') && !p.startsWith('HG ') && !p.includes('SIM ') && !p.includes('GRAAL');
+            const p = normalizarTexto(d.POSTO);
+            return !p.includes('MARAJO') && !p.startsWith('HG ') && !p.includes('SIM ') && !p.includes('GRAAL');
           });
         } else {
-          registros = registros.filter(d => (d.POSTO || '').toUpperCase().includes(redeFiltrada));
+          registros = registros.filter(d => normalizarTexto(d.POSTO).includes(redeFiltrada));
         }
       }
 
@@ -1100,7 +1142,7 @@
       }
 
       baseCalculo.forEach(d => {
-        // Chave exclusiva incluindo município para separar garagens da mesma UF (SP Barueri vs SP Ribeirão)
+        // Separação de garagens da mesma UF (SP Barueri vs SP Ribeirão)
         const chave = d.TIPO_OPERACAO === 'INTERNO' 
           ? `${d.POSTO}_${d.UF_POSTO}_${d.MUNICIPIO_POSTO}` 
           : `${d.POSTO}_${d.UF_POSTO}`;
@@ -1232,8 +1274,8 @@
     }
 
     /**
-     * Determina os extremos vigentes sem agregação ponderada arbitrária,
-     * padronizando cores (Maior Preço 100% vermelho, Menor Preço 100% verde).
+     * Determina os extremos vigentes sem ponderada.
+     * Padroniza a ordem visual: 1ª linha ROTA / 2ª linha GARAGEM em ambos os cards.
      */
     function atualizarCardsExtremosSemPonderada(todosRegistros, mesSel) {
       const containerMaior = document.getElementById('cardMaiorConteudo');
@@ -1252,10 +1294,13 @@
         });
 
         if (maxDataStr) {
-          const maxDate = new Date(maxDataStr);
-          const dataCorte = new Date(maxDate.getTime() - (20 * 24 * 60 * 60 * 1000));
-          const dataCorteStr = dataCorte.toISOString().slice(0, 10);
-          amostra = amostra.filter(d => d.ULTIMA_DATA_MES >= dataCorteStr);
+          const match = maxDataStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+          if (match) {
+            const maxDate = new Date(`${match[1]}-${match[2]}-${match[3]}T12:00:00Z`);
+            const dataCorte = new Date(maxDate.getTime() - (20 * 24 * 60 * 60 * 1000));
+            const dataCorteStr = dataCorte.toISOString().slice(0, 10);
+            amostra = amostra.filter(d => (d.ULTIMA_DATA_MES || '').substring(0, 10) >= dataCorteStr);
+          }
         }
       }
 
@@ -1289,15 +1334,15 @@
         const extRota = extrairExtremos(rotaRegs);
         const extInterno = extrairExtremos(internoRegs);
 
-        // MAIOR PREÇO (AMBAS AS LINHAS EM VERMELHO DESTAQUE PADRONIZADO)
+        // MAIOR PREÇO (1º ROTA / 2º GARAGEM - 100% VERMELHO INSTITUCIONAL)
         if (extRota.max || extInterno.max) {
           containerMaior.innerHTML = `
             <div class="kpi-val-split text-danger" title="Pico Rota: ${extRota.max ? extRota.max.posto : 'ND'}">
-              <span><span class="badge bg-danger-subtle text-danger border border-danger-subtle p-0 me-1" style="font-size:0.60rem;">ROTA</span>${extRota.max ? extRota.max.uf : '--'}</span>
+              <span><span class="badge bg-danger-subtle text-danger border border-danger-subtle p-0 me-1" style="font-size:0.58rem;">ROTA</span>${extRota.max ? extRota.max.uf : '--'}</span>
               <span>R$ ${extRota.max ? extRota.max.preco.toFixed(3) : '--'}</span>
             </div>
             <div class="kpi-val-split text-danger pt-1" style="border-top: 1px dotted #fecaca;" title="Maior Garagem: ${extInterno.max ? extInterno.max.posto : 'ND'}">
-              <span><span class="badge bg-danger-subtle text-danger border border-danger-subtle p-0 me-1" style="font-size:0.60rem;">GARAGEM</span>${extInterno.max ? extInterno.max.uf : '--'}</span>
+              <span><span class="badge bg-danger-subtle text-danger border border-danger-subtle p-0 me-1" style="font-size:0.58rem;">GARAGEM</span>${extInterno.max ? extInterno.max.uf : '--'}</span>
               <span>R$ ${extInterno.max ? extInterno.max.preco.toFixed(3) : '--'}</span>
             </div>
           `;
@@ -1307,16 +1352,16 @@
           lblMaiorSub.innerText = "Sem compras recentes";
         }
 
-        // MENOR PREÇO (AMBAS AS LINHAS EM VERDE DESTAQUE PADRONIZADO)
-        if (extInterno.min || extRota.min) {
+        // MENOR PREÇO (PADRONIZADO NA MESMA ORDEM: 1º ROTA / 2º GARAGEM - 100% VERDE INSTITUCIONAL)
+        if (extRota.min || extInterno.min) {
           containerMenor.innerHTML = `
-            <div class="kpi-val-split text-success" title="Menor Garagem Ativa: ${extInterno.min ? extInterno.min.posto : 'ND'}">
-              <span><span class="badge bg-success-subtle text-success border border-success-subtle p-0 me-1" style="font-size:0.60rem;">GARAGEM</span>${extInterno.min ? extInterno.min.uf : '--'}</span>
-              <span>R$ ${extInterno.min ? extInterno.min.preco.toFixed(3) : '--'}</span>
-            </div>
-            <div class="kpi-val-split text-success pt-1" style="border-top: 1px dotted #bbf7d0;" title="Menor Posto Rota: ${extRota.min ? extRota.min.posto : 'ND'}">
-              <span><span class="badge bg-success-subtle text-success border border-success-subtle p-0 me-1" style="font-size:0.60rem;">ROTA</span>${extRota.min ? extRota.min.uf : '--'}</span>
+            <div class="kpi-val-split text-success" title="Menor Posto Rota: ${extRota.min ? extRota.min.posto : 'ND'}">
+              <span><span class="badge bg-success-subtle text-success border border-success-subtle p-0 me-1" style="font-size:0.58rem;">ROTA</span>${extRota.min ? extRota.min.uf : '--'}</span>
               <span>R$ ${extRota.min ? extRota.min.preco.toFixed(3) : '--'}</span>
+            </div>
+            <div class="kpi-val-split text-success pt-1" style="border-top: 1px dotted #bbf7d0;" title="Menor Garagem Ativa: ${extInterno.min ? extInterno.min.posto : 'ND'}">
+              <span><span class="badge bg-success-subtle text-success border border-success-subtle p-0 me-1" style="font-size:0.58rem;">GARAGEM</span>${extInterno.min ? extInterno.min.uf : '--'}</span>
+              <span>R$ ${extInterno.min ? extInterno.min.preco.toFixed(3) : '--'}</span>
             </div>
           `;
           lblMenorSub.innerText = mesSel === 'YTD' ? "Últimos 20 dias ativos" : "Extremos da competência";
@@ -1326,7 +1371,7 @@
         }
 
       } else {
-        // MODO ISOLADO (TANQUES PRÓPRIOS OU ROTA)
+        // FILTROS ISOLADOS (TANQUES PRÓPRIOS OU ROTA)
         const registrosModo = amostra.filter(d => d.TIPO_OPERACAO === modoAtual);
         const ext = extrairExtremos(registrosModo);
         const rotuloTipo = modoAtual === 'INTERNO' ? 'Garagem' : 'Rota';
@@ -1396,12 +1441,8 @@
           gapHtml = `<span class="${corGap} fw-bold small">${sinal}R$ ${Math.abs(p.GAP_MERCADO).toFixed(3)} (${sinal}${Math.abs(p.GAP_PERC).toFixed(1)}%)</span>`;
         }
 
-        // Formatação discreta da data do último abastecimento (DD/MM)
-        let dataUltimoFormatada = "--/--";
-        if (p.DATA_MAIS_RECENTE && p.DATA_MAIS_RECENTE.length >= 10) {
-          const partes = p.DATA_MAIS_RECENTE.split('-');
-          dataUltimoFormatada = `${partes[2]}/${partes[1]}`;
-        }
+        // Formatação limpa da data no padrão: 20/Out, 14/Ago
+        const dataUltimoFormatada = formatarDataDiaMes(p.DATA_MAIS_RECENTE);
 
         const indicesAbastecidos = [];
         const dadosKmmMes = [];
@@ -1440,8 +1481,10 @@
           `;
         }
 
+        const ehZebrado = (idx % 2 === 1) ? 'zebrado-sutil' : '';
+
         const card = document.createElement('div');
-        card.className = "card-posto-termometro";
+        card.className = `card-posto-termometro ${ehZebrado}`;
         card.innerHTML = `
           <!-- COLUNA 1: IDENTIFICAÇÃO DO POSTO (NOME COMPLETO) -->
           <div class="col-posto-identificacao">
@@ -1454,13 +1497,13 @@
             </div>
           </div>
 
-          <!-- COLUNA 2: GRÁFICO CENTRALIZADO COM LINHAS DE CORTE E MÁSCARA LATERAL -->
+          <!-- COLUNA 2: LINHA DO TEMPO COM MARCADORES -->
           <div class="col-posto-grafico">
             ${marcadoresLinhasHtml}
             <div id="${chartDomId}" style="width: 100%; height: 100%;"></div>
           </div>
 
-          <!-- COLUNA 3: MÉTRICAS ALINHADAS COM DATA COMPACTA (DD/MM) E BOTÃO TRATATIVA -->
+          <!-- COLUNA 3: MÉTRICAS INTEGRADAS (SEM BORDAS DUPLICADAS) -->
           <div class="col-posto-metricas">
             <div class="col-m-vol">
               <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">Volume</div>
@@ -1486,11 +1529,11 @@
               <div class="font-monospace" style="font-size: 0.74rem;">${gapHtml}</div>
             </div>
 
-            <!-- ÚLTIMO PAGO COM DATA NO FORMATO DD/MM LOGO ABAIXO -->
+            <!-- ÚLTIMO PAGO COM DATA NO PADRÃO DD/Mês (ex: 20/Out, 14/Ago) -->
             <div class="col-m-ult">
               <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">Último Pago</div>
               <div class="font-monospace fw-bold" style="font-size: 0.78rem;">R$ ${p.ULTIMO_PRECO.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</div>
-              <div class="font-monospace text-muted" style="font-size: 0.58rem; line-height: 1;">em ${dataUltimoFormatada}</div>
+              <div class="font-monospace text-muted" style="font-size: 0.60rem; line-height: 1;">em ${dataUltimoFormatada}</div>
             </div>
 
             <div class="col-m-var">
