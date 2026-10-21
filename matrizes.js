@@ -6,13 +6,13 @@ let cacheAnpBase = null;
 async function obterBaseAnpOficial() {
   if (cacheAnpBase) return cacheAnpBase;
 
-  // 1. Aproveita os dados já baixados pelo index.html via Firestore
+  // 1. Aproveita dados já carregados pelo index.html
   if (typeof dadosAnpBaseGlobal !== 'undefined' && dadosAnpBaseGlobal && dadosAnpBaseGlobal.revenda) {
     cacheAnpBase = dadosAnpBaseGlobal;
     return cacheAnpBase;
   }
 
-  // 2. Fallback direto à API REST do Firestore caso chamado isoladamente
+  // 2. Consulta direta via REST API do Firestore
   try {
     const FIRESTORE_REST_URL = "https://firestore.googleapis.com/v1/projects/cargosoft-diesel/databases/(default)/documents/anp_consolidada/mensal_2026";
     const resp = await fetch(FIRESTORE_REST_URL);
@@ -201,6 +201,39 @@ function gerarInsightsInteligentes(analiseExterna, analiseInterna, analiseSpread
   `;
 }
 
+// BUSCA DO POSTO VILÃO DE UMA UF E MÊS ESPECÍFICOS
+function obterPostoVilao(registros, uf, mes, tipoOperacao, refAnp) {
+  if (!refAnp || refAnp <= 0) return null;
+
+  const regs = registros.filter(r => 
+    r.UF_POSTO === uf && 
+    r.MES_ANO === mes && 
+    r.TIPO_OPERACAO === tipoOperacao
+  );
+
+  let piorPosto = null;
+  let maiorDesvioTotal = 0;
+
+  regs.forEach(r => {
+    const preco = parseFloat(r.PRECO_MEDIO_MES || 0);
+    const litros = parseFloat(r.LITROS_MES || 0);
+    if (preco > refAnp && litros > 0) {
+      const desvioReais = (preco - refAnp) * litros;
+      if (desvioReais > maiorDesvioTotal) {
+        maiorDesvioTotal = desvioReais;
+        piorPosto = {
+          nome: r.POSTO,
+          preco: preco,
+          litros: litros,
+          desvio: desvioReais
+        };
+      }
+    }
+  });
+
+  return piorPosto;
+}
+
 async function calcularMatrizesGerenciais(registros) {
   const dadosAnp = await obterBaseAnpOficial();
   const mapaRevenda = dadosAnp.revenda || {};
@@ -272,7 +305,7 @@ async function calcularMatrizesGerenciais(registros) {
     return qtdTotal;
   }
 
-  // 1. MATRIZ EXECUTIVA EXTERNA (Var % vs ANP Revenda)
+  // 1. MATRIZ EXECUTIVA EXTERNA (COM HOVER DE POSTO VILÃO NO ÁGIO)
   let htmlExterna = `
     <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.72rem;">
       <thead class="table-light">
@@ -308,7 +341,20 @@ async function calcularMatrizesGerenciais(registros) {
         const bgCor = varPerc <= 0 ? '#ecfdf5' : '#fef2f2';
         const txtCor = varPerc <= 0 ? '#047857' : '#b91c1c';
         const textoSinal = (varPerc > 0 ? '+' : '') + varPerc.toFixed(2).replace('.', ',') + '%';
-        tds += `<td style="background-color: ${bgCor}; color: ${txtCor}; font-weight: 600;">${textoSinal}</td>`;
+        
+        let tooltipAttr = "";
+        if (varPerc > 0) {
+          const vilao = obterPostoVilao(registros, uf, m.id, 'EXTERNO', refAnp);
+          if (vilao) {
+            tooltipAttr = `title="⚠️ Posto Vilão da Praça: ${vilao.nome} | Pago: R$ ${vilao.preco.toFixed(2)} vs ANP R$ ${refAnp.toFixed(2)} | Desvio: +R$ ${Math.round(vilao.desvio).toLocaleString('pt-BR')} (${Math.round(vilao.litros).toLocaleString('pt-BR')} L)" style="cursor:help; background-color: ${bgCor}; color: ${txtCor}; font-weight: 600;"`;
+          } else {
+            tooltipAttr = `style="background-color: ${bgCor}; color: ${txtCor}; font-weight: 600;"`;
+          }
+        } else {
+          tooltipAttr = `style="background-color: ${bgCor}; color: ${txtCor}; font-weight: 600;"`;
+        }
+
+        tds += `<td ${tooltipAttr}>${textoSinal}</td>`;
       } else {
         tds += `<td class="text-muted" style="background:#fafafa;">-</td>`;
       }
@@ -346,7 +392,7 @@ async function calcularMatrizesGerenciais(registros) {
   });
   htmlExterna += `</tbody></table>`;
 
-  // 2. MATRIZ EXECUTIVA INTERNA (Var % vs ANP Distribuição)
+  // 2. MATRIZ EXECUTIVA INTERNA (COM HOVER DE POSTO VILÃO NO ÁGIO)
   let htmlInterna = `
     <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.72rem;">
       <thead class="table-light">
@@ -373,7 +419,20 @@ async function calcularMatrizesGerenciais(registros) {
         const bgCor = varPerc <= 0 ? '#ecfdf5' : '#fef2f2';
         const txtCor = varPerc <= 0 ? '#047857' : '#b91c1c';
         const textoSinal = (varPerc > 0 ? '+' : '') + varPerc.toFixed(2).replace('.', ',') + '%';
-        tds += `<td style="background-color: ${bgCor}; color: ${txtCor}; font-weight: 600;">${textoSinal}</td>`;
+        
+        let tooltipAttr = "";
+        if (varPerc > 0) {
+          const vilao = obterPostoVilao(registros, uf, m.id, 'INTERNO', refAnp);
+          if (vilao) {
+            tooltipAttr = `title="⚠️ Garagem Vilã: ${vilao.nome} | Custo: R$ ${vilao.preco.toFixed(2)} vs ANP R$ ${refAnp.toFixed(2)} | Impacto: +R$ ${Math.round(vilao.desvio).toLocaleString('pt-BR')}" style="cursor:help; background-color: ${bgCor}; color: ${txtCor}; font-weight: 600;"`;
+          } else {
+            tooltipAttr = `style="background-color: ${bgCor}; color: ${txtCor}; font-weight: 600;"`;
+          }
+        } else {
+          tooltipAttr = `style="background-color: ${bgCor}; color: ${txtCor}; font-weight: 600;"`;
+        }
+
+        tds += `<td ${tooltipAttr}>${textoSinal}</td>`;
       } else {
         tds += `<td class="text-muted" style="background:#fafafa;">-</td>`;
       }
@@ -395,7 +454,7 @@ async function calcularMatrizesGerenciais(registros) {
   });
   htmlInterna += `</tbody></table>`;
 
-  // 3. MATRIZ EXECUTIVA DE SPREAD (Interno vs Externo R$/L)
+  // 3. MATRIZ EXECUTIVA DE SPREAD
   let htmlSpread = `
     <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.72rem;">
       <thead class="table-light">
@@ -614,7 +673,6 @@ async function renderizarAbaMatrizes() {
   const matrizes = await calcularMatrizesGerenciais(baseRegistrosMensais);
 
   container.innerHTML = `
-    <!-- CABEÇALHO DA SEÇÃO DE MATRIZES -->
     <div class="d-flex justify-content-between align-items-center mb-3">
       <div>
         <h5 class="fw-bold mb-0 text-dark">Matrizes Gerenciais de Combustível</h5>
@@ -627,9 +685,7 @@ async function renderizarAbaMatrizes() {
       </div>
     </div>
 
-    <!-- BLOCO 1: MATRIZES EXECUTIVAS COLORIDAS -->
     <div class="row g-3 mb-3">
-      <!-- AUDITORIA EXTERNA -->
       <div class="col-12 col-xl-7">
         <div class="card p-3 shadow-sm border-0 h-100 bg-white">
           <div class="d-flex justify-content-between align-items-center mb-2">
@@ -643,12 +699,11 @@ async function renderizarAbaMatrizes() {
             ${matrizes.htmlExterna}
           </div>
           <div class="alert alert-light border mt-auto py-2 px-3 small text-muted" style="font-size: 0.72rem;">
-            <em>💡 <strong>Como interpretar:</strong> Mede o poder de compra da frota na estrada contra a bomba oficial da ANP. Números em <strong>verde (valores negativos)</strong> indicam compra abaixo da média estadual. Números em <strong>vermelho (valores positivos)</strong> alertam para ágio ou postos caros. A coluna <strong>Total</strong> consolida a média anual ponderada.</em>
+            <em>💡 <strong>Como interpretar:</strong> Mede o poder de compra da frota na estrada contra a bomba oficial da ANP. Células em <strong>vermelho com ágio</strong> possuem tooltip indicando o <strong>Posto Vilão</strong> que causou o maior sangramento financeiro na praça.</em>
           </div>
         </div>
       </div>
 
-      <!-- AUDITORIA INTERNA E SPREAD -->
       <div class="col-12 col-xl-5 d-flex flex-column gap-3">
         <div class="card p-3 shadow-sm border-0 flex-grow-1 bg-white">
           <div class="d-flex justify-content-between align-items-center mb-2">
@@ -684,17 +739,14 @@ async function renderizarAbaMatrizes() {
       </div>
     </div>
 
-    <!-- BLOCO DE TEXTOS INTELIGENTES / DIAGNÓSTICO ESTRATÉGICO -->
     ${matrizes.htmlInsights}
 
-    <!-- BARRA INFERIOR DE AUDITORIA BRUTA -->
     <div class="d-flex justify-content-center my-3">
       <button id="btnToggleAuditoria" class="btn btn-sm btn-outline-secondary px-4 shadow-sm" onclick="alternarPainelAuditoria()">
         <i class="bi bi-shield-check me-1"></i> Exibir Tabelas de Auditoria Bruta (4)
       </button>
     </div>
 
-    <!-- BLOCO 2: MODO DE CHECAGEM BRUTO -->
     <div id="painelChecagemBruta" class="card p-3 shadow-sm border-0 bg-light d-none" style="display: none;">
       <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
         <div>
@@ -704,7 +756,6 @@ async function renderizarAbaMatrizes() {
         <span class="badge bg-secondary text-white font-monospace">Auditoria Interna de Dados</span>
       </div>
 
-      <!-- CHECAGEM DE REVENDA -->
       <div class="row g-3 mb-3">
         <div class="col-12 col-xl-6">
           <div class="card p-2 bg-white border h-100">
@@ -725,7 +776,6 @@ async function renderizarAbaMatrizes() {
         </div>
       </div>
 
-      <!-- CHECAGEM DE DISTRIBUIÇÃO -->
       <div class="row g-3">
         <div class="col-12 col-xl-6">
           <div class="card p-2 bg-white border h-100">
