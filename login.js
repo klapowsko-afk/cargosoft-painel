@@ -1,9 +1,12 @@
 /* ==========================================================================
-   LÓGICA E INJEÇÃO VISUAL DO LOGIN - VOCTT
+   LÓGICA E INJEÇÃO VISUAL DO LOGIN - VOCTT FUEL INTELLIGENCE
    ========================================================================== */
 
+const FIREBASE_API_KEY = "AIzaSyDT2fbjOk1TvkzJhiw_Wm5Xf9sIO1WH-PA";
+let utilizadorAutenticado = null;
+
 (function () {
-  // 1. Injeta o HTML da tela de bloqueio e do card VOCTT no corpo da página
+  // 1. Injeta o ecrã de bloqueio e o formulário de acesso no documento
   const telaLoginHtml = `
     <div id="telaBloqueioLogin">
       <div class="card-login-voctt text-center">
@@ -14,7 +17,7 @@
 
         <div id="msgErroLogin"></div>
 
-        <form id="formAcessoVoctt" onsubmit="executarLoginVoctt(event)">
+        <form id="formAcessoVoctt" onsubmit="executarLoginFirebase(event)">
           <div class="form-floating-custom">
             <label for="campoEmailVoctt">E-mail Corporativo</label>
             <input type="email" id="campoEmailVoctt" class="input-login-voctt" placeholder="seu.email@empresa.com.br" required autocomplete="username">
@@ -41,19 +44,19 @@
 
   document.body.insertAdjacentHTML('afterbegin', telaLoginHtml);
 
-  // Oculta a área de conteúdo do dashboard enquanto não autenticado
+  // Garante que o painel principal fica invisível antes da autenticação
   const containerDashboard = document.querySelector('.container-fluid');
   if (containerDashboard) {
     containerDashboard.style.display = 'none';
   }
 })();
 
-// 2. Manipulação de submissão do formulário
-function executarLoginVoctt(event) {
+// 2. Validação direta através do endpoint REST do Firebase Authentication
+async function executarLoginFirebase(event) {
   event.preventDefault();
 
   const email = document.getElementById('campoEmailVoctt').value.trim();
-  const senha = document.getElementById('campoSenhaVoctt').value.trim();
+  const password = document.getElementById('campoSenhaVoctt').value.trim();
   const boxErro = document.getElementById('msgErroLogin');
   const btn = document.getElementById('btnSubmeterLogin');
   const txtBtn = document.getElementById('txtBtnLogin');
@@ -64,27 +67,56 @@ function executarLoginVoctt(event) {
   txtBtn.innerText = "Autenticando...";
   spinnerBtn.style.display = 'inline-block';
 
-  // Chamada de autenticação (Próxima etapa: conectar com auth do Firebase)
-  // Estrutura pronta de validação
-  setTimeout(() => {
-    if (email && senha) {
-      liberarAcessoDashboard(email);
-    } else {
-      exibirErroLogin("Por favor, preencha todos os campos.");
-      btn.disabled = false;
-      txtBtn.innerHTML = `<i class="bi bi-shield-lock me-1"></i> Acessar Ambiente`;
-      spinnerBtn.style.display = 'none';
+  try {
+    const urlAuth = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`;
+    const response = await fetch(urlAuth, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+        returnSecureToken: true
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const codigoErro = data.error?.message || "ERRO_DESCONHECIDO";
+      let mensagemAmigavel = "Erro ao validar credenciais. Tente novamente.";
+
+      if (codigoErro.includes("EMAIL_NOT_FOUND") || codigoErro.includes("INVALID_LOGIN_CREDENTIALS") || codigoErro.includes("INVALID_PASSWORD")) {
+        mensagemAmigavel = "E-mail corporativo ou senha incorretos.";
+      } else if (codigoErro.includes("USER_DISABLED")) {
+        mensagemAmigavel = "Acesso temporariamente bloqueado pela administração.";
+      } else if (codigoErro.includes("TOO_MANY_ATTEMPTS_TRY_LATER")) {
+        mensagemAmigavel = "Muitas tentativas sem sucesso. Aguarde alguns instantes.";
+      }
+
+      throw new Error(mensagemAmigavel);
     }
-  }, 600);
+
+    // Guarda os dados da sessão autenticada
+    utilizadorAutenticado = {
+      email: data.email,
+      idToken: data.idToken,
+      localId: data.localId
+    };
+
+    // Remove o ecrã de login e exibe o dashboard com os dados sincronizados
+    liberarAcessoDashboard();
+
+  } catch (err) {
+    boxErro.innerText = err.message;
+    boxErro.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    txtBtn.innerHTML = `<i class="bi bi-shield-lock me-1"></i> Acessar Ambiente`;
+    spinnerBtn.style.display = 'none';
+  }
 }
 
-function exibirErroLogin(texto) {
-  const boxErro = document.getElementById('msgErroLogin');
-  boxErro.innerText = texto;
-  boxErro.style.display = 'block';
-}
-
-function liberarAcessoDashboard(emailUsuario) {
+function liberarAcessoDashboard() {
   const tela = document.getElementById('telaBloqueioLogin');
   const containerDashboard = document.querySelector('.container-fluid');
 
@@ -95,7 +127,7 @@ function liberarAcessoDashboard(emailUsuario) {
       if (containerDashboard) {
         containerDashboard.style.display = 'block';
       }
-      // Se a função carregarDados existir, dispara o carregamento
+      // Inicializa o carregamento dos abastecimentos do KMM e ANP
       if (typeof carregarDados === 'function') {
         carregarDados();
       }
