@@ -6,7 +6,7 @@ let cacheAnpBase = null;
 async function obterBaseAnpOficial() {
   if (cacheAnpBase) return cacheAnpBase;
 
-  // 1. Aproveita dados já carregados pelo index.html
+  // 1. Aproveita dados já carregados pelo index.html via Firestore
   if (typeof dadosAnpBaseGlobal !== 'undefined' && dadosAnpBaseGlobal && dadosAnpBaseGlobal.revenda) {
     cacheAnpBase = dadosAnpBaseGlobal;
     return cacheAnpBase;
@@ -201,15 +201,42 @@ function gerarInsightsInteligentes(analiseExterna, analiseInterna, analiseSpread
   `;
 }
 
-// BUSCA DO POSTO VILÃO DE UMA UF E MÊS ESPECÍFICOS
-function obterPostoVilao(registros, uf, mes, tipoOperacao, refAnp) {
+// Identifica a chave interna discriminando SP entre Barueri e Ribeirão Preto
+function obterChaveInternaUnidade(registro) {
+  if (registro.TIPO_OPERACAO !== 'INTERNO') return registro.UF_POSTO;
+  const uf = registro.UF_POSTO;
+  if (uf === 'SP') {
+    const mun = (registro.MUNICIPIO_POSTO || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+    const pos = (registro.POSTO || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+    if (mun.includes('RIBEIRAO') || pos.includes('RIBEIRAO') || pos.includes('RP')) {
+      return 'SP_RP';
+    }
+    return 'SP_BAR';
+  }
+  return uf;
+}
+
+function obterRotuloInterno(chave) {
+  if (chave === 'SP_BAR') return 'SP (Barueri)';
+  if (chave === 'SP_RP') return 'SP (Rib. Preto)';
+  return chave;
+}
+
+function obterUfPai(chave) {
+  if (chave.startsWith('SP_')) return 'SP';
+  return chave;
+}
+
+function obterPostoVilao(registros, chaveUnidade, mes, tipoOperacao, refAnp) {
   if (!refAnp || refAnp <= 0) return null;
 
-  const regs = registros.filter(r => 
-    r.UF_POSTO === uf && 
-    r.MES_ANO === mes && 
-    r.TIPO_OPERACAO === tipoOperacao
-  );
+  const regs = registros.filter(r => {
+    if (r.MES_ANO !== mes || r.TIPO_OPERACAO !== tipoOperacao) return false;
+    if (tipoOperacao === 'INTERNO') {
+      return obterChaveInternaUnidade(r) === chaveUnidade;
+    }
+    return r.UF_POSTO === chaveUnidade;
+  });
 
   let piorPosto = null;
   let maiorDesvioTotal = 0;
@@ -256,12 +283,25 @@ async function calcularMatrizesGerenciais(registros) {
   });
 
   const ufsExterno = [...new Set(registros.filter(r => r.TIPO_OPERACAO === 'EXTERNO').map(r => r.UF_POSTO).filter(Boolean))].sort();
-  const ufsInterno = [...new Set(registros.filter(r => r.TIPO_OPERACAO === 'INTERNO').map(r => r.UF_POSTO).filter(Boolean))].sort();
+
+  // Lista de unidades internas discriminando SP
+  const chavesInternasSet = new Set();
+  registros.filter(r => r.TIPO_OPERACAO === 'INTERNO').forEach(r => {
+    chavesInternasSet.add(obterChaveInternaUnidade(r));
+  });
+
+  // Ordena mantendo UFs padrão e abrindo SP_BAR e SP_RP no final
+  const chavesInterno = [...chavesInternasSet].sort((a, b) => {
+    if (a.startsWith('SP_') && !b.startsWith('SP_')) return 1;
+    if (!a.startsWith('SP_') && b.startsWith('SP_')) return -1;
+    return a.localeCompare(b);
+  });
 
   const dadosAgrupados = {};
 
   registros.forEach(r => {
-    const chave = `${r.UF_POSTO}_${r.MES_ANO}_${r.TIPO_OPERACAO}`;
+    const chaveUnidade = r.TIPO_OPERACAO === 'INTERNO' ? obterChaveInternaUnidade(r) : r.UF_POSTO;
+    const chave = `${chaveUnidade}_${r.MES_ANO}_${r.TIPO_OPERACAO}`;
     if (!dadosAgrupados[chave]) {
       dadosAgrupados[chave] = { somaPonderadaTransacoes: 0, totalAbastecimentos: 0 };
     }
@@ -275,18 +315,18 @@ async function calcularMatrizesGerenciais(registros) {
     }
   });
 
-  function getPrecoMedioSimples(uf, mes, tipo) {
-    const d = dadosAgrupados[`${uf}_${mes}_${tipo}`];
+  function getPrecoMedioSimples(chaveUnidade, mes, tipo) {
+    const d = dadosAgrupados[`${chaveUnidade}_${mes}_${tipo}`];
     if (!d || d.totalAbastecimentos === 0) return null;
     return d.somaPonderadaTransacoes / d.totalAbastecimentos;
   }
 
-  function getTotalUfSimples(uf, tipo) {
+  function getTotalUfSimples(chaveUnidade, tipo) {
     let somaTotal = 0;
     let qtdTotal = 0;
 
     mesesColunas.forEach(m => {
-      const d = dadosAgrupados[`${uf}_${m.id}_${tipo}`];
+      const d = dadosAgrupados[`${chaveUnidade}_${m.id}_${tipo}`];
       if (d && d.totalAbastecimentos > 0) {
         somaTotal += d.somaPonderadaTransacoes;
         qtdTotal += d.totalAbastecimentos;
@@ -296,16 +336,16 @@ async function calcularMatrizesGerenciais(registros) {
     return qtdTotal > 0 ? (somaTotal / qtdTotal) : null;
   }
 
-  function getQtdTotalUf(uf, tipo) {
+  function getQtdTotalUf(chaveUnidade, tipo) {
     let qtdTotal = 0;
     mesesColunas.forEach(m => {
-      const d = dadosAgrupados[`${uf}_${m.id}_${tipo}`];
+      const d = dadosAgrupados[`${chaveUnidade}_${m.id}_${tipo}`];
       if (d) qtdTotal += d.totalAbastecimentos;
     });
     return qtdTotal;
   }
 
-  // 1. MATRIZ EXECUTIVA EXTERNA (COM HOVER DE POSTO VILÃO NO ÁGIO)
+  // 1. MATRIZ EXECUTIVA EXTERNA (ROTA POR UF)
   let htmlExterna = `
     <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.72rem;">
       <thead class="table-light">
@@ -392,12 +432,12 @@ async function calcularMatrizesGerenciais(registros) {
   });
   htmlExterna += `</tbody></table>`;
 
-  // 2. MATRIZ EXECUTIVA INTERNA (COM HOVER DE POSTO VILÃO NO ÁGIO)
+  // 2. MATRIZ EXECUTIVA INTERNA (DIVIDINDO SP EM BARUERI E RIB. PRETO)
   let htmlInterna = `
     <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.72rem;">
       <thead class="table-light">
         <tr>
-          <th style="width: 48px; background-color: #f8fafc;">UF</th>
+          <th style="min-width: 80px; background-color: #f8fafc;">Filial / UF</th>
           ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
           <th style="background-color: #f1f5f9; color: #334155; border-left: 2px solid #cbd5e1; width: 68px; font-weight: 700;">Total</th>
         </tr>
@@ -405,13 +445,15 @@ async function calcularMatrizesGerenciais(registros) {
       <tbody>
   `;
 
-  ufsInterno.forEach(uf => {
-    let tds = `<td class="fw-bold bg-light">${uf}</td>`;
+  chavesInterno.forEach(chave => {
+    const rotulo = obterRotuloInterno(chave);
+    const ufPai = obterUfPai(chave);
+    let tds = `<td class="fw-bold bg-light text-start ps-2" style="white-space: nowrap;">${rotulo}</td>`;
     const precosAnpAno = [];
 
     mesesColunas.forEach(m => {
-      const precoPago = getPrecoMedioSimples(uf, m.id, 'INTERNO');
-      const refAnp = (mapaDistribuicao[uf] && mapaDistribuicao[uf][m.id]) ? mapaDistribuicao[uf][m.id] : null;
+      const precoPago = getPrecoMedioSimples(chave, m.id, 'INTERNO');
+      const refAnp = (mapaDistribuicao[ufPai] && mapaDistribuicao[ufPai][m.id]) ? mapaDistribuicao[ufPai][m.id] : null;
 
       if (precoPago && refAnp) {
         precosAnpAno.push(refAnp);
@@ -422,9 +464,9 @@ async function calcularMatrizesGerenciais(registros) {
         
         let tooltipAttr = "";
         if (varPerc > 0) {
-          const vilao = obterPostoVilao(registros, uf, m.id, 'INTERNO', refAnp);
+          const vilao = obterPostoVilao(registros, chave, m.id, 'INTERNO', refAnp);
           if (vilao) {
-            tooltipAttr = `title="⚠️ Garagem Vilã: ${vilao.nome} | Custo: R$ ${vilao.preco.toFixed(2)} vs ANP R$ ${refAnp.toFixed(2)} | Impacto: +R$ ${Math.round(vilao.desvio).toLocaleString('pt-BR')}" style="cursor:help; background-color: ${bgCor}; color: ${txtCor}; font-weight: 600;"`;
+            tooltipAttr = `title="⚠️ Garagem: ${vilao.nome} | Custo: R$ ${vilao.preco.toFixed(2)} vs ANP R$ ${refAnp.toFixed(2)} | Impacto: +R$ ${Math.round(vilao.desvio).toLocaleString('pt-BR')}" style="cursor:help; background-color: ${bgCor}; color: ${txtCor}; font-weight: 600;"`;
           } else {
             tooltipAttr = `style="background-color: ${bgCor}; color: ${txtCor}; font-weight: 600;"`;
           }
@@ -438,7 +480,7 @@ async function calcularMatrizesGerenciais(registros) {
       }
     });
 
-    const totalPago = getTotalUfSimples(uf, 'INTERNO');
+    const totalPago = getTotalUfSimples(chave, 'INTERNO');
     if (totalPago && precosAnpAno.length > 0) {
       const mediaAnpAno = precosAnpAno.reduce((a, b) => a + b, 0) / precosAnpAno.length;
       const varTotal = ((totalPago - mediaAnpAno) / mediaAnpAno) * 100;
@@ -454,12 +496,12 @@ async function calcularMatrizesGerenciais(registros) {
   });
   htmlInterna += `</tbody></table>`;
 
-  // 3. MATRIZ EXECUTIVA DE SPREAD
+  // 3. MATRIZ EXECUTIVA DE SPREAD (DIVIDINDO SP EM BARUERI E RIB. PRETO)
   let htmlSpread = `
     <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.72rem;">
       <thead class="table-light">
         <tr>
-          <th style="width: 48px; background-color: #f8fafc;">UF</th>
+          <th style="min-width: 80px; background-color: #f8fafc;">Filial / UF</th>
           ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
           <th style="background-color: #f1f5f9; color: #334155; border-left: 2px solid #cbd5e1; width: 72px; font-weight: 700;">Total</th>
         </tr>
@@ -472,14 +514,16 @@ async function calcularMatrizesGerenciais(registros) {
   let ufMaiorSpread = null;
   let maiorSpreadVal = -999;
 
-  ufsInterno.forEach(uf => {
-    let tds = `<td class="fw-bold bg-light">${uf}</td>`;
-    const totInt = getTotalUfSimples(uf, 'INTERNO');
-    const totExt = getTotalUfSimples(uf, 'EXTERNO');
+  chavesInterno.forEach(chave => {
+    const rotulo = obterRotuloInterno(chave);
+    const ufPai = obterUfPai(chave);
+    let tds = `<td class="fw-bold bg-light text-start ps-2" style="white-space: nowrap;">${rotulo}</td>`;
+    const totInt = getTotalUfSimples(chave, 'INTERNO');
+    const totExt = getTotalUfSimples(ufPai, 'EXTERNO');
 
     mesesColunas.forEach(m => {
-      const pInt = getPrecoMedioSimples(uf, m.id, 'INTERNO');
-      const pExt = getPrecoMedioSimples(uf, m.id, 'EXTERNO');
+      const pInt = getPrecoMedioSimples(chave, m.id, 'INTERNO');
+      const pExt = getPrecoMedioSimples(ufPai, m.id, 'EXTERNO');
 
       if (pInt && pExt) {
         const spread = pExt - pInt;
@@ -504,11 +548,11 @@ async function calcularMatrizesGerenciais(registros) {
       const spreadTot = totExt - totInt;
       if (spreadTot < menorSpreadVal) {
         menorSpreadVal = spreadTot;
-        ufMenorSpread = uf;
+        ufMenorSpread = rotulo;
       }
       if (spreadTot > maiorSpreadVal) {
         maiorSpreadVal = spreadTot;
-        ufMaiorSpread = uf;
+        ufMaiorSpread = rotulo;
       }
 
       let bgTotal = '#fef3c7';
@@ -583,12 +627,12 @@ async function calcularMatrizesGerenciais(registros) {
   });
   htmlCheckAnp += `</tbody></table>`;
 
-  // CHECAGEM 3: Custo Médio Interno Pago (R$/L)
+  // CHECAGEM 3: Custo Médio Interno Pago (R$/L) - COM BARUERI E RIBEIRÃO PRETO
   let htmlCheckInternoPago = `
     <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.70rem;">
       <thead class="table-dark">
         <tr>
-          <th style="width: 45px;">UF</th>
+          <th style="min-width: 80px;">Filial / UF</th>
           ${mesesColunas.map(m => `<th>${m.rotulo}</th>`).join('')}
           <th class="fw-bold bg-primary text-white" style="border-left: 2px solid #64748b;">Total</th>
         </tr>
@@ -596,13 +640,14 @@ async function calcularMatrizesGerenciais(registros) {
       <tbody>
   `;
 
-  ufsInterno.forEach(uf => {
-    let tds = `<td class="fw-bold">${uf}</td>`;
+  chavesInterno.forEach(chave => {
+    const rotulo = obterRotuloInterno(chave);
+    let tds = `<td class="fw-bold text-start ps-2" style="white-space: nowrap;">${rotulo}</td>`;
     mesesColunas.forEach(m => {
-      const p = getPrecoMedioSimples(uf, m.id, 'INTERNO');
+      const p = getPrecoMedioSimples(chave, m.id, 'INTERNO');
       tds += `<td>${p ? p.toFixed(2).replace('.', ',') : '-'}</td>`;
     });
-    const tot = getTotalUfSimples(uf, 'INTERNO');
+    const tot = getTotalUfSimples(chave, 'INTERNO');
     tds += `<td class="fw-bold bg-light" style="border-left: 2px solid #64748b;">${tot ? tot.toFixed(2).replace('.', ',') : '-'}</td>`;
     htmlCheckInternoPago += `<tr>${tds}</tr>`;
   });
@@ -717,7 +762,7 @@ async function renderizarAbaMatrizes() {
             ${matrizes.htmlInterna}
           </div>
           <div class="alert alert-light border mt-1 py-1 px-2 text-muted" style="font-size: 0.69rem;">
-            <em>💡 <strong>Como interpretar:</strong> Eficiência nas compras de atacado das garagens em relação ao Levantamento Oficial de Preços de Distribuição (PDC/ANP).</em>
+            <em>💡 <strong>Como interpretar:</strong> Eficiência nas compras de atacado das garagens em relação ao Levantamento Oficial de Preços de Distribuição (PDC/ANP). Barueri e Ribeirão Preto agora auditados individualmente.</em>
           </div>
         </div>
 
