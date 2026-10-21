@@ -55,7 +55,7 @@
     .brand-logo-cargo { height: 40px; width: auto; object-fit: contain; }
     .brand-logo-voctt { height: 40px; width: auto; border-radius: 50%; border: 2px solid var(--border-color); }
 
-    /* BARRA SUPERIOR MESTRE DE FORA A FORA */
+    /* BARRA SUPERIOR MESTRE */
     .cockpit-bar-mestre {
       background: linear-gradient(135deg, #062316 0%, #0f3d26 50%, #144e31 100%);
       border-radius: 10px;
@@ -99,7 +99,7 @@
       color: #ffffff;
     }
 
-    /* CARDS KPIS COM ENCAIXE PRECISO DE ALTURA */
+    /* CARDS KPIS COM ENCAIXE PRECISO */
     .card-kpi {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -113,6 +113,8 @@
       flex-direction: column;
       justify-content: center;
       transition: transform 0.15s ease;
+      position: relative;
+      overflow: hidden;
     }
     .card-kpi:hover {
       transform: translateY(-2px);
@@ -126,6 +128,10 @@
     }
     .card-kpi-destaque {
       border-left: 4px solid #059669 !important;
+    }
+    .card-kpi-ineficiencia {
+      border-left: 4px solid #ea580c !important;
+      background: linear-gradient(to right, #fff7ed 0%, #ffffff 100%);
     }
 
     .kpi-label {
@@ -158,7 +164,19 @@
       margin-top: 1px;
     }
 
-    /* TABELA SINTÉTICA DE CONFERÊNCIA COM RESPIRO TOTAL */
+    /* MINI GRÁFICO AO FUNDO DO CARD */
+    .sparkline-kpi-bg {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 110px;
+      height: 48px;
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* TABELA SINTÉTICA DE CONFERÊNCIA */
     .card-tabela-resumo {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -211,7 +229,7 @@
       gap: 8px;
     }
 
-    /* CARD DO POSTO: EFEITO ZEBRADO ESMAECIDO E SEM BORDAS DUPLICADAS */
+    /* CARD DO POSTO */
     .card-posto-termometro {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -276,10 +294,10 @@
       pointer-events: none;
     }
 
-    /* COLUNA 3: MÉTRICAS INTEGRADAS (SEM BORDA DUPLICADA) */
+    /* COLUNA 3: MÉTRICAS INTEGRADAS (VAR. MÊS SUBSTITUÍDO POR IMPACTO R$) */
     .col-posto-metricas {
-      width: 650px;
-      min-width: 650px;
+      width: 660px;
+      min-width: 660px;
       flex-shrink: 0;
       background: transparent;
       border: none;
@@ -294,9 +312,9 @@
     .col-m-vol { width: 75px; flex-shrink: 0; }
     .col-m-pm { width: 85px; flex-shrink: 0; }
     .col-m-anp { width: 75px; flex-shrink: 0; }
-    .col-m-gap { width: 110px; flex-shrink: 0; }
+    .col-m-gap { width: 105px; flex-shrink: 0; }
     .col-m-ult { width: 90px; flex-shrink: 0; }
-    .col-m-var { width: 80px; flex-shrink: 0; }
+    .col-m-impacto { width: 100px; flex-shrink: 0; }
     .col-m-btn { width: 85px; flex-shrink: 0; text-align: right; }
 
     .clickable-posto {
@@ -325,6 +343,17 @@
     }
     .tipo-rota { background: #ffedd5; color: #c2410c; }
     .tipo-interno { background: #dcfce7; color: #15803d; }
+
+    .badge-dispersao-local {
+      font-size: 0.58rem;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+      padding: 1px 4px;
+      border-radius: 3px;
+      margin-left: 4px;
+      font-weight: 600;
+    }
 
     .btn-sync {
       background: var(--cargosoft-green);
@@ -365,7 +394,7 @@
       margin-right: 3px;
     }
 
-    /* CONTENTOR DO MAPA PREENCHENDO ALTURA INTEGRAL (230px) */
+    /* MAPA */
     .map-container {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -391,7 +420,6 @@
       display: none !important;
     }
 
-    /* TOOLTIP NATIVO DO LEAFLET */
     .custom-leaflet-tooltip {
       background: rgba(15, 23, 42, 0.96) !important;
       border: 1px solid #334155 !important;
@@ -405,7 +433,6 @@
       border-top-color: rgba(15, 23, 42, 0.96) !important;
     }
 
-    /* ROTEIRIZADOR LEAFLET */
     #secaoRoteirizador, #secaoMatrizesGerenciais {
       display: none;
     }
@@ -467,7 +494,7 @@
       </div>
     </div>
 
-    <!-- LINHA 1: BARRA SUPERIOR MESTRE DE FORA A FORA (COMPETÊNCIA + 5 MODOS) -->
+    <!-- LINHA 1: BARRA SUPERIOR MESTRE -->
     <div class="cockpit-bar-mestre d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
       <div class="d-flex align-items-center gap-2">
         <label class="small fw-bold text-white-50 text-uppercase mb-0" style="font-size: 0.68rem; white-space: nowrap;">
@@ -496,27 +523,23 @@
       </div>
     </div>
 
-    <!-- LINHA 2: GRID SIMÉTRICO (INDICADORES + TABELA SINTÉTICA col-xl-8 vs. MINI MAPA col-xl-4) -->
+    <!-- LINHA 2: GRID SIMÉTRICO REBALANCEADO (KPIS E MAPA) -->
     <div class="row g-2 mb-3 align-items-stretch">
       <div class="col-12 col-xl-8 d-flex flex-column justify-content-between">
-        <!-- FILEIRA SUPERIOR: 4 KPIS GERAIS -->
+        
+        <!-- FILEIRA SUPERIOR: 4 CARDS REBALANCEADOS COM MINI GRÁFICO AO FUNDO -->
         <div class="row g-2 mb-2">
+          <!-- CARD 1 CONSOLIDADO: VOLUME & GASTO TOTAL -->
           <div class="col-6 col-md-3">
             <div class="card-kpi">
-              <div class="kpi-label">VOLUME ENTREGUE</div>
+              <div class="kpi-label">VOLUME & GASTO TOTAL</div>
               <div class="kpi-val" id="cardVolume">-- L</div>
-              <div class="kpi-sub">Litros na competência</div>
+              <div class="kpi-sub fw-bold" id="cardGasto" style="color: var(--cargosoft-green);">R$ --</div>
+              <div id="sparkVolumeBg" class="sparkline-kpi-bg"></div>
             </div>
           </div>
           
-          <div class="col-6 col-md-3">
-            <div class="card-kpi">
-              <div class="kpi-label">GASTO TOTAL</div>
-              <div class="kpi-val" id="cardGasto">R$ --</div>
-              <div class="kpi-sub">Custo total auditado</div>
-            </div>
-          </div>
-          
+          <!-- CARD 2: PREÇO MÉDIO REAL -->
           <div class="col-6 col-md-3">
             <div class="card-kpi">
               <div class="kpi-label" id="cardPrecoMedioLabel">PREÇO MÉDIO REAL</div>
@@ -524,7 +547,20 @@
               <div class="kpi-sub" id="cardPrecoMedioSub">Média frota auditada</div>
             </div>
           </div>
+
+          <!-- CARD 3: TOP OPORTUNIDADE DE NEGOCIAÇÃO (MAIOR IMPACTO EM R$) -->
+          <div class="col-6 col-md-3">
+            <div class="card-kpi card-kpi-ineficiencia">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <div class="kpi-label text-warning-emphasis mb-0">TOP DESVIO NA MESA</div>
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.52rem;">PRIORIDADE</span>
+              </div>
+              <div class="kpi-val text-danger" id="cardTopDesvioVal">R$ 0,00</div>
+              <div class="kpi-sub text-truncate" id="cardTopDesvioNome" title="Posto com maior custo de ineficiência">Calculando...</div>
+            </div>
+          </div>
           
+          <!-- CARD 4: PONTOS COM VOLUME -->
           <div class="col-6 col-md-3">
             <div class="card-kpi">
               <div class="kpi-label">PONTOS COM VOLUME</div>
@@ -536,7 +572,7 @@
 
         <!-- FILEIRA INFERIOR: EXTREMOS PADRONIZADOS + ANP + TABELA SINTÉTICA -->
         <div class="row g-2">
-          <!-- CARD MAIOR PREÇO (PADRONIZADO EM VERMELHO: 1º ROTA / 2º GARAGEM) -->
+          <!-- CARD MAIOR PREÇO UF -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-alerta">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -550,7 +586,7 @@
             </div>
           </div>
 
-          <!-- CARD MENOR PREÇO (PADRONIZADO EM VERDE: 1º ROTA / 2º GARAGEM) -->
+          <!-- CARD MENOR PREÇO UF -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-destaque">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -564,6 +600,7 @@
             </div>
           </div>
 
+          <!-- CARD ANP / ANTT BRASIL -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-anp">
               <div class="d-flex justify-content-between align-items-center">
@@ -577,6 +614,7 @@
             </div>
           </div>
 
+          <!-- TABELA SINTÉTICA -->
           <div class="col-6 col-md-3">
             <div class="card-tabela-resumo">
               <table class="table tabela-sintetica text-end">
@@ -614,7 +652,7 @@
         </div>
       </div>
 
-      <!-- COLUNA DO MINI MAPA AMPLIADO (col-xl-4 COM ALTURA EXATA DE 230px) -->
+      <!-- COLUNA DO MINI MAPA -->
       <div class="col-12 col-xl-4">
         <div class="map-container">
           <div class="d-flex justify-content-between align-items-center mb-1">
@@ -650,7 +688,7 @@
           <div class="small text-muted" id="lblSubtituloTabela" style="font-size: 0.72rem;">Garagens internas (Barueri, Ribeirão, Eusébio, Colombo, etc.) e postos de rodovia</div>
         </div>
 
-        <!-- FILTROS OPERACIONAIS JUNTO À LISTA DE POSTOS -->
+        <!-- FILTROS OPERACIONAIS -->
         <div class="d-flex align-items-center gap-2 flex-wrap">
           <div class="d-flex align-items-center gap-1">
             <label class="small fw-bold text-muted text-uppercase mb-0" style="font-size: 0.65rem;">Rede:</label>
@@ -797,6 +835,7 @@
     let baseRegistrosMensais = [];
     let dadosAnpBaseGlobal = null;
     let sparklineInstances = {};
+    let sparkVolumeCardInstance = null;
     let modoAtual = "TODOS";
     let ufFiltrada = "";
     let postoFiltrado = "";
@@ -811,9 +850,6 @@
       return (txt || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
     }
 
-    /**
-     * Decodificador dos nós de campos brutos da REST API do Firestore
-     */
     function decodificarCampoFirestore(valorBruto) {
       if (!valorBruto || typeof valorBruto !== 'object') return null;
       if ('stringValue' in valorBruto) return valorBruto.stringValue;
@@ -830,9 +866,6 @@
       return null;
     }
 
-    /**
-     * Identificação de postos e garagens, discriminando SP entre Barueri e Ribeirão Preto
-     */
     function identificarNomePonto(posto, municipio, uf, tipo) {
       if (tipo === 'INTERNO') {
         const mun = normalizarTexto(municipio);
@@ -849,9 +882,6 @@
       return posto || 'NÃO IDENTIFICADO';
     }
 
-    /**
-     * Formata a data com segurança para o formato DD/Mês (ex: 20/Out, 14/Ago)
-     */
     function formatarDataDiaMes(dataStr) {
       if (!dataStr) return "--/--";
       
@@ -1173,6 +1203,18 @@
         baseCalculo = registrosModo.filter(d => d.MES_ANO === mesSel);
       }
 
+      // Mapeamento de menor preço por município para detectar dispersão local
+      const menoresPrecosMunicipio = {};
+      baseCalculo.forEach(d => {
+        const preco = parseFloat(d.PRECO_MEDIO_MES || 0);
+        const mun = normalizarTexto(d.MUNICIPIO_POSTO);
+        if (preco > 0 && mun) {
+          if (!menoresPrecosMunicipio[mun] || preco < menoresPrecosMunicipio[mun]) {
+            menoresPrecosMunicipio[mun] = preco;
+          }
+        }
+      });
+
       baseCalculo.forEach(d => {
         const chave = d.TIPO_OPERACAO === 'INTERNO' 
           ? `${d.POSTO}_${d.UF_POSTO}_${d.MUNICIPIO_POSTO}` 
@@ -1208,9 +1250,11 @@
         }
       });
 
+      let topPostoDesvio = null;
+      let maiorImpactoFinanceiro = 0;
+
       const listaPostos = Object.values(postosMap).map(p => {
         let precoMedioExibicao = 0;
-        let variacaoMesAnt = null;
 
         if (mesSel === 'YTD') {
           const regVigente = baseRegistrosMensais.find(r => 
@@ -1218,42 +1262,8 @@
             (p.TIPO_OPERACAO !== 'INTERNO' || r.MUNICIPIO_POSTO === p.MUNICIPIO_POSTO)
           );
           precoMedioExibicao = regVigente ? parseFloat(regVigente.PRECO_MEDIO_MES || 0) : 0;
-
-          const [anoV, mesV] = p.MES_MAIS_RECENTE.split('-').map(Number);
-          const mesAntV = mesV === 1 ? 12 : mesV - 1;
-          const anoAntV = mesV === 1 ? anoV - 1 : anoV;
-          const chaveMesAntV = `${anoAntV}-${String(mesAntV).padStart(2, '0')}`;
-
-          const regAnt = baseRegistrosMensais.find(r => 
-            r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === chaveMesAntV &&
-            (p.TIPO_OPERACAO !== 'INTERNO' || r.MUNICIPIO_POSTO === p.MUNICIPIO_POSTO)
-          );
-
-          if (regAnt) {
-            const precoAnt = parseFloat(regAnt.PRECO_MEDIO_MES || 0);
-            if (precoAnt > 0 && precoMedioExibicao > 0) {
-              variacaoMesAnt = precoMedioExibicao - precoAnt;
-            }
-          }
         } else {
           precoMedioExibicao = p.LITROS_TOTAL > 0 ? (p.VALOR_TOTAL / p.LITROS_TOTAL) : 0;
-
-          const [anoS, mesS] = mesSel.split('-').map(Number);
-          const mesAntS = mesS === 1 ? 12 : mesS - 1;
-          const anoAntS = mesS === 1 ? anoS - 1 : anoS;
-          const chaveMesAntS = `${anoAntS}-${String(mesAntS).padStart(2, '0')}`;
-
-          const regAnt = baseRegistrosMensais.find(r => 
-            r.POSTO === p.POSTO && r.UF_POSTO === p.UF_POSTO && r.MES_ANO === chaveMesAntS &&
-            (p.TIPO_OPERACAO !== 'INTERNO' || r.MUNICIPIO_POSTO === p.MUNICIPIO_POSTO)
-          );
-
-          if (regAnt) {
-            const precoAnt = parseFloat(regAnt.PRECO_MEDIO_MES || 0);
-            if (precoAnt > 0 && precoMedioExibicao > 0) {
-              variacaoMesAnt = precoMedioExibicao - precoAnt;
-            }
-          }
         }
 
         const tabelaReferencia = (p.TIPO_OPERACAO === 'INTERNO') ? anpDistribuicao : anpRevenda;
@@ -1263,6 +1273,26 @@
         const gapMercado = (precoMedioExibicao > 0 && refAnpValor > 0) ? (precoMedioExibicao - refAnpValor) : 0;
         const gapPerc = refAnpValor > 0 ? ((gapMercado / refAnpValor) * 100) : 0;
 
+        // CUSTO DA INEFICIÊNCIA (IMPACTO EM R$)
+        const impactoTotalReais = (gapMercado > 0 && p.LITROS_TOTAL > 0) ? (gapMercado * p.LITROS_TOTAL) : 0;
+
+        if (p.TIPO_OPERACAO === 'EXTERNO' && impactoTotalReais > maiorImpactoFinanceiro) {
+          maiorImpactoFinanceiro = impactoTotalReais;
+          topPostoDesvio = {
+            nome: p.POSTO,
+            uf: p.UF_POSTO,
+            impacto: impactoTotalReais
+          };
+        }
+
+        // DISPERSÃO LOCAL NO MUNICÍPIO
+        const munNorm = normalizarTexto(p.MUNICIPIO_POSTO);
+        const menorMun = menoresPrecosMunicipio[munNorm] || 0;
+        let diffLocal = 0;
+        if (p.TIPO_OPERACAO === 'EXTERNO' && menorMun > 0 && precoMedioExibicao > (menorMun + 0.05)) {
+          diffLocal = precoMedioExibicao - menorMun;
+        }
+
         return {
           ...p,
           NOME_EXIBICAO: identificarNomePonto(p.POSTO, p.MUNICIPIO_POSTO, p.UF_POSTO, p.TIPO_OPERACAO),
@@ -1270,7 +1300,8 @@
           REF_ANP: refAnpValor,
           GAP_MERCADO: gapMercado,
           GAP_PERC: gapPerc,
-          VARIACAO_MES_ANT: variacaoMesAnt
+          IMPACTO_REAIS: impactoTotalReais,
+          DIFF_LOCAL: diffLocal
         };
       });
 
@@ -1293,15 +1324,59 @@
         : "R$ 0,000";
       document.getElementById('cardPontos').innerText = listaPostos.length.toString();
 
-      // =========================================================================
-      // CARDS EXTREMOS (SEM PONDERADA • JANELA DE 20 DIAS)
-      // =========================================================================
-      atualizarCardsExtremosSemPonderada(registros, mesSel);
+      // RENDERIZAR CARD TOP OPORTUNIDADE NA MESA
+      if (topPostoDesvio && topPostoDesvio.impacto > 0) {
+        document.getElementById('cardTopDesvioVal').innerText = "R$ " + Math.round(topPostoDesvio.impacto).toLocaleString('pt-BR');
+        document.getElementById('cardTopDesvioNome').innerText = `${topPostoDesvio.uf} • ${topPostoDesvio.nome}`;
+      } else {
+        document.getElementById('cardTopDesvioVal').innerText = "R$ 0,00";
+        document.getElementById('cardTopDesvioNome').innerText = "Sem desvios expressivos";
+      }
 
+      // RENDERIZAR MINI GRÁFICO AO FUNDO DO CARD DE VOLUME
+      renderizarSparklineVolumeCard(mesesDisponiveis, registrosModo);
+
+      atualizarCardsExtremosSemPonderada(registros, mesSel);
       renderizarTermometroPostos(listaPostos, mesesDisponiveis);
+
       if (typeof atualizarCoresMiniMapa === 'function') {
         atualizarCoresMiniMapa();
       }
+    }
+
+    function renderizarSparklineVolumeCard(mesesDisponiveis, registros) {
+      const container = document.getElementById('sparkVolumeBg');
+      if (!container) return;
+
+      const dadosVolume = mesesDisponiveis.map(m => {
+        const regs = registros.filter(r => r.MES_ANO === m);
+        return Math.round(regs.reduce((acc, c) => acc + parseFloat(c.LITROS_MES || 0), 0));
+      });
+
+      if (sparkVolumeCardInstance) {
+        try { sparkVolumeCardInstance.destroy(); } catch(e){}
+      }
+
+      const options = {
+        series: [{ data: dadosVolume }],
+        chart: {
+          type: 'area',
+          height: 48,
+          width: 110,
+          sparkline: { enabled: true },
+          animations: { enabled: false }
+        },
+        colors: ['#1c483a'],
+        stroke: { curve: 'smooth', width: 1.5 },
+        fill: {
+          type: 'solid',
+          opacity: 0.25
+        },
+        tooltip: { enabled: false }
+      };
+
+      sparkVolumeCardInstance = new ApexCharts(container, options);
+      sparkVolumeCardInstance.render();
     }
 
     function atualizarCardsExtremosSemPonderada(todosRegistros, mesSel) {
@@ -1448,21 +1523,26 @@
           ? `<span class="badge-tipo tipo-interno">GARAGEM</span>`
           : `<span class="badge-tipo tipo-rota">ROTA</span>`;
 
-        let variacaoHtml = `<span class="text-muted small">Estável</span>`;
-        if (p.VARIACAO_MES_ANT !== null) {
-          const diff = p.VARIACAO_MES_ANT;
-          if (diff > 0.005) {
-            variacaoHtml = `<span class="text-danger fw-bold small"><i class="bi bi-caret-up-fill me-1"></i>+R$ ${diff.toFixed(2)}</span>`;
-          } else if (diff < -0.005) {
-            variacaoHtml = `<span class="text-success fw-bold small"><i class="bi bi-caret-down-fill me-1"></i>-R$ ${Math.abs(diff).toFixed(2)}</span>`;
-          }
-        }
-
         let gapHtml = `<span class="text-muted small">--</span>`;
         if (p.REF_ANP > 0) {
           const sinal = p.GAP_MERCADO >= 0 ? "+" : "-";
           const corGap = p.GAP_MERCADO > 0.05 ? "text-danger" : "text-success";
           gapHtml = `<span class="${corGap} fw-bold small">${sinal}R$ ${Math.abs(p.GAP_MERCADO).toFixed(3)} (${sinal}${Math.abs(p.GAP_PERC).toFixed(1)}%)</span>`;
+        }
+
+        // IMPACTO FINANCEIRO EM R$ (SUBSTITUI VAR. MÊS)
+        let impactoHtml = `<span class="text-muted small">R$ 0,00</span>`;
+        if (p.IMPACTO_REAIS > 0) {
+          impactoHtml = `<span class="text-danger fw-bold small">+R$ ${Math.round(p.IMPACTO_REAIS).toLocaleString('pt-BR')}</span>`;
+        } else if (p.REF_ANP > 0 && p.GAP_MERCADO < 0) {
+          const economia = Math.abs(p.GAP_MERCADO * p.LITROS_TOTAL);
+          impactoHtml = `<span class="text-success fw-bold small">-R$ ${Math.round(economia).toLocaleString('pt-BR')}</span>`;
+        }
+
+        // TAG DE DISPERSÃO LOCAL SE HOUVER OPÇÃO MAIS BARATA NA MESMA CIDADE
+        let tagDispersao = "";
+        if (p.DIFF_LOCAL > 0) {
+          tagDispersao = `<span class="badge-dispersao-local" title="Existe posto na mesma cidade rodando R$ ${p.DIFF_LOCAL.toFixed(2)} mais barato">Opção local -R$ ${p.DIFF_LOCAL.toFixed(2)}</span>`;
         }
 
         const dataUltimoFormatada = formatarDataDiaMes(p.DATA_MAIS_RECENTE);
@@ -1509,18 +1589,21 @@
         const card = document.createElement('div');
         card.className = `card-posto-termometro ${ehZebrado}`;
         card.innerHTML = `
-          <!-- COLUNA 1: IDENTIFICAÇÃO DO POSTO -->
+          <!-- COLUNA 1: IDENTIFICAÇÃO -->
           <div class="col-posto-identificacao">
             <span class="badge-uf">${p.UF_POSTO || '--'}</span>
             <div style="min-width: 0;">
               <div class="nome-posto-completo clickable-posto" onclick="filtrarPorPostoClique('${p.POSTO.replace(/'/g, "\\'")}')" title="${p.NOME_EXIBICAO}">
                 ${p.NOME_EXIBICAO}
               </div>
-              <div class="small text-muted" style="font-size: 0.66rem;">${p.MUNICIPIO_POSTO || 'ND'} &bull; ${badgeTipo}</div>
+              <div class="small text-muted" style="font-size: 0.66rem;">
+                ${p.MUNICIPIO_POSTO || 'ND'} &bull; ${badgeTipo}
+                ${tagDispersao}
+              </div>
             </div>
           </div>
 
-          <!-- COLUNA 2: LINHA DO TEMPO COM MARCADORES -->
+          <!-- COLUNA 2: LINHA DO TEMPO COM ANP EM TRACEJADO CINZA -->
           <div class="col-posto-grafico">
             ${marcadoresLinhasHtml}
             <div id="${chartDomId}" style="width: 100%; height: 100%;"></div>
@@ -1542,13 +1625,13 @@
 
             <div class="col-m-anp">
               <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">Ref. ANP</div>
-              <div class="font-monospace text-success fw-semibold" style="font-size: 0.78rem;">
+              <div class="font-monospace text-secondary fw-semibold" style="font-size: 0.78rem;">
                 ${p.REF_ANP > 0 ? "R$ " + p.REF_ANP.toFixed(3) : "--"}
               </div>
             </div>
 
             <div class="col-m-gap">
-              <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">GAP Mercado</div>
+              <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">GAP ANP</div>
               <div class="font-monospace" style="font-size: 0.74rem;">${gapHtml}</div>
             </div>
 
@@ -1558,9 +1641,9 @@
               <div class="font-monospace text-muted" style="font-size: 0.60rem; line-height: 1;">em ${dataUltimoFormatada}</div>
             </div>
 
-            <div class="col-m-var">
-              <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">Var. Mês</div>
-              <div class="font-monospace">${variacaoHtml}</div>
+            <div class="col-m-impacto">
+              <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">Impacto R$</div>
+              <div class="font-monospace">${impactoHtml}</div>
             </div>
 
             <div class="col-m-btn">
@@ -1573,11 +1656,13 @@
 
         container.appendChild(card);
 
-        const seriesColors = ehInterno ? ['#2563eb', '#059669'] : ['#ea580c', '#059669'];
+        // COR DA SÉRIE: PAGO (COLORIDO) VS ANP (CINZA GRAFITE TRACEJADO)
+        const corPago = ehInterno ? '#2563eb' : '#ea580c';
+        const corAnpTracejado = '#64748b';
 
         const optionsSpark = {
           series: [
-            { name: ehInterno ? "Custo Interno" : "Preço Bomba", data: dadosKmmMes },
+            { name: ehInterno ? "Custo Interno" : "Preço Pago", data: dadosKmmMes },
             { name: "Referência ANP", data: dadosAnpMes }
           ],
           chart: {
@@ -1586,11 +1671,15 @@
             sparkline: { enabled: true },
             animations: { enabled: false }
           },
-          colors: seriesColors,
-          stroke: { curve: 'smooth', width: 2.2 },
+          colors: [corPago, corAnpTracejado],
+          stroke: { 
+            curve: 'smooth', 
+            width: [2.2, 1.8],
+            dashArray: [0, 4] // ANP em linha pontilhada/tracejada
+          },
           fill: {
-            type: 'solid',
-            opacity: 0.32
+            type: ['solid', 'none'], // ANP sem preenchimento para virar régua
+            opacity: [0.30, 0]
           },
           tooltip: { enabled: false }
         };
