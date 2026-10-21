@@ -55,7 +55,7 @@
     .brand-logo-cargo { height: 40px; width: auto; object-fit: contain; }
     .brand-logo-voctt { height: 40px; width: auto; border-radius: 50%; border: 2px solid var(--border-color); }
 
-    /* BARRA SUPERIOR INTEGRADA (COCKPIT EM LINHA ÚNICA) */
+    /* BARRA SUPERIOR INTEGRADA EM LINHA ÚNICA */
     .cockpit-bar {
       background: linear-gradient(135deg, #062316 0%, #0f3d26 50%, #144e31 100%);
       border-radius: 10px;
@@ -150,6 +150,15 @@
       color: var(--cargosoft-green);
       letter-spacing: -0.02em;
       line-height: 1.15;
+    }
+    .kpi-val-split {
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .kpi-sub {
       font-size: 0.60rem;
@@ -458,9 +467,8 @@
       </div>
     </div>
 
-    <!-- LINHA 1: BARRA SUPERIOR INTEGRADA EM LINHA ÚNICA SEM QUEBRAS -->
+    <!-- LINHA 1: BARRA SUPERIOR INTEGRADA EM LINHA ÚNICA -->
     <div class="row g-2 mb-2 align-items-stretch">
-      <!-- COMPETÊNCIA -->
       <div class="col-12 col-xl-auto">
         <div class="cockpit-bar d-flex align-items-center gap-2 h-100">
           <label class="small fw-bold text-white-50 text-uppercase" style="font-size: 0.68rem; white-space: nowrap;">
@@ -471,7 +479,6 @@
         </div>
       </div>
 
-      <!-- FILTROS DESAFOGADOS (REDE, POSTO, BUSCA) -->
       <div class="col-12 col-xl">
         <div class="control-sub-bar d-flex align-items-center justify-content-between gap-2 h-100 flex-nowrap">
           <div class="d-flex align-items-center gap-1">
@@ -507,7 +514,6 @@
         </div>
       </div>
 
-      <!-- BOTÕES DE SELEÇÃO DE MODO (TRAVADOS EM LINHA ÚNICA SEM CAIR DE LINHA) -->
       <div class="col-12 col-xl-auto">
         <div class="cockpit-bar d-flex align-items-center justify-content-end gap-1 h-100 flex-nowrap" style="overflow-x: auto;">
           <button class="btn-toggle-tipo active" id="btnModoGeral" onclick="alternarModoOperacao('TODOS')">
@@ -529,7 +535,7 @@
       </div>
     </div>
 
-    <!-- LINHA 2: GRID SIMÉTRICO (KPIS SUPERIORES + CARDS/TABELA INFERIORES + MINI MAPA ALTURA TOTAL) -->
+    <!-- LINHA 2: GRID SIMÉTRICO (KPIS SUPERIORES + CARDS EXTREMOS/TABELA + MINI MAPA ALTURA TOTAL) -->
     <div class="row g-2 mb-3 align-items-stretch">
       <div class="col-12 col-xl-9">
         <!-- FILEIRA SUPERIOR: 4 KPIS GERAIS -->
@@ -554,7 +560,7 @@
             <div class="card-kpi">
               <div class="kpi-label" id="cardPrecoMedioLabel">PREÇO MÉDIO REAL</div>
               <div class="kpi-val" id="cardPrecoMedio">R$ --</div>
-              <div class="kpi-sub" id="cardPrecoMedioSub">Média ponderada frota</div>
+              <div class="kpi-sub" id="cardPrecoMedioSub">Média frota auditada</div>
             </div>
           </div>
           
@@ -567,27 +573,33 @@
           </div>
         </div>
 
-        <!-- FILEIRA INFERIOR: 3 CARDS COMPLEMENTARES + TABELA SINTÉTICA COM RESPIRO -->
+        <!-- FILEIRA INFERIOR: CARDS EXTREMOS (SEM PONDERADA) + TABELA SINTÉTICA -->
         <div class="row g-2">
+          <!-- CARD MAIOR PREÇO (COM DUPLA LINHA NO CONSOLIDADO GERAL) -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-alerta">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="kpi-label text-danger">MAIOR PREÇO UF</div>
-                <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.52rem;">PICO</span>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <div class="kpi-label text-danger mb-0">MAIOR PREÇO UF</div>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.52rem;">PICO RECENTE</span>
               </div>
-              <div class="kpi-val text-danger" id="cardMaiorUf">--</div>
-              <div class="kpi-sub text-truncate" id="cardMaiorUfSub">Maior custo no período</div>
+              <div id="cardMaiorConteudo" class="my-auto">
+                <div class="kpi-val text-danger" id="cardMaiorUf">--</div>
+              </div>
+              <div class="kpi-sub text-truncate" id="cardMaiorUfSub">Últimos 20 dias</div>
             </div>
           </div>
 
+          <!-- CARD MENOR PREÇO (COM DUPLA LINHA NO CONSOLIDADO GERAL) -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-destaque">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="kpi-label text-success">MENOR PREÇO UF</div>
-                <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.52rem;">ECONOMIA</span>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <div class="kpi-label text-success mb-0">MENOR PREÇO UF</div>
+                <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.52rem;">ECONOMIA RECENTE</span>
               </div>
-              <div class="kpi-val text-success" id="cardMenorUf">--</div>
-              <div class="kpi-sub text-truncate" id="cardMenorUfSub">Melhor custo no período</div>
+              <div id="cardMenorConteudo" class="my-auto">
+                <div class="kpi-val text-success" id="cardMenorUf">--</div>
+              </div>
+              <div class="kpi-sub text-truncate" id="cardMenorUfSub">Últimos 20 dias</div>
             </div>
           </div>
 
@@ -641,7 +653,7 @@
         </div>
       </div>
 
-      <!-- COLUNA DIREITA: MINI MAPA INTEGRAL (ALTURA TOTAL AJUSTADA E EXPANDIDA) -->
+      <!-- COLUNA DIREITA: MINI MAPA INTEGRAL (ALTURA TOTAL 195px SEM VAZIOS) -->
       <div class="col-12 col-xl-3">
         <div class="map-container">
           <div class="d-flex justify-content-between align-items-center mb-1">
@@ -1052,7 +1064,7 @@
         baseCalculoGeral = registros.filter(d => d.MES_ANO === mesSel);
       }
 
-      // 1. Tabela Sintética de Conferência (Separada por Operação)
+      // 1. Tabela Sintética de Conferência
       let qtdRota = 0, volRota = 0, gastoRota = 0;
       let qtdInterno = 0, volInterno = 0, gastoInterno = 0;
 
@@ -1088,7 +1100,7 @@
       document.getElementById('tbResumoVolTotal').innerText = Math.round(volTotal).toLocaleString('pt-BR');
       document.getElementById('tbResumoGastoTotal').innerText = "R$ " + Math.round(gastoTotal).toLocaleString('pt-BR');
 
-      // 2. Filtro dos postos e cards de acordo com o modo
+      // 2. Filtro dos postos e listagem
       let registrosModo = registros;
       if (modoAtual !== 'TODOS' && modoAtual !== 'ROTEIRIZADOR' && modoAtual !== 'MATRIZES') {
         registrosModo = registros.filter(d => d.TIPO_OPERACAO === modoAtual);
@@ -1101,9 +1113,6 @@
       let somaLitrosCards = 0;
       let somaGastoCards = 0;
 
-      const somaUfLitros = {};
-      const somaUfGasto = {};
-
       let baseCalculo = registrosModo;
       if (mesSel !== 'YTD') {
         baseCalculo = registrosModo.filter(d => d.MES_ANO === mesSel);
@@ -1113,15 +1122,9 @@
         const chave = d.POSTO + "_" + d.UF_POSTO;
         const litros = parseFloat(d.LITROS_MES || 0);
         const valor = parseFloat(d.VALOR_TOTAL_MES || 0);
-        const uf = d.UF_POSTO;
 
         somaLitrosCards += litros;
         somaGastoCards += valor;
-
-        if (uf && litros > 0 && valor > 0) {
-          somaUfLitros[uf] = (somaUfLitros[uf] || 0) + litros;
-          somaUfGasto[uf] = (somaUfGasto[uf] || 0) + valor;
-        }
 
         if (!postosMap[chave]) {
           postosMap[chave] = {
@@ -1144,25 +1147,6 @@
           postosMap[chave].DATA_MAIS_RECENTE = d.ULTIMA_DATA_MES;
           postosMap[chave].ULTIMO_PRECO = parseFloat(d.ULTIMO_PRECO_MES || 0);
           postosMap[chave].MES_MAIS_RECENTE = d.MES_ANO;
-        }
-      });
-
-      let maiorUfNome = "--";
-      let maiorUfVal = -1;
-      let menorUfNome = "--";
-      let menorUfVal = Infinity;
-
-      Object.keys(somaUfLitros).forEach(uf => {
-        if (somaUfLitros[uf] > 0) {
-          const med = somaUfGasto[uf] / somaUfLitros[uf];
-          if (med > maiorUfVal) {
-            maiorUfVal = med;
-            maiorUfNome = uf;
-          }
-          if (med < menorUfVal) {
-            menorUfVal = med;
-            menorUfNome = uf;
-          }
         }
       });
 
@@ -1248,26 +1232,141 @@
         : "R$ 0,000";
       document.getElementById('cardPontos').innerText = listaPostos.length.toString();
 
-      const tipoTxt = modoAtual === 'INTERNO' ? 'Tanques Próprios' : (modoAtual === 'EXTERNO' ? 'Rota Rodoviária' : 'Consolidado');
-      if (maiorUfVal > 0) {
-        document.getElementById('cardMaiorUf').innerText = `${maiorUfNome} - R$ ${maiorUfVal.toFixed(3)}`;
-        document.getElementById('cardMaiorUfSub').innerText = `${tipoTxt} • Maior custo no período`;
-      } else {
-        document.getElementById('cardMaiorUf').innerText = "--";
-        document.getElementById('cardMaiorUfSub').innerText = "Sem dados";
-      }
-
-      if (menorUfVal < Infinity) {
-        document.getElementById('cardMenorUf').innerText = `${menorUfNome} - R$ ${menorUfVal.toFixed(3)}`;
-        document.getElementById('cardMenorUfSub').innerText = `${tipoTxt} • Menor custo no período`;
-      } else {
-        document.getElementById('cardMenorUf').innerText = "--";
-        document.getElementById('cardMenorUfSub').innerText = "Sem dados";
-      }
+      // =========================================================================
+      // 3. CÁLCULO DOS CARDS DE EXTREMOS (SEM PONDERADA • ÚLTIMOS 20 DIAS REAIS)
+      // =========================================================================
+      atualizarCardsExtremosSemPonderada(registros, mesSel);
 
       renderizarTermometroPostos(listaPostos, mesesDisponiveis);
       if (typeof atualizarCoresMiniMapa === 'function') {
         atualizarCoresMiniMapa();
+      }
+    }
+
+    /**
+     * Regra de BI operacional: Localiza o menor e maior valor real nos últimos 20 dias,
+     * eliminando garagens inativas ou históricos mortos sem uso de médias ponderadas.
+     */
+    function atualizarCardsExtremosSemPonderada(todosRegistros, mesSel) {
+      const containerMaior = document.getElementById('cardMaiorConteudo');
+      const containerMenor = document.getElementById('cardMenorConteudo');
+      const lblMaiorSub = document.getElementById('cardMaiorUfSub');
+      const lblMenorSub = document.getElementById('cardMenorUfSub');
+
+      let amostra = todosRegistros.filter(d => parseFloat(d.ULTIMO_PRECO_MES || 0) > 0 && d.ULTIMA_DATA_MES);
+
+      if (mesSel !== 'YTD') {
+        amostra = amostra.filter(d => d.MES_ANO === mesSel);
+      } else {
+        // Encontra a data máxima cadastrada na base
+        let maxDataStr = "";
+        amostra.forEach(d => {
+          if (d.ULTIMA_DATA_MES > maxDataStr) maxDataStr = d.ULTIMA_DATA_MES;
+        });
+
+        if (maxDataStr) {
+          const maxDate = new Date(maxDataStr);
+          const dataCorte = new Date(maxDate.getTime() - (20 * 24 * 60 * 60 * 1000));
+          const dataCorteStr = dataCorte.toISOString().slice(0, 10);
+          amostra = amostra.filter(d => d.ULTIMA_DATA_MES >= dataCorteStr);
+        }
+      }
+
+      function extrairExtremos(lista) {
+        if (!lista || lista.length === 0) return { max: null, min: null };
+        let maxReg = lista[0];
+        let minReg = lista[0];
+        lista.forEach(item => {
+          const p = parseFloat(item.ULTIMO_PRECO_MES);
+          if (p > parseFloat(maxReg.ULTIMO_PRECO_MES)) maxReg = item;
+          if (p < parseFloat(minReg.ULTIMO_PRECO_MES)) minReg = item;
+        });
+        return {
+          max: {
+            uf: maxReg.UF_POSTO,
+            posto: identificarNomePonto(maxReg.POSTO, maxReg.MUNICIPIO_POSTO, maxReg.UF_POSTO, maxReg.TIPO_OPERACAO),
+            preco: parseFloat(maxReg.ULTIMO_PRECO_MES)
+          },
+          min: {
+            uf: minReg.UF_POSTO,
+            posto: identificarNomePonto(minReg.POSTO, minReg.MUNICIPIO_POSTO, minReg.UF_POSTO, minReg.TIPO_OPERACAO),
+            preco: parseFloat(minReg.ULTIMO_PRECO_MES)
+          }
+        };
+      }
+
+      if (modoAtual === 'TODOS') {
+        const rotaRegs = amostra.filter(d => d.TIPO_OPERACAO === 'EXTERNO');
+        const internoRegs = amostra.filter(d => d.TIPO_OPERACAO === 'INTERNO');
+
+        const extRota = extrairExtremos(rotaRegs);
+        const extInterno = extrairExtremos(internoRegs);
+
+        // MAIOR PREÇO (DIVIDIDO EM 2 LINHAS NO CONSOLIDADO GERAL)
+        if (extRota.max || extInterno.max) {
+          containerMaior.innerHTML = `
+            <div class="kpi-val-split text-danger" title="Pico na Rodovia: ${extRota.max ? extRota.max.posto : 'ND'}">
+              <span><span class="badge bg-danger-subtle text-danger p-0 me-1" style="font-size:0.60rem;">ROTA</span>${extRota.max ? extRota.max.uf : '--'}</span>
+              <span>R$ ${extRota.max ? extRota.max.preco.toFixed(3) : '--'}</span>
+            </div>
+            <div class="kpi-val-split text-dark pt-1" style="border-top: 1px dotted #e2e8f0; font-size:0.75rem;" title="Maior Garagem: ${extInterno.max ? extInterno.max.posto : 'ND'}">
+              <span class="text-muted"><span class="badge bg-light text-dark border p-0 me-1" style="font-size:0.58rem;">GARAGEM</span>${extInterno.max ? extInterno.max.uf : '--'}</span>
+              <span class="fw-bold text-secondary">R$ ${extInterno.max ? extInterno.max.preco.toFixed(3) : '--'}</span>
+            </div>
+          `;
+          lblMaiorSub.innerText = mesSel === 'YTD' ? "Últimos 20 dias ativos" : "Extremos da competência";
+        } else {
+          containerMaior.innerHTML = `<div class="kpi-val text-danger">--</div>`;
+          lblMaiorSub.innerText = "Sem compras recentes";
+        }
+
+        // MENOR PREÇO (DIVIDIDO EM 2 LINHAS NO CONSOLIDADO GERAL)
+        if (extInterno.min || extRota.min) {
+          containerMenor.innerHTML = `
+            <div class="kpi-val-split text-success" title="Menor Garagem Ativa: ${extInterno.min ? extInterno.min.posto : 'ND'}">
+              <span><span class="badge bg-success-subtle text-success p-0 me-1" style="font-size:0.60rem;">GARAGEM</span>${extInterno.min ? extInterno.min.uf : '--'}</span>
+              <span>R$ ${extInterno.min ? extInterno.min.preco.toFixed(3) : '--'}</span>
+            </div>
+            <div class="kpi-val-split text-dark pt-1" style="border-top: 1px dotted #e2e8f0; font-size:0.75rem;" title="Menor Posto Rota: ${extRota.min ? extRota.min.posto : 'ND'}">
+              <span class="text-muted"><span class="badge bg-light text-dark border p-0 me-1" style="font-size:0.58rem;">ROTA</span>${extRota.min ? extRota.min.uf : '--'}</span>
+              <span class="fw-bold text-secondary">R$ ${extRota.min ? extRota.min.preco.toFixed(3) : '--'}</span>
+            </div>
+          `;
+          lblMenorSub.innerText = mesSel === 'YTD' ? "Últimos 20 dias ativos" : "Extremos da competência";
+        } else {
+          containerMenor.innerHTML = `<div class="kpi-val text-success">--</div>`;
+          lblMenorSub.innerText = "Sem compras recentes";
+        }
+
+      } else {
+        // FILTRO ESPECÍFICO (TANQUES PRÓPRIOS OU ROTA)
+        const registrosModo = amostra.filter(d => d.TIPO_OPERACAO === modoAtual);
+        const ext = extrairExtremos(registrosModo);
+        const rotuloTipo = modoAtual === 'INTERNO' ? 'Garagem' : 'Rota';
+
+        if (ext.max) {
+          containerMaior.innerHTML = `
+            <div class="kpi-val text-danger" title="${ext.max.posto}">
+              ${ext.max.uf} - R$ ${ext.max.preco.toFixed(3)}
+            </div>
+          `;
+          lblMaiorSub.innerText = `${rotuloTipo} • ${ext.max.posto}`;
+        } else {
+          containerMaior.innerHTML = `<div class="kpi-val text-danger">--</div>`;
+          lblMaiorSub.innerText = "Sem compras recentes";
+        }
+
+        if (ext.min) {
+          containerMenor.innerHTML = `
+            <div class="kpi-val text-success" title="${ext.min.posto}">
+              ${ext.min.uf} - R$ ${ext.min.preco.toFixed(3)}
+            </div>
+          `;
+          lblMenorSub.innerText = `${rotuloTipo} • ${ext.min.posto}`;
+        } else {
+          containerMenor.innerHTML = `<div class="kpi-val text-success">--</div>`;
+          lblMenorSub.innerText = "Sem compras recentes";
+        }
       }
     }
 
