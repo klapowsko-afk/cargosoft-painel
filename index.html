@@ -164,7 +164,6 @@
       margin-top: 1px;
     }
 
-    /* MINI GRÁFICO AO FUNDO DO CARD */
     .sparkline-kpi-bg {
       position: absolute;
       right: 0;
@@ -176,7 +175,6 @@
       z-index: 1;
     }
 
-    /* TABELA SINTÉTICA DE CONFERÊNCIA */
     .card-tabela-resumo {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -229,7 +227,6 @@
       gap: 8px;
     }
 
-    /* CARD DO POSTO */
     .card-posto-termometro {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -251,7 +248,6 @@
       background: linear-gradient(to right, #f8fafc 0%, #f1f5f9 60%, #ffffff 100%);
     }
 
-    /* COLUNA 1: IDENTIFICAÇÃO */
     .col-posto-identificacao {
       width: 310px;
       min-width: 310px;
@@ -273,7 +269,6 @@
       word-break: break-word;
     }
 
-    /* COLUNA 2: LINHA DO TEMPO */
     .col-posto-grafico {
       flex: 1;
       height: 48px;
@@ -294,7 +289,6 @@
       pointer-events: none;
     }
 
-    /* COLUNA 3: MÉTRICAS INTEGRADAS (VAR. MÊS SUBSTITUÍDO POR IMPACTO R$) */
     .col-posto-metricas {
       width: 660px;
       min-width: 660px;
@@ -353,6 +347,7 @@
       border-radius: 3px;
       margin-left: 4px;
       font-weight: 600;
+      cursor: help;
     }
 
     .btn-sync {
@@ -394,7 +389,6 @@
       margin-right: 3px;
     }
 
-    /* MAPA */
     .map-container {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -523,13 +517,12 @@
       </div>
     </div>
 
-    <!-- LINHA 2: GRID SIMÉTRICO REBALANCEADO (KPIS E MAPA) -->
+    <!-- LINHA 2: GRID SIMÉTRICO REBALANCEADO -->
     <div class="row g-2 mb-3 align-items-stretch">
       <div class="col-12 col-xl-8 d-flex flex-column justify-content-between">
         
-        <!-- FILEIRA SUPERIOR: 4 CARDS REBALANCEADOS COM MINI GRÁFICO AO FUNDO -->
+        <!-- FILEIRA SUPERIOR -->
         <div class="row g-2 mb-2">
-          <!-- CARD 1 CONSOLIDADO: VOLUME & GASTO TOTAL -->
           <div class="col-6 col-md-3">
             <div class="card-kpi">
               <div class="kpi-label">VOLUME & GASTO TOTAL</div>
@@ -539,7 +532,6 @@
             </div>
           </div>
           
-          <!-- CARD 2: PREÇO MÉDIO REAL -->
           <div class="col-6 col-md-3">
             <div class="card-kpi">
               <div class="kpi-label" id="cardPrecoMedioLabel">PREÇO MÉDIO REAL</div>
@@ -548,7 +540,6 @@
             </div>
           </div>
 
-          <!-- CARD 3: TOP OPORTUNIDADE DE NEGOCIAÇÃO (MAIOR IMPACTO EM R$) -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-ineficiencia">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -560,7 +551,6 @@
             </div>
           </div>
           
-          <!-- CARD 4: PONTOS COM VOLUME -->
           <div class="col-6 col-md-3">
             <div class="card-kpi">
               <div class="kpi-label">PONTOS COM VOLUME</div>
@@ -570,9 +560,8 @@
           </div>
         </div>
 
-        <!-- FILEIRA INFERIOR: EXTREMOS PADRONIZADOS + ANP + TABELA SINTÉTICA -->
+        <!-- FILEIRA INFERIOR -->
         <div class="row g-2">
-          <!-- CARD MAIOR PREÇO UF -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-alerta">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -586,7 +575,6 @@
             </div>
           </div>
 
-          <!-- CARD MENOR PREÇO UF -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-destaque">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -600,7 +588,6 @@
             </div>
           </div>
 
-          <!-- CARD ANP / ANTT BRASIL -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-anp">
               <div class="d-flex justify-content-between align-items-center">
@@ -614,7 +601,6 @@
             </div>
           </div>
 
-          <!-- TABELA SINTÉTICA -->
           <div class="col-6 col-md-3">
             <div class="card-tabela-resumo">
               <table class="table tabela-sintetica text-end">
@@ -688,23 +674,30 @@
           <div class="small text-muted" id="lblSubtituloTabela" style="font-size: 0.72rem;">Garagens internas (Barueri, Ribeirão, Eusébio, Colombo, etc.) e postos de rodovia</div>
         </div>
 
-        <!-- FILTROS OPERACIONAIS -->
+        <!-- FILTROS OPERACIONAIS: UF, REDE, POSTO E TEXTO -->
         <div class="d-flex align-items-center gap-2 flex-wrap">
           <div class="d-flex align-items-center gap-1">
+            <label class="small fw-bold text-muted text-uppercase mb-0" style="font-size: 0.65rem;">UF:</label>
+            <select id="filtroUfSelect" class="form-select form-select-sm" style="min-width: 80px;" onchange="aplicarFiltroUfSelect()">
+              <option value="">Todas</option>
+            </select>
+          </div>
+
+          <div class="d-flex align-items-center gap-1">
             <label class="small fw-bold text-muted text-uppercase mb-0" style="font-size: 0.65rem;">Rede:</label>
-            <select id="filtroRede" class="form-select form-select-sm" style="min-width: 145px;" onchange="aplicarFiltroRede()">
+            <select id="filtroRede" class="form-select form-select-sm" style="min-width: 140px;" onchange="aplicarFiltroRede()">
               <option value="">Todas as Redes</option>
             </select>
           </div>
 
           <div class="d-flex align-items-center gap-1">
             <label class="small fw-bold text-muted text-uppercase mb-0" style="font-size: 0.65rem;">Posto:</label>
-            <select id="filtroPosto" class="form-select form-select-sm" style="min-width: 160px;" onchange="aplicarFiltroPostoSelect()">
+            <select id="filtroPosto" class="form-select form-select-sm" style="min-width: 155px;" onchange="aplicarFiltroPostoSelect()">
               <option value="">Todos os Postos</option>
             </select>
           </div>
 
-          <div style="min-width: 140px;">
+          <div style="min-width: 135px;">
             <div class="input-group input-group-sm">
               <span class="input-group-text bg-white border-end-0 text-muted px-1"><i class="bi bi-search"></i></span>
               <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Buscar posto/filial..." oninput="filtrarTabelaTexto()">
@@ -1003,6 +996,17 @@
         selectMes.appendChild(opt);
       });
 
+      // NOVO: POPULAR FILTRO SELECT DE UF
+      const ufsUnicas = [...new Set(baseRegistrosMensais.map(d => d.UF_POSTO).filter(Boolean))].sort();
+      const selectUf = document.getElementById('filtroUfSelect');
+      selectUf.innerHTML = '<option value="">Todas</option>';
+      ufsUnicas.forEach(uf => {
+        const opt = document.createElement('option');
+        opt.value = uf;
+        opt.innerText = uf;
+        selectUf.appendChild(opt);
+      });
+
       const contagemRedes = {
         'MARAJO': new Set(),
         'GRAAL': new Set(),
@@ -1083,6 +1087,22 @@
       }
     }
 
+    function aplicarFiltroUfSelect() {
+      const val = document.getElementById('filtroUfSelect').value;
+      ufFiltrada = val;
+      const badgeUf = document.getElementById('badgeFiltroUf');
+      if (val) {
+        badgeUf.style.display = 'inline-block';
+        document.getElementById('lblUfAtiva').innerText = val;
+      } else {
+        badgeUf.style.display = 'none';
+      }
+      if (typeof atualizarCoresMiniMapa === 'function') {
+        atualizarCoresMiniMapa();
+      }
+      processarPainel();
+    }
+
     function aplicarFiltroRede() {
       redeFiltrada = document.getElementById('filtroRede').value;
       processarPainel();
@@ -1114,6 +1134,7 @@
 
     function limparFiltroUf() {
       ufFiltrada = "";
+      document.getElementById('filtroUfSelect').value = "";
       const badgeUf = document.getElementById('badgeFiltroUf');
       if (badgeUf) badgeUf.style.display = 'none';
       if (typeof atualizarCoresMiniMapa === 'function') {
@@ -1203,14 +1224,34 @@
         baseCalculo = registrosModo.filter(d => d.MES_ANO === mesSel);
       }
 
-      // Mapeamento de menor preço por município para detectar dispersão local
-      const menoresPrecosMunicipio = {};
-      baseCalculo.forEach(d => {
-        const preco = parseFloat(d.PRECO_MEDIO_MES || 0);
+      // CORREÇÃO TEMPORAL JUSTA DA DISPERSÃO LOCAL
+      let amostraTempoLocal = baseCalculo;
+      if (mesSel === 'YTD') {
+        let maxDataGeral = "";
+        baseCalculo.forEach(d => {
+          if (d.ULTIMA_DATA_MES > maxDataGeral) maxDataGeral = d.ULTIMA_DATA_MES;
+        });
+        if (maxDataGeral) {
+          const match = maxDataGeral.match(/(\d{4})-(\d{2})-(\d{2})/);
+          if (match) {
+            const dtCorte = new Date(new Date(`${match[1]}-${match[2]}-${match[3]}T12:00:00Z`).getTime() - (30 * 24 * 60 * 60 * 1000));
+            const strCorte = dtCorte.toISOString().slice(0, 10);
+            amostraTempoLocal = baseCalculo.filter(d => (d.ULTIMA_DATA_MES || '').substring(0, 10) >= strCorte);
+          }
+        }
+      }
+
+      const melhorConcorrenteMunicipio = {};
+      amostraTempoLocal.forEach(d => {
+        const preco = parseFloat(d.ULTIMO_PRECO_MES || d.PRECO_MEDIO_MES || 0);
         const mun = normalizarTexto(d.MUNICIPIO_POSTO);
-        if (preco > 0 && mun) {
-          if (!menoresPrecosMunicipio[mun] || preco < menoresPrecosMunicipio[mun]) {
-            menoresPrecosMunicipio[mun] = preco;
+        if (preco > 0 && mun && d.TIPO_OPERACAO === 'EXTERNO') {
+          if (!melhorConcorrenteMunicipio[mun] || preco < melhorConcorrenteMunicipio[mun].preco) {
+            melhorConcorrenteMunicipio[mun] = {
+              posto: d.POSTO,
+              preco: preco,
+              data: d.ULTIMA_DATA_MES
+            };
           }
         }
       });
@@ -1273,7 +1314,6 @@
         const gapMercado = (precoMedioExibicao > 0 && refAnpValor > 0) ? (precoMedioExibicao - refAnpValor) : 0;
         const gapPerc = refAnpValor > 0 ? ((gapMercado / refAnpValor) * 100) : 0;
 
-        // CUSTO DA INEFICIÊNCIA (IMPACTO EM R$)
         const impactoTotalReais = (gapMercado > 0 && p.LITROS_TOTAL > 0) ? (gapMercado * p.LITROS_TOTAL) : 0;
 
         if (p.TIPO_OPERACAO === 'EXTERNO' && impactoTotalReais > maiorImpactoFinanceiro) {
@@ -1285,12 +1325,19 @@
           };
         }
 
-        // DISPERSÃO LOCAL NO MUNICÍPIO
         const munNorm = normalizarTexto(p.MUNICIPIO_POSTO);
-        const menorMun = menoresPrecosMunicipio[munNorm] || 0;
+        const melhorLocal = melhorConcorrenteMunicipio[munNorm];
         let diffLocal = 0;
-        if (p.TIPO_OPERACAO === 'EXTERNO' && menorMun > 0 && precoMedioExibicao > (menorMun + 0.05)) {
-          diffLocal = precoMedioExibicao - menorMun;
+        let nomeMelhorLocal = "";
+        let precoMelhorLocal = 0;
+
+        if (p.TIPO_OPERACAO === 'EXTERNO' && melhorLocal && melhorLocal.posto !== p.POSTO) {
+          const precoRefComp = (mesSel === 'YTD') ? p.ULTIMO_PRECO : precoMedioExibicao;
+          if (precoRefComp > (melhorLocal.preco + 0.05)) {
+            diffLocal = precoRefComp - melhorLocal.preco;
+            nomeMelhorLocal = melhorLocal.posto;
+            precoMelhorLocal = melhorLocal.preco;
+          }
         }
 
         return {
@@ -1301,7 +1348,9 @@
           GAP_MERCADO: gapMercado,
           GAP_PERC: gapPerc,
           IMPACTO_REAIS: impactoTotalReais,
-          DIFF_LOCAL: diffLocal
+          DIFF_LOCAL: diffLocal,
+          NOME_MELHOR_LOCAL: nomeMelhorLocal,
+          PRECO_MELHOR_LOCAL: precoMelhorLocal
         };
       });
 
@@ -1324,7 +1373,6 @@
         : "R$ 0,000";
       document.getElementById('cardPontos').innerText = listaPostos.length.toString();
 
-      // RENDERIZAR CARD TOP OPORTUNIDADE NA MESA
       if (topPostoDesvio && topPostoDesvio.impacto > 0) {
         document.getElementById('cardTopDesvioVal').innerText = "R$ " + Math.round(topPostoDesvio.impacto).toLocaleString('pt-BR');
         document.getElementById('cardTopDesvioNome').innerText = `${topPostoDesvio.uf} • ${topPostoDesvio.nome}`;
@@ -1333,9 +1381,7 @@
         document.getElementById('cardTopDesvioNome').innerText = "Sem desvios expressivos";
       }
 
-      // RENDERIZAR MINI GRÁFICO AO FUNDO DO CARD DE VOLUME
       renderizarSparklineVolumeCard(mesesDisponiveis, registrosModo);
-
       atualizarCardsExtremosSemPonderada(registros, mesSel);
       renderizarTermometroPostos(listaPostos, mesesDisponiveis);
 
@@ -1383,7 +1429,7 @@
       const containerMaior = document.getElementById('cardMaiorConteudo');
       const containerMenor = document.getElementById('cardMenorConteudo');
       const lblMaiorSub = document.getElementById('cardMaiorUfSub');
-      const lblMenorSub = document.getElementById('cardMenorUfSub');
+      const lblMenorSub = document.getElementById('cardMaiorUfSub');
 
       let amostra = todosRegistros.filter(d => parseFloat(d.ULTIMO_PRECO_MES || 0) > 0 && d.ULTIMA_DATA_MES);
 
@@ -1530,7 +1576,6 @@
           gapHtml = `<span class="${corGap} fw-bold small">${sinal}R$ ${Math.abs(p.GAP_MERCADO).toFixed(3)} (${sinal}${Math.abs(p.GAP_PERC).toFixed(1)}%)</span>`;
         }
 
-        // IMPACTO FINANCEIRO EM R$ (SUBSTITUI VAR. MÊS)
         let impactoHtml = `<span class="text-muted small">R$ 0,00</span>`;
         if (p.IMPACTO_REAIS > 0) {
           impactoHtml = `<span class="text-danger fw-bold small">+R$ ${Math.round(p.IMPACTO_REAIS).toLocaleString('pt-BR')}</span>`;
@@ -1539,10 +1584,10 @@
           impactoHtml = `<span class="text-success fw-bold small">-R$ ${Math.round(economia).toLocaleString('pt-BR')}</span>`;
         }
 
-        // TAG DE DISPERSÃO LOCAL SE HOUVER OPÇÃO MAIS BARATA NA MESMA CIDADE
         let tagDispersao = "";
         if (p.DIFF_LOCAL > 0) {
-          tagDispersao = `<span class="badge-dispersao-local" title="Existe posto na mesma cidade rodando R$ ${p.DIFF_LOCAL.toFixed(2)} mais barato">Opção local -R$ ${p.DIFF_LOCAL.toFixed(2)}</span>`;
+          const titleTexto = `Opção mais barata no mesmo período: ${p.NOME_MELHOR_LOCAL} a R$ ${p.PRECO_MELHOR_LOCAL.toFixed(2)}`;
+          tagDispersao = `<span class="badge-dispersao-local" title="${titleTexto}">Opção local -R$ ${p.DIFF_LOCAL.toFixed(2)}</span>`;
         }
 
         const dataUltimoFormatada = formatarDataDiaMes(p.DATA_MAIS_RECENTE);
@@ -1559,14 +1604,14 @@
           const precoKmm = reg ? parseFloat(reg.PRECO_MEDIO_MES || 0) : null;
           if (precoKmm > 0) {
             indicesAbastecidos.push(mIdx);
-            dadosKmmMes.push(parseFloat(precoKmm.toFixed(2)));
+            dadosKmmMes.push(parseFloat(precoKmm.toFixed(3)));
           } else {
             dadosKmmMes.push(null);
           }
 
           const tabelaRef = ehInterno ? anpDistribuicao : anpRevenda;
           const anpUf = tabelaRef[p.UF_POSTO] || null;
-          dadosAnpMes.push((anpUf && anpUf[m]) ? anpUf[m] : null);
+          dadosAnpMes.push((anpUf && anpUf[m]) ? parseFloat(anpUf[m].toFixed(3)) : null);
         });
 
         let marcadoresLinhasHtml = "";
@@ -1603,7 +1648,7 @@
             </div>
           </div>
 
-          <!-- COLUNA 2: LINHA DO TEMPO COM ANP EM TRACEJADO CINZA -->
+          <!-- COLUNA 2: LINHA DO TEMPO COM TOOLTIP ANALÍTICO -->
           <div class="col-posto-grafico">
             ${marcadoresLinhasHtml}
             <div id="${chartDomId}" style="width: 100%; height: 100%;"></div>
@@ -1656,15 +1701,18 @@
 
         container.appendChild(card);
 
-        // COR DA SÉRIE: PAGO (COLORIDO) VS ANP (CINZA GRAFITE TRACEJADO)
         const corPago = ehInterno ? '#2563eb' : '#ea580c';
         const corAnpTracejado = '#64748b';
 
+        // WAVE COM TOOLTIP ANALÍTICO (DATA, PREÇO PAGO E ANP)
         const optionsSpark = {
           series: [
             { name: ehInterno ? "Custo Interno" : "Preço Pago", data: dadosKmmMes },
             { name: "Referência ANP", data: dadosAnpMes }
           ],
+          xaxis: {
+            categories: mesesDisponiveis
+          },
           chart: {
             type: 'area',
             height: 48,
@@ -1675,13 +1723,27 @@
           stroke: { 
             curve: 'smooth', 
             width: [2.2, 1.8],
-            dashArray: [0, 4] // ANP em linha pontilhada/tracejada
+            dashArray: [0, 4]
           },
           fill: {
-            type: ['solid', 'none'], // ANP sem preenchimento para virar régua
+            type: ['solid', 'none'],
             opacity: [0.30, 0]
           },
-          tooltip: { enabled: false }
+          tooltip: {
+            enabled: true,
+            theme: 'dark',
+            x: {
+              show: true,
+              formatter: function(val, opt) {
+                return opt && opt.dataPointIndex !== undefined ? mesesDisponiveis[opt.dataPointIndex] : val;
+              }
+            },
+            y: {
+              formatter: function(val) {
+                return val ? `R$ ${val.toFixed(3)}` : "Sem registro";
+              }
+            }
+          }
         };
 
         const sparkChart = new ApexCharts(document.getElementById(chartDomId), optionsSpark);
