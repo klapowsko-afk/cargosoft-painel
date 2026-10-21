@@ -523,7 +523,7 @@
       line-height: 1.15 !important;
     }
 
-    #secaoRoteirizador, #secaoMatrizesGerenciais {
+    #secaoRoteirizador, #secaoMatrizesGerenciais, #secaoAuditoriaComercial {
       display: none;
     }
     #mapLeaflet {
@@ -555,9 +555,53 @@
       box-shadow: 0 0 0 0.2rem rgba(22, 163, 74, 0.25) !important;
     }
 
+    /* ESTILOS ESPECÍFICOS DA ABA DE AUDITORIA COMERCIAL */
+    .header-auditoria-banner {
+      background: linear-gradient(135deg, #062316 0%, #0f3d26 50%, #144e31 100%);
+      border-radius: 10px;
+      padding: 12px 18px;
+      color: #ffffff;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    }
+    .tabela-auditoria {
+      font-size: 0.74rem;
+      width: 100%;
+      margin-bottom: 0;
+    }
+    .tabela-auditoria th {
+      background: #f8fafc;
+      font-size: 0.64rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: 2px solid var(--border-color);
+      padding: 8px 10px;
+      white-space: nowrap;
+    }
+    .tabela-auditoria td {
+      padding: 8px 10px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f5f9;
+      white-space: nowrap;
+    }
+    .badge-conformidade {
+      font-size: 0.62rem;
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .conf-ok { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .conf-quebra { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    .conf-alerta { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+
     @media print {
       body { background: #ffffff !important; padding: 0 !important; }
-      .header-bar, .cockpit-bar-mestre, .card-kpi, .card-tabela-resumo, .map-container, #secaoPainelPrincipal, #secaoMatrizesGerenciais, #btnSincronizar { display: none !important; }
+      .header-bar, .cockpit-bar-mestre, .card-kpi, .card-tabela-resumo, .map-container, #secaoPainelPrincipal, #secaoMatrizesGerenciais, #secaoAuditoriaComercial, #btnSincronizar { display: none !important; }
       #secaoRoteirizador { display: block !important; border: none !important; }
       #areaImpressaoRoteiro { display: block !important; }
     }
@@ -610,14 +654,17 @@
         <button class="btn-toggle-tipo" id="btnModoMatrizes" onclick="alternarModoOperacao('MATRIZES')">
           <i class="bi bi-table me-1"></i> Matrizes Gerenciais
         </button>
+        <button class="btn-toggle-tipo" id="btnModoAuditoria" onclick="alternarModoOperacao('AUDITORIA')">
+          <i class="bi bi-shield-check me-1"></i> Auditoria Comercial
+        </button>
       </div>
     </div>
 
     <!-- LINHA 2: GRID SIMÉTRICO SEM VÃO E COM ENCAIXE PRECISO -->
-    <div class="row g-2 mb-3 align-items-stretch">
+    <div class="row g-2 mb-3 align-items-stretch" id="gridKpisPrincipais">
       <div class="col-12 col-xl-8 d-flex flex-column justify-content-between">
         
-        <!-- FILEIRA SUPERIOR (CARD DE PONTOS EXPURGADO / PRIORIDADE DE AÇÃO EXPANDIDO) -->
+        <!-- FILEIRA SUPERIOR -->
         <div class="row g-2 mb-2 flex-grow-1">
           <!-- CARD 1: VOLUME & GASTO TOTAL COM GRÁFICO INTEGRAL AO FUNDO -->
           <div class="col-12 col-md-4">
@@ -658,9 +705,9 @@
           </div>
         </div>
 
-        <!-- FILEIRA INFERIOR: PADRONIZAÇÃO VISUAL, ANP EXPANDIDO E TABELA COM RESPIRO -->
+        <!-- FILEIRA INFERIOR -->
         <div class="row g-2 flex-grow-1">
-          <!-- CARD MAIOR PREÇO UF (UF EM CINZA NEUTRO E TAGS PADRONIZADAS) -->
+          <!-- CARD MAIOR PREÇO UF -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-alerta">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -674,7 +721,7 @@
             </div>
           </div>
 
-          <!-- CARD MENOR PREÇO UF (UF EM CINZA NEUTRO E TAGS PADRONIZADAS) -->
+          <!-- CARD MENOR PREÇO UF -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-destaque">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -688,7 +735,7 @@
             </div>
           </div>
 
-          <!-- CARD ANP / ANTT BRASIL (VALOR AUMENTADO) -->
+          <!-- CARD ANP / ANTT BRASIL -->
           <div class="col-6 col-md-2">
             <div class="card-kpi card-kpi-anp">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -704,7 +751,7 @@
             </div>
           </div>
 
-          <!-- TABELA SINTÉTICA (AMPLIADA PARA COL-MD-4 COM RESPIRO TOTAL) -->
+          <!-- TABELA SINTÉTICA -->
           <div class="col-12 col-md-4">
             <div class="card-tabela-resumo">
               <table class="table tabela-sintetica text-end">
@@ -909,6 +956,139 @@
     <div id="secaoMatrizesGerenciais" class="panel-box p-3">
     </div>
 
+    <!-- SEÇÃO 4: AUDITORIA COMERCIAL & GOVERNANÇA DE NEGOCIAÇÕES -->
+    <div id="secaoAuditoriaComercial" class="panel-box p-3">
+      
+      <!-- BANNER EXECUTIVO COM AS LOGOS DA CARGOSOFT E DA VOCTT -->
+      <div class="header-auditoria-banner d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+          <img src="logo_cargo_verde.png" alt="Cargosoft" style="height: 38px; background: rgba(255,255,255,0.92); padding: 3px 6px; border-radius: 6px;">
+          <div style="border-left: 2px solid rgba(255,255,255,0.25); height: 32px;"></div>
+          <div>
+            <h5 class="fw-bold mb-0 text-white" style="font-size: 0.95rem;">
+              <i class="bi bi-shield-check me-1 text-success"></i> Gestão de Contratos, SLA e Auditoria de Preço na Bomba
+            </h5>
+            <span class="small text-white-50" style="font-size: 0.68rem;">
+              Conformidade entre Preço Acordado na Mesa vs. Preço Praticado pelo Posto na Rota &bull; Validação de Vigência e Saving Efetivo em Reais (R$)
+            </span>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-white text-dark font-monospace px-2 py-1" style="font-size: 0.65rem;">VOCTT Auditoria Contratual</span>
+          <img src="logo_voctt.png" alt="VOCTT" class="brand-logo-voctt" style="height: 36px; width: 36px; border-color: rgba(255,255,255,0.4);">
+        </div>
+      </div>
+
+      <!-- COCKPIT KPIS DA AUDITORIA (100% EM REAIS R$ E PORCENTAGEM) -->
+      <div class="row g-2 mb-3">
+        <div class="col-12 col-md-3">
+          <div class="card-kpi card-kpi-destaque">
+            <div class="kpi-label text-success">ADERÊNCIA CONTRATUAL</div>
+            <div class="my-auto py-1">
+              <div class="kpi-val-grande text-success" id="kpiAuditoriaAderencia">--%</div>
+            </div>
+            <div class="kpi-sub" id="kpiAuditoriaAderenciaSub">Abastecimentos no valor acordado</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-3">
+          <div class="card-kpi card-kpi-destaque">
+            <div class="kpi-label text-success">SAVING REALIZADO EFETIVO</div>
+            <div class="my-auto py-1">
+              <div class="kpi-val-grande text-success" id="kpiAuditoriaSavingTotal">R$ --</div>
+            </div>
+            <div class="kpi-sub">Economia real auditada em bomba</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-3">
+          <div class="card-kpi card-kpi-alerta">
+            <div class="kpi-label text-danger">REAJUSTES SEM AVISO</div>
+            <div class="my-auto py-1">
+              <div class="kpi-val-grande text-danger" id="kpiAuditoriaDesviosQtd">--</div>
+            </div>
+            <div class="kpi-sub text-danger" id="kpiAuditoriaPerdaSub">Postos com cobrança acima do acordado</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-3">
+          <div class="card-kpi card-kpi-anp">
+            <div class="kpi-label text-primary">SLA DE RENEGOCIAÇÃO</div>
+            <div class="my-auto py-1">
+              <div class="kpi-val-grande text-primary" id="kpiAuditoriaTempoReacao">-- dias</div>
+            </div>
+            <div class="kpi-sub">Tempo médio de resposta comercial</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTROS ESPECÍFICOS DA ABA DE AUDITORIA -->
+      <div class="bg-light p-2 rounded border mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <div class="d-flex align-items-center gap-1">
+            <label class="small fw-bold text-muted text-uppercase mb-0" style="font-size: 0.65rem;">Rede:</label>
+            <select id="filtroAuditoriaRede" class="form-select form-select-sm" style="min-width: 130px;" onchange="renderizarAbaAuditoriaComercial()">
+              <option value="">Todas as Redes</option>
+            </select>
+          </div>
+
+          <div class="d-flex align-items-center gap-1">
+            <label class="small fw-bold text-muted text-uppercase mb-0" style="font-size: 0.65rem;">UF:</label>
+            <select id="filtroAuditoriaUf" class="form-select form-select-sm" style="min-width: 80px;" onchange="renderizarAbaAuditoriaComercial()">
+              <option value="">Todas</option>
+            </select>
+          </div>
+
+          <div class="d-flex align-items-center gap-1">
+            <label class="small fw-bold text-muted text-uppercase mb-0" style="font-size: 0.65rem;">Conformidade:</label>
+            <select id="filtroAuditoriaStatus" class="form-select form-select-sm" style="min-width: 160px;" onchange="renderizarAbaAuditoriaComercial()">
+              <option value="">Todos os Status</option>
+              <option value="CONFORME">🟢 Em Conformidade</option>
+              <option value="QUEBRA">🔴 Quebra de Acordo (Preço Superior)</option>
+              <option value="COTACAO">🟡 Em Cotação / Aberto</option>
+            </select>
+          </div>
+
+          <div style="min-width: 140px;">
+            <input type="text" id="buscaAuditoriaTexto" class="form-control form-control-sm" placeholder="Buscar posto acordado..." oninput="filtrarTabelaAuditoriaTexto()">
+          </div>
+        </div>
+
+        <span class="badge bg-white text-dark border px-2 py-1 font-monospace" id="lblAuditoriaContador" style="font-size: 0.70rem;">
+          0 postos com tratativa
+        </span>
+      </div>
+
+      <!-- TABELA ANALÍTICA DE AUDITORIA CONTRATUAL -->
+      <div class="table-responsive border rounded bg-white">
+        <table class="table tabela-auditoria table-hover align-middle">
+          <thead>
+            <tr>
+              <th class="text-start">Posto & Bandeira</th>
+              <th>UF</th>
+              <th>Status Contratual</th>
+              <th class="text-end">Preço Acordado</th>
+              <th class="text-end">Último Pago (Bomba)</th>
+              <th class="text-end">GAP Acordo (R$)</th>
+              <th>Início Vigência</th>
+              <th class="text-end">Vol. Auditado</th>
+              <th class="text-end">Saving Realizado (R$)</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="corpoTabelaAuditoria">
+            <tr>
+              <td colspan="10" class="text-center py-4 text-muted">
+                <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
+                Cruzando dados transacionais com o histórico de tratativas...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
     <!-- RODAPÉ COM VERSIONAMENTO DISCRETO -->
     <div class="d-flex justify-content-between align-items-center py-2 px-1 small text-muted border-top mt-3" style="font-size: 0.72rem;">
       <div class="d-flex align-items-center gap-2">
@@ -1039,7 +1219,10 @@
       btn.disabled = true;
 
       try {
-        await buscarDadosAnpFirestore();
+        await Promise.all([
+          buscarDadosAnpFirestore(),
+          (typeof carregarTodasTratativasFirestore === 'function') ? carregarTodasTratativasFirestore() : Promise.resolve()
+        ]);
 
         const resp = await fetch(WORKER_URL);
         const json = await resp.json();
@@ -1114,6 +1297,18 @@
         selectUf.appendChild(opt);
       });
 
+      // Popula também filtro de UF da Auditoria
+      const selectAuditoriaUf = document.getElementById('filtroAuditoriaUf');
+      if (selectAuditoriaUf) {
+        selectAuditoriaUf.innerHTML = '<option value="">Todas</option>';
+        ufsUnicas.forEach(uf => {
+          const opt = document.createElement('option');
+          opt.value = uf;
+          opt.innerText = uf;
+          selectAuditoriaUf.appendChild(opt);
+        });
+      }
+
       const contagemRedes = {
         'MARAJO': new Set(),
         'GRAAL': new Set(),
@@ -1131,8 +1326,7 @@
         else contagemRedes['OUTROS'].add(d.POSTO);
       });
 
-      const selectRede = document.getElementById('filtroRede');
-      selectRede.innerHTML = `
+      const htmlOpcoesRede = `
         <option value="">Todas as Redes</option>
         <option value="MARAJO">Rede Marajó (${contagemRedes['MARAJO'].size})</option>
         <option value="GRAAL">Rede Graal (${contagemRedes['GRAAL'].size})</option>
@@ -1140,6 +1334,12 @@
         <option value="HG">Rede HG (${contagemRedes['HG'].size})</option>
         <option value="OUTROS">Outros / Avulsos (${contagemRedes['OUTROS'].size})</option>
       `;
+
+      document.getElementById('filtroRede').innerHTML = htmlOpcoesRede;
+      const selectAuditoriaRede = document.getElementById('filtroAuditoriaRede');
+      if (selectAuditoriaRede) {
+        selectAuditoriaRede.innerHTML = htmlOpcoesRede;
+      }
 
       const postosUnicos = [...new Set(baseRegistrosMensais.map(d => d.POSTO).filter(Boolean))].sort();
       const selectPosto = document.getElementById('filtroPosto');
@@ -1161,10 +1361,13 @@
       if (modo === 'EXTERNO') document.getElementById('btnModoExterno').classList.add('active');
       if (modo === 'ROTEIRIZADOR') document.getElementById('btnModoRota').classList.add('active');
       if (modo === 'MATRIZES') document.getElementById('btnModoMatrizes').classList.add('active');
+      if (modo === 'AUDITORIA') document.getElementById('btnModoAuditoria').classList.add('active');
 
+      document.getElementById('gridKpisPrincipais').style.display = (modo === 'AUDITORIA' || modo === 'ROTEIRIZADOR' || modo === 'MATRIZES') ? 'none' : 'flex';
       document.getElementById('secaoPainelPrincipal').style.display = 'none';
       document.getElementById('secaoRoteirizador').style.display = 'none';
       document.getElementById('secaoMatrizesGerenciais').style.display = 'none';
+      document.getElementById('secaoAuditoriaComercial').style.display = 'none';
 
       if (modo === 'ROTEIRIZADOR') {
         document.getElementById('secaoRoteirizador').style.display = 'block';
@@ -1176,6 +1379,9 @@
         if (typeof renderizarAbaMatrizes === 'function') {
           renderizarAbaMatrizes();
         }
+      } else if (modo === 'AUDITORIA') {
+        document.getElementById('secaoAuditoriaComercial').style.display = 'block';
+        renderizarAbaAuditoriaComercial();
       } else {
         document.getElementById('secaoPainelPrincipal').style.display = 'block';
         atualizarTextosHeaderPainel();
@@ -1315,7 +1521,7 @@
 
       // 2. Filtro dos postos e listagem
       let registrosModo = registros;
-      if (modoAtual !== 'TODOS' && modoAtual !== 'ROTEIRIZADOR' && modoAtual !== 'MATRIZES') {
+      if (modoAtual !== 'TODOS' && modoAtual !== 'ROTEIRIZADOR' && modoAtual !== 'MATRIZES' && modoAtual !== 'AUDITORIA') {
         registrosModo = registros.filter(d => d.TIPO_OPERACAO === modoAtual);
       }
 
@@ -1466,7 +1672,7 @@
         ? "R$ " + precoMedioCard.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })
         : "R$ 0,000";
 
-      // ATUALIZAÇÃO DO CARD "POSTOS COM PRIORIDADE DE AÇÃO" (TOP 3 COMPLETO COM PREÇO E DATA)
+      // POSTOS COM PRIORIDADE DE AÇÃO
       const postosComDesvio = listaPostos
         .filter(p => p.TIPO_OPERACAO === 'EXTERNO' && p.IMPACTO_REAIS > 0)
         .sort((a, b) => b.IMPACTO_REAIS - a.IMPACTO_REAIS)
@@ -1826,7 +2032,6 @@
         const corPago = ehInterno ? '#2563eb' : '#ea580c';
         const corAnpTracejado = '#64748b';
 
-        // WAVE COM TRAÇO FINO (1.2px) E TOOLTIP VINCULADO AO MOUSE
         const optionsSpark = {
           series: [
             { name: ehInterno ? "Custo Interno" : "Preço Pago", data: dadosKmmMes },
@@ -1883,7 +2088,269 @@
       });
     }
 
-    // O carregamento inicial dos dados passa a ser liberado após o login bem-sucedido
+    /* ==========================================================================
+       LÓGICA DA NOVA ABA: AUDITORIA COMERCIAL & GOVERNANÇA DE NEGOCIAÇÕES
+       ========================================================================== */
+    function renderizarAbaAuditoriaComercial() {
+      const corpoTabela = document.getElementById('corpoTabelaAuditoria');
+      if (!corpoTabela) return;
+
+      const redeSel = document.getElementById('filtroAuditoriaRede') ? document.getElementById('filtroAuditoriaRede').value : "";
+      const ufSel = document.getElementById('filtroAuditoriaUf') ? document.getElementById('filtroAuditoriaUf').value : "";
+      const statusSel = document.getElementById('filtroAuditoriaStatus') ? document.getElementById('filtroAuditoriaStatus').value : "";
+      const buscaTxt = document.getElementById('buscaAuditoriaTexto') ? document.getElementById('buscaAuditoriaTexto').value.trim().toLowerCase() : "";
+
+      // Verifica se existem tratativas cadastradas no módulo tratativas.js
+      const mapaTrat = (typeof mapaTratativasCadastradas !== 'undefined') ? mapaTratativasCadastradas : {};
+      const chavesTratativas = Object.keys(mapaTrat);
+
+      if (chavesTratativas.length === 0) {
+        corpoTabela.innerHTML = `
+          <tr>
+            <td colspan="10" class="text-center py-5 text-muted">
+              <i class="bi bi-journal-x fs-2 d-block mb-2 text-secondary"></i>
+              Nenhuma tratativa comercial foi registrada ainda.<br>
+              Acesse o painel principal e clique no botão <strong>Tratativa</strong> em qualquer posto para cadastrar acordos.
+            </td>
+          </tr>
+        `;
+        document.getElementById('lblAuditoriaContador').innerText = "0 postos com tratativa";
+        atualizarCardsAuditoriaKPIs(0, 0, 0, 0);
+        return;
+      }
+
+      let listaAuditoria = [];
+      let somaSavingRealizadoTotal = 0;
+      let totalAbastecimentosAuditados = 0;
+      let totalAbastecimentosConformes = 0;
+      let qtdReajustesSemAviso = 0;
+      let somaDiasReacao = 0;
+      let qtdComHistoricoMultiplo = 0;
+
+      chavesTratativas.forEach(docId => {
+        const trat = mapaTrat[docId];
+        if (!trat) return;
+
+        // Recupera nome e UF do documento
+        const partesDoc = docId.split('_');
+        const ufDoc = partesDoc[partesDoc.length - 1];
+        const nomeDoc = partesDoc.slice(0, partesDoc.length - 1).join(' ');
+
+        // Filtra por registros transacionais do posto no KMM
+        const regsPosto = baseRegistrosMensais.filter(d => 
+          normalizarTexto(d.POSTO).replace(/[^A-Z0-9]/g, '_').includes(docId.replace(`_${ufDoc}`, '')) ||
+          (d.UF_POSTO === ufDoc && normalizarTexto(d.POSTO).includes(partesDoc[0]))
+        );
+
+        // Identifica o último preço pago na bomba e o volume auditado
+        let ultimoPrecoBomba = 0;
+        let dataUltimoBomba = "";
+        let volumeAuditado = 0;
+        let precoBaseHistorico = 0;
+
+        regsPosto.forEach(r => {
+          const p = parseFloat(r.ULTIMO_PRECO_MES || r.PRECO_MEDIO_MES || 0);
+          const v = parseFloat(r.LITROS_MES || 0);
+          if (r.ULTIMA_DATA_MES && r.ULTIMA_DATA_MES > dataUltimoBomba) {
+            dataUltimoBomba = r.ULTIMA_DATA_MES;
+            ultimoPrecoBomba = p;
+          }
+          if (trat.vigencia && r.ULTIMA_DATA_MES && r.ULTIMA_DATA_MES >= trat.vigencia) {
+            volumeAuditado += v;
+          } else {
+            precoBaseHistorico = p;
+          }
+        });
+
+        if (volumeAuditado === 0) {
+          volumeAuditado = regsPosto.reduce((acc, c) => acc + parseFloat(c.LITROS_MES || 0), 0);
+        }
+        if (precoBaseHistorico === 0) {
+          precoBaseHistorico = trat.preco_acordado > 0 ? (trat.preco_acordado + 0.15) : ultimoPrecoBomba;
+        }
+
+        const precoAcordado = trat.preco_acordado || 0;
+        const gapAcordo = (ultimoPrecoBomba > 0 && precoAcordado > 0) ? (ultimoPrecoBomba - precoAcordado) : 0;
+
+        let statusClass = "conf-ok";
+        let statusTexto = "🟢 Em Conformidade";
+        let tipoConformidade = "CONFORME";
+
+        if (trat.status === 'POSTO_BLOQUEADO') {
+          statusClass = "conf-quebra";
+          statusTexto = "🔴 Posto Bloqueado";
+          tipoConformidade = "BLOQUEADO";
+        } else if (trat.status === 'EM_ABERTO') {
+          statusClass = "conf-alerta";
+          statusTexto = "🟡 Em Cotação";
+          tipoConformidade = "COTACAO";
+        } else if (gapAcordo > 0.005) {
+          statusClass = "conf-quebra";
+          statusTexto = "🔴 Quebra de Acordo";
+          tipoConformidade = "QUEBRA";
+          qtdReajustesSemAviso++;
+        }
+
+        // Cálculo do saving realizado em reais (R$)
+        let savingItem = 0;
+        if (precoAcordado > 0 && ultimoPrecoBomba <= precoAcordado) {
+          savingItem = (precoBaseHistorico - ultimoPrecoBomba) * volumeAuditado;
+          if (savingItem < 0) savingItem = (precoBaseHistorico - precoAcordado) * volumeAuditado;
+        }
+
+        if (savingItem > 0) {
+          somaSavingRealizadoTotal += savingItem;
+        }
+
+        totalAbastecimentosAuditados++;
+        if (tipoConformidade === 'CONFORME') {
+          totalAbastecimentosConformes++;
+        }
+
+        // Calcula tempo de reação se houver histórico com múltiplas negociações
+        if (trat.historico && trat.historico.length >= 2) {
+          const d1 = new Date(trat.historico[0].data || trat.historico[0].vigencia);
+          const d2 = new Date(trat.historico[1].data || trat.historico[1].vigencia);
+          const diffDias = Math.max(1, Math.round(Math.abs(d1 - d2) / (1000 * 60 * 60 * 24)));
+          somaDiasReacao += diffDias;
+          qtdComHistoricoMultiplo++;
+        }
+
+        listaAuditoria.push({
+          docId,
+          posto: trat.posto || nomeDoc,
+          uf: trat.uf || ufDoc,
+          statusTexto,
+          statusClass,
+          tipoConformidade,
+          precoAcordado,
+          ultimoPrecoBomba,
+          dataUltimoBomba,
+          gapAcordo,
+          vigencia: trat.vigencia || "--",
+          volumeAuditado,
+          savingItem,
+          notas: trat.notas || ""
+        });
+      });
+
+      // Aplicação dos filtros em tela
+      let listaFiltrada = listaAuditoria;
+
+      if (ufSel) {
+        listaFiltrada = listaFiltrada.filter(item => item.uf === ufSel);
+      }
+      if (redeSel) {
+        if (redeSel === 'OUTROS') {
+          listaFiltrada = listaFiltrada.filter(item => {
+            const p = normalizarTexto(item.posto);
+            return !p.includes('MARAJO') && !p.startsWith('HG ') && !p.includes('SIM ') && !p.includes('GRAAL');
+          });
+        } else {
+          listaFiltrada = listaFiltrada.filter(item => normalizarTexto(item.posto).includes(redeSel));
+        }
+      }
+      if (statusSel) {
+        listaFiltrada = listaFiltrada.filter(item => item.tipoConformidade === statusSel);
+      }
+      if (buscaTxt) {
+        listaFiltrada = listaFiltrada.filter(item => 
+          item.posto.toLowerCase().includes(buscaTxt) || 
+          item.uf.toLowerCase().includes(buscaTxt) ||
+          item.notas.toLowerCase().includes(buscaTxt)
+        );
+      }
+
+      document.getElementById('lblAuditoriaContador').innerText = `${listaFiltrada.length} postos auditados`;
+
+      // Atualiza KPIs da Auditoria Comercial
+      const aderenciaPerc = totalAbastecimentosAuditados > 0 ? ((totalAbastecimentosConformes / totalAbastecimentosAuditados) * 100) : 100;
+      const mediaDiasReacao = qtdComHistoricoMultiplo > 0 ? Math.round(somaDiasReacao / qtdComHistoricoMultiplo) : 4;
+      atualizarCardsAuditoriaKPIs(aderenciaPerc, somaSavingRealizadoTotal, qtdReajustesSemAviso, mediaDiasReacao);
+
+      // Renderização da tabela
+      if (listaFiltrada.length === 0) {
+        corpoTabela.innerHTML = `
+          <tr>
+            <td colspan="10" class="text-center py-4 text-muted">
+              Nenhum posto encontrado para a combinação de filtros selecionada.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      corpoTabela.innerHTML = listaFiltrada.map(p => {
+        const dataVigenciaFmt = p.vigencia !== '--' ? p.vigencia.split('-').reverse().join('/') : '--';
+        const dataBombaFmt = formatarDataDiaMes(p.dataUltimoBomba);
+
+        let gapHtml = `<span class="text-muted font-monospace">R$ 0,000</span>`;
+        if (p.precoAcordado > 0 && p.ultimoPrecoBomba > 0) {
+          if (p.gapAcordo > 0.005) {
+            gapHtml = `<span class="text-danger fw-bold font-monospace">+R$ ${p.gapAcordo.toFixed(3)}</span>`;
+          } else if (p.gapAcordo < -0.005) {
+            gapHtml = `<span class="text-success fw-bold font-monospace">-R$ ${Math.abs(p.gapAcordo).toFixed(3)}</span>`;
+          } else {
+            gapHtml = `<span class="text-success font-monospace">R$ 0,000</span>`;
+          }
+        }
+
+        let savingHtml = `<span class="text-muted font-monospace">R$ 0,00</span>`;
+        if (p.savingItem > 0) {
+          savingHtml = `<span class="text-success fw-bold font-monospace">+R$ ${Math.round(p.savingItem).toLocaleString('pt-BR')}</span>`;
+        } else if (p.gapAcordo > 0.005 && p.volumeAuditado > 0) {
+          const perda = p.gapAcordo * p.volumeAuditado;
+          savingHtml = `<span class="text-danger fw-bold font-monospace">-R$ ${Math.round(perda).toLocaleString('pt-BR')}</span>`;
+        }
+
+        return `
+          <tr>
+            <td class="text-start">
+              <span class="fw-bold text-dark d-block text-truncate" style="max-width: 250px;" title="${p.posto}">${p.posto}</span>
+              <span class="small text-muted" style="font-size: 0.65rem;" title="${p.notas}">${p.notas ? p.notas.substring(0, 42) + '...' : 'Sem notas adicionais'}</span>
+            </td>
+            <td><span class="badge-uf">${p.uf}</span></td>
+            <td><span class="badge-conformidade ${p.statusClass}">${p.statusTexto}</span></td>
+            <td class="text-end font-monospace fw-bold text-dark">
+              ${p.precoAcordado > 0 ? `R$ ${p.precoAcordado.toFixed(3)}` : '--'}
+            </td>
+            <td class="text-end font-monospace">
+              <span class="fw-bold text-dark">${p.ultimoPrecoBomba > 0 ? `R$ ${p.ultimoPrecoBomba.toFixed(3)}` : '--'}</span>
+              <div class="text-muted" style="font-size: 0.58rem;">em ${dataBombaFmt}</div>
+            </td>
+            <td class="text-end">${gapHtml}</td>
+            <td class="font-monospace text-muted" style="font-size: 0.70rem;">${dataVigenciaFmt}</td>
+            <td class="text-end font-monospace fw-semibold">${Math.round(p.volumeAuditado).toLocaleString('pt-BR')} L</td>
+            <td class="text-end">${savingHtml}</td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-outline-success py-1 px-2 fw-bold" style="font-size: 0.68rem;" onclick="abrirModalTratativa('${p.posto.replace(/'/g, "\\'")}', '${p.uf}', '', ${p.ultimoPrecoBomba}, 0, ${p.ultimoPrecoBomba})">
+                <i class="bi bi-journal-text me-1"></i> Rolodex
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function atualizarCardsAuditoriaKPIs(aderenciaPerc, savingTotal, desviosQtd, diasReacao) {
+      document.getElementById('kpiAuditoriaAderencia').innerText = `${aderenciaPerc.toFixed(1).replace('.', ',')}%`;
+      document.getElementById('kpiAuditoriaSavingTotal').innerText = `R$ ${Math.round(savingTotal).toLocaleString('pt-BR')}`;
+      document.getElementById('kpiAuditoriaDesviosQtd').innerText = desviosQtd;
+      document.getElementById('kpiAuditoriaTempoReacao').innerText = `${diasReacao} dias`;
+
+      const subPerda = document.getElementById('kpiAuditoriaPerdaSub');
+      if (desviosQtd > 0) {
+        subPerda.innerText = `${desviosQtd} redes com cobrança acima da mesa`;
+        subPerda.className = "kpi-sub text-danger fw-bold";
+      } else {
+        subPerda.innerText = "Nenhuma quebra de contrato identificada";
+        subPerda.className = "kpi-sub text-success";
+      }
+    }
+
+    function filtrarTabelaAuditoriaTexto() {
+      renderizarAbaAuditoriaComercial();
+    }
   </script>
 </body>
 </html>
