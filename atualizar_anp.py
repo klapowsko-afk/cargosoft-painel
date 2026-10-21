@@ -59,31 +59,37 @@ def extrair_revenda_estados():
     resp = requests.get(URL_REVENDA_ESTADOS, headers=HEADERS, timeout=180)
     resp.raise_for_status()
 
-    df = pd.read_excel(io.BytesIO(resp.content), skiprows=16)
+    # Cabecalho da planilha de Revenda Estados esta na linha 18 (skiprows=17)
+    df = pd.read_excel(io.BytesIO(resp.content), skiprows=17)
     df.columns = [str(c).strip().upper() for c in df.columns]
 
-    df_diesel = df[df["PRODUTO"].astype(str).str.upper().str.contains("DIESEL S10")].copy()
-    df_diesel["DATA FINAL"] = pd.to_datetime(df_diesel["DATA FINAL"], errors="coerce")
+    col_prod = [c for c in df.columns if "PRODUTO" in c][0]
+    col_data_fim = [c for c in df.columns if "DATA FINAL" in c][0]
+    col_estado = [c for c in df.columns if "ESTADO" in c][0]
+    col_preco = [c for c in df.columns if "PREÇO MÉDIO REVENDA" in c or "PRECO MEDIO REVENDA" in c][0]
+
+    df_diesel = df[df[col_prod].astype(str).str.upper().str.contains("DIESEL S10")].copy()
+    df_diesel["DATA FINAL"] = pd.to_datetime(df_diesel[col_data_fim], errors="coerce")
     df_diesel = df_diesel.dropna(subset=["DATA FINAL"])
     df_diesel["MES_ANO"] = df_diesel["DATA FINAL"].dt.strftime("%Y-%m")
     df_diesel = df_diesel[df_diesel["MES_ANO"].str.startswith("2026")].copy()
 
-    df_diesel["PREÇO MÉDIO REVENDA"] = pd.to_numeric(
-        df_diesel["PREÇO MÉDIO REVENDA"].astype(str).str.replace(",", "."),
+    df_diesel["PRECO_NUM"] = pd.to_numeric(
+        df_diesel[col_preco].astype(str).str.replace(",", "."),
         errors="coerce"
     )
-    df_diesel = df_diesel.dropna(subset=["PREÇO MÉDIO REVENDA"])
+    df_diesel = df_diesel.dropna(subset=["PRECO_NUM"])
 
-    df_diesel["UF"] = df_diesel["ESTADO"].astype(str).str.strip().str.upper().map(MAPA_ESTADOS)
+    df_diesel["UF"] = df_diesel[col_estado].astype(str).str.strip().str.upper().map(MAPA_ESTADOS)
     df_diesel = df_diesel.dropna(subset=["UF"])
 
-    resumo = df_diesel.groupby(["UF", "MES_ANO"])["PREÇO MÉDIO REVENDA"].mean().round(3).reset_index()
+    resumo = df_diesel.groupby(["UF", "MES_ANO"])["PRECO_NUM"].mean().round(3).reset_index()
 
     resultado = {}
     for _, row in resumo.iterrows():
         uf = row["UF"]
         mes = row["MES_ANO"]
-        preco = float(row["PREÇO MÉDIO REVENDA"])
+        preco = float(row["PRECO_NUM"])
         if uf not in resultado:
             resultado[uf] = {}
         resultado[uf][mes] = preco
@@ -95,31 +101,37 @@ def extrair_distribuicao_estados():
     resp = requests.get(URL_DISTRIBUICAO_ESTADOS, headers=HEADERS, timeout=180)
     resp.raise_for_status()
 
+    # Cabecalho da distribuicao na aba ESTADOS esta na linha 9 (skiprows=8)
     df = pd.read_excel(io.BytesIO(resp.content), sheet_name="ESTADOS", skiprows=8)
     df.columns = [str(c).strip().upper() for c in df.columns]
 
-    df_diesel = df[df["PRODUTO"].astype(str).str.upper().str.contains("DIESEL B S10")].copy()
-    df_diesel["DATA FINAL"] = pd.to_datetime(df_diesel["DATA FINAL"], errors="coerce")
+    col_prod = [c for c in df.columns if "PRODUTO" in c][0]
+    col_data_fim = [c for c in df.columns if "DATA FINAL" in c][0]
+    col_estado = [c for c in df.columns if "ESTADO" in c][0]
+    col_preco = [c for c in df.columns if "PREÇO MÉDIO DISTRIBUIÇÃO" in c or "PRECO MEDIO DISTRIBUICAO" in c][0]
+
+    df_diesel = df[df[col_prod].astype(str).str.upper().str.contains("DIESEL B S10")].copy()
+    df_diesel["DATA FINAL"] = pd.to_datetime(df_diesel[col_data_fim], errors="coerce")
     df_diesel = df_diesel.dropna(subset=["DATA FINAL"])
     df_diesel["MES_ANO"] = df_diesel["DATA FINAL"].dt.strftime("%Y-%m")
     df_diesel = df_diesel[df_diesel["MES_ANO"].str.startswith("2026")].copy()
 
-    df_diesel["PREÇO MÉDIO DISTRIBUIÇÃO"] = pd.to_numeric(
-        df_diesel["PREÇO MÉDIO DISTRIBUIÇÃO"].astype(str).str.replace(",", "."),
+    df_diesel["PRECO_NUM"] = pd.to_numeric(
+        df_diesel[col_preco].astype(str).str.replace(",", "."),
         errors="coerce"
     )
-    df_diesel = df_diesel.dropna(subset=["PREÇO MÉDIO DISTRIBUIÇÃO"])
+    df_diesel = df_diesel.dropna(subset=["PRECO_NUM"])
 
-    df_diesel["UF"] = df_diesel["ESTADO"].astype(str).str.strip().str.upper().map(MAPA_ESTADOS)
+    df_diesel["UF"] = df_diesel[col_estado].astype(str).str.strip().str.upper().map(MAPA_ESTADOS)
     df_diesel = df_diesel.dropna(subset=["UF"])
 
-    resumo = df_diesel.groupby(["UF", "MES_ANO"])["PREÇO MÉDIO DISTRIBUIÇÃO"].mean().round(3).reset_index()
+    resumo = df_diesel.groupby(["UF", "MES_ANO"])["PRECO_NUM"].mean().round(3).reset_index()
 
     resultado = {}
     for _, row in resumo.iterrows():
         uf = row["UF"]
         mes = row["MES_ANO"]
-        preco = float(row["PREÇO MÉDIO DISTRIBUIÇÃO"])
+        preco = float(row["PRECO_NUM"])
         if uf not in resultado:
             resultado[uf] = {}
         resultado[uf][mes] = preco
@@ -131,24 +143,29 @@ def extrair_referencia_antt():
     resp = requests.get(URL_BRASIL_ANTT, headers=HEADERS, timeout=180)
     resp.raise_for_status()
 
+    # Cabecalho da serie Brasil esta na linha 18 (skiprows=17)
     df = pd.read_excel(io.BytesIO(resp.content), skiprows=17)
     df.columns = [str(c).strip().upper() for c in df.columns]
 
-    df_diesel = df[df["PRODUTO"].astype(str).str.upper().str.contains("DIESEL S10")].copy()
-    df_diesel["DATA FINAL"] = pd.to_datetime(df_diesel["DATA FINAL"], errors="coerce")
+    col_prod = [c for c in df.columns if "PRODUTO" in c][0]
+    col_data_fim = [c for c in df.columns if "DATA FINAL" in c][0]
+    col_preco = [c for c in df.columns if "PREÇO MÉDIO REVENDA" in c or "PRECO MEDIO REVENDA" in c][0]
+
+    df_diesel = df[df[col_prod].astype(str).str.upper().str.contains("DIESEL S10")].copy()
+    df_diesel["DATA FINAL"] = pd.to_datetime(df_diesel[col_data_fim], errors="coerce")
     df_diesel = df_diesel.dropna(subset=["DATA FINAL"])
 
-    df_diesel["PREÇO MÉDIO REVENDA"] = pd.to_numeric(
-        df_diesel["PREÇO MÉDIO REVENDA"].astype(str).str.replace(",", "."),
+    df_diesel["PRECO_NUM"] = pd.to_numeric(
+        df_diesel[col_preco].astype(str).str.replace(",", "."),
         errors="coerce"
     )
-    df_diesel = df_diesel.dropna(subset=["PREÇO MÉDIO REVENDA"])
+    df_diesel = df_diesel.dropna(subset=["PRECO_NUM"])
     df_diesel = df_diesel.sort_values(by="DATA FINAL", ascending=False)
 
     if not df_diesel.empty:
         ultima_linha = df_diesel.iloc[0]
         data_formatada = ultima_linha["DATA FINAL"].strftime("%d/%m/%Y")
-        preco_brasil = float(round(ultima_linha["PREÇO MÉDIO REVENDA"], 3))
+        preco_brasil = float(round(ultima_linha["PRECO_NUM"], 3))
         return {
             "valor": preco_brasil,
             "periodo": f"Semana ate {data_formatada}"
