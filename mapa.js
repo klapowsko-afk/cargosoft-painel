@@ -7,6 +7,17 @@
 // URL da malha GeoJSON oficial dos 27 estados do Brasil
 const GEOJSON_BR_URL = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson";
 
+// Dicionário de conversão Nome do Estado -> Sigla UF da Base KMM
+const DE_PARA_NOMES_UFS = {
+  "ACRE": "AC", "ALAGOAS": "AL", "AMAPA": "AP", "AMAZONAS": "AM", "BAHIA": "BA",
+  "CEARA": "CE", "DISTRITO FEDERAL": "DF", "ESPIRITO SANTO": "ES", "GOIAS": "GO",
+  "MARANHAO": "MA", "MATO GROSSO": "MT", "MATO GROSSO DO SUL": "MS", "MINAS GERAIS": "MG",
+  "PARA": "PA", "PARAIBA": "PB", "PARANA": "PR", "PERNAMBUCO": "PE", "PIAUI": "PI",
+  "RIO DE JANEIRO": "RJ", "RIO GRANDE DO NORTE": "RN", "RIO GRANDE DO SUL": "RS",
+  "RONDONIA": "RO", "RORAIMA": "RR", "SANTA CATARINA": "SC", "SAO PAULO": "SP",
+  "SERGIPE": "SE", "TOCANTINS": "TO"
+};
+
 // Variáveis de controle do Mini Mapa do Brasil
 let miniMapaLeaflet = null;
 let camadaGeoJsonBrasil = null;
@@ -23,6 +34,21 @@ let postosSugeridosUltimaRota = [];
 // =========================================================================
 // 1. MINI MAPA LEAFLET: MALHA OFICIAL DOS 27 ESTADOS (FILTRO POR UF)
 // =========================================================================
+
+/**
+ * Converte qualquer variação de nome ou sigla da feature GeoJSON na UF de 2 letras da base KMM.
+ */
+function extrairSiglaUf(props) {
+  if (!props) return "";
+  if (props.sigla && props.sigla.length === 2) return props.sigla.toUpperCase();
+  if (props.UF && props.UF.length === 2) return props.UF.toUpperCase();
+  if (props.id && props.id.length === 2) return props.id.toUpperCase();
+  
+  const nomeLimpo = (props.name || props.nome || props.NOME || '')
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    
+  return DE_PARA_NOMES_UFS[nomeLimpo] || (nomeLimpo.length === 2 ? nomeLimpo : "");
+}
 
 /**
  * Inicializa a instância do Mini Mapa Leaflet do Brasil.
@@ -87,7 +113,7 @@ function atualizarCoresMiniMapa() {
 
   camadaGeoJsonBrasil = L.geoJSON(dadosGeoJsonBr, {
     style: function(feature) {
-      const sigla = (feature.properties.sigla || feature.properties.name || '').toUpperCase();
+      const sigla = extrairSiglaUf(feature.properties);
       const vol = volPorUf[sigla] || 0;
       const selecionado = (typeof ufFiltrada !== 'undefined' && ufFiltrada === sigla);
 
@@ -100,7 +126,7 @@ function atualizarCoresMiniMapa() {
       };
     },
     onEachFeature: function(feature, layer) {
-      const sigla = (feature.properties.sigla || feature.properties.name || '').toUpperCase();
+      const sigla = extrairSiglaUf(feature.properties);
 
       layer.on('mouseover', function(e) {
         const l = e.target;
