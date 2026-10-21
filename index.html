@@ -55,7 +55,7 @@
     .brand-logo-cargo { height: 40px; width: auto; object-fit: contain; }
     .brand-logo-voctt { height: 40px; width: auto; border-radius: 50%; border: 2px solid var(--border-color); }
 
-    /* BARRA SUPERIOR INTEGRADA (COCKPIT TOTALMENTE UNIFICADO) */
+    /* BARRA SUPERIOR INTEGRADA (COCKPIT EM LINHA ÚNICA) */
     .cockpit-bar {
       background: linear-gradient(135deg, #062316 0%, #0f3d26 50%, #144e31 100%);
       border-radius: 10px;
@@ -80,12 +80,13 @@
       color: #e2e8f0;
       font-size: 0.74rem;
       font-weight: 700;
-      padding: 4px 10px;
+      padding: 5px 9px;
       border-radius: 20px;
       transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
       white-space: nowrap;
+      flex-shrink: 0;
     }
     .btn-toggle-tipo.active {
       background: #22c55e !important;
@@ -114,7 +115,7 @@
       padding: 8px 12px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
       border-left: 4px solid var(--cargosoft-green);
-      min-height: 82px;
+      min-height: 84px;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -156,15 +157,15 @@
       margin-top: 1px;
     }
 
-    /* TABELA SINTÉTICA DE CONFERÊNCIA */
+    /* TABELA SINTÉTICA DE CONFERÊNCIA COM RESPIRO */
     .card-tabela-resumo {
       background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      padding: 6px 8px;
+      padding: 6px 10px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
       height: 100%;
-      min-height: 82px;
+      min-height: 84px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -172,6 +173,7 @@
     .tabela-sintetica {
       font-size: 0.66rem;
       margin-bottom: 0;
+      width: 100%;
     }
     .tabela-sintetica th {
       font-size: 0.58rem;
@@ -179,12 +181,13 @@
       color: var(--text-muted);
       text-transform: uppercase;
       border-bottom: 1px solid var(--border-color);
-      padding: 1px 3px;
+      padding: 2px 4px;
     }
     .tabela-sintetica td {
-      padding: 2px 3px;
+      padding: 2px 4px;
       vertical-align: middle;
       border-bottom: 1px solid #f1f5f9;
+      white-space: nowrap;
     }
 
     .panel-box {
@@ -354,7 +357,7 @@
       margin-right: 3px;
     }
 
-    /* CONTENTOR DO MAPA ALINHADO ÀS DUAS FILEIRAS */
+    /* CONTENTOR DO MAPA PREENCHENDO A ALTURA TOTAL */
     .map-container {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -362,15 +365,15 @@
       padding: 8px 10px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
       height: 100%;
-      min-height: 172px;
+      min-height: 180px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
     #miniMapaBrasil {
       width: 100%;
-      height: 100%;
-      min-height: 125px;
+      height: 195px;
+      min-height: 195px;
       background: #ffffff;
       border-radius: 6px;
       z-index: 2;
@@ -378,6 +381,19 @@
     #miniMapaBrasil .leaflet-control-attribution,
     #miniMapaBrasil .leaflet-control-zoom {
       display: none !important;
+    }
+
+    /* ESTILO VISUAL DO TOOLTIP NATIVO DO LEAFLET */
+    .custom-leaflet-tooltip {
+      background: rgba(15, 23, 42, 0.96) !important;
+      border: 1px solid #334155 !important;
+      color: #ffffff !important;
+      border-radius: 6px !important;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25) !important;
+      padding: 6px 10px !important;
+    }
+    .custom-leaflet-tooltip:before {
+      border-top-color: rgba(15, 23, 42, 0.96) !important;
     }
 
     /* ROTEIRIZADOR LEAFLET */
@@ -442,55 +458,58 @@
       </div>
     </div>
 
-    <!-- LINHA 1: BARRA SUPERIOR INTEGRADA (COMPETÊNCIA, FILTROS E MODOS UNIFICADOS NO TOPO) -->
+    <!-- LINHA 1: BARRA SUPERIOR INTEGRADA EM LINHA ÚNICA SEM QUEBRAS -->
     <div class="row g-2 mb-2 align-items-stretch">
-      <div class="col-12 col-xl-3">
+      <!-- COMPETÊNCIA -->
+      <div class="col-12 col-xl-auto">
         <div class="cockpit-bar d-flex align-items-center gap-2 h-100">
           <label class="small fw-bold text-white-50 text-uppercase" style="font-size: 0.68rem; white-space: nowrap;">
             <i class="bi bi-calendar3 me-1"></i> Competência:
           </label>
-          <select id="filtroMesAno" class="form-select form-select-sm" onchange="processarPainel()">
+          <select id="filtroMesAno" class="form-select form-select-sm" style="min-width: 190px;" onchange="processarPainel()">
           </select>
         </div>
       </div>
 
-      <div class="col-12 col-xl-4">
-        <div class="control-sub-bar d-flex align-items-center justify-content-between gap-2 h-100 flex-wrap">
+      <!-- FILTROS DESAFOGADOS (REDE, POSTO, BUSCA) -->
+      <div class="col-12 col-xl">
+        <div class="control-sub-bar d-flex align-items-center justify-content-between gap-2 h-100 flex-nowrap">
           <div class="d-flex align-items-center gap-1">
-            <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.65rem;">Rede:</label>
-            <select id="filtroRede" class="form-select form-select-sm" style="width: 130px;" onchange="aplicarFiltroRede()">
+            <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.65rem; white-space: nowrap;">Rede:</label>
+            <select id="filtroRede" class="form-select form-select-sm" style="min-width: 145px;" onchange="aplicarFiltroRede()">
               <option value="">Todas as Redes</option>
             </select>
           </div>
 
           <div class="d-flex align-items-center gap-1">
-            <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.65rem;">Posto:</label>
-            <select id="filtroPosto" class="form-select form-select-sm" style="width: 130px;" onchange="aplicarFiltroPostoSelect()">
+            <label class="small fw-bold text-muted text-uppercase" style="font-size: 0.65rem; white-space: nowrap;">Posto:</label>
+            <select id="filtroPosto" class="form-select form-select-sm" style="min-width: 155px;" onchange="aplicarFiltroPostoSelect()">
               <option value="">Todos os Postos</option>
             </select>
           </div>
 
-          <div style="min-width: 130px; flex-grow: 1;">
+          <div style="min-width: 120px; flex-grow: 1;">
             <div class="input-group input-group-sm">
               <span class="input-group-text bg-white border-end-0 text-muted px-1"><i class="bi bi-search"></i></span>
               <input type="text" id="campoBusca" class="form-control border-start-0" placeholder="Buscar..." oninput="filtrarTabelaTexto()">
             </div>
           </div>
 
-          <span id="badgeFiltroUf" class="badge bg-dark text-white px-2 py-1" style="display: none; font-size: 0.65rem;">
+          <span id="badgeFiltroUf" class="badge bg-dark text-white px-2 py-1" style="display: none; font-size: 0.65rem; white-space: nowrap;">
             UF: <span id="lblUfAtiva"></span>
             <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroUf()"></i>
           </span>
 
-          <span id="badgeFiltroPosto" class="badge bg-primary text-white px-2 py-1" style="display: none; font-size: 0.65rem;">
+          <span id="badgeFiltroPosto" class="badge bg-primary text-white px-2 py-1" style="display: none; font-size: 0.65rem; white-space: nowrap;">
             <span id="lblPostoAtivo"></span>
             <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="limparFiltroPosto()"></i>
           </span>
         </div>
       </div>
 
-      <div class="col-12 col-xl-5">
-        <div class="cockpit-bar d-flex align-items-center justify-content-end gap-1 h-100 flex-wrap">
+      <!-- BOTÕES DE SELEÇÃO DE MODO (TRAVADOS EM LINHA ÚNICA SEM CAIR DE LINHA) -->
+      <div class="col-12 col-xl-auto">
+        <div class="cockpit-bar d-flex align-items-center justify-content-end gap-1 h-100 flex-nowrap" style="overflow-x: auto;">
           <button class="btn-toggle-tipo active" id="btnModoGeral" onclick="alternarModoOperacao('TODOS')">
             <i class="bi bi-pie-chart-fill me-1"></i> Consolidado Geral
           </button>
@@ -548,7 +567,7 @@
           </div>
         </div>
 
-        <!-- FILEIRA INFERIOR: 3 CARDS COMPLEMENTARES + TABELA SINTÉTICA -->
+        <!-- FILEIRA INFERIOR: 3 CARDS COMPLEMENTARES + TABELA SINTÉTICA COM RESPIRO -->
         <div class="row g-2">
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-alerta">
@@ -622,7 +641,7 @@
         </div>
       </div>
 
-      <!-- COLUNA DIREITA: MINI MAPA INTEGRAL DOS 27 ESTADOS (ALINHADO ÀS DUAS FILEIRAS) -->
+      <!-- COLUNA DIREITA: MINI MAPA INTEGRAL (ALTURA TOTAL AJUSTADA E EXPANDIDA) -->
       <div class="col-12 col-xl-3">
         <div class="map-container">
           <div class="d-flex justify-content-between align-items-center mb-1">
@@ -632,7 +651,7 @@
             <span class="text-muted" style="font-size: 0.62rem;" id="lblHoverEstado">Passe o mouse ou clique</span>
           </div>
 
-          <div class="flex-grow-1 position-relative my-1" style="min-height: 115px;">
+          <div class="flex-grow-1 position-relative my-1" style="min-height: 195px;">
             <div id="miniMapaBrasil"></div>
           </div>
 
