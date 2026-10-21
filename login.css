@@ -1,0 +1,169 @@
+/* ==========================================================================
+   TELA DE ACESSO & LOGIN - VOCTT FUEL INTELLIGENCE SUITE
+   ========================================================================== */
+
+#telaBloqueioLogin {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #070d12;
+  background-image: url('fundo_tela_login.jpeg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+  overflow: hidden;
+}
+
+/* Camada de escurecimento suave para contraste da marca e tipografia */
+#telaBloqueioLogin::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.70) 0%, rgba(2, 6, 23, 0.92) 100%);
+  backdrop-filter: blur(4px);
+  z-index: 1;
+}
+
+/* Card centralizado com efeito glassmorphism executivo */
+.card-login-voctt {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+  margin: 16px;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 34px 30px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+
+.card-login-voctt .brand-logo-central {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid rgba(34, 197, 94, 0.6);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.25);
+  object-fit: cover;
+  margin-bottom: 14px;
+}
+
+.login-titulo-marca {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
+.login-subtitulo-marca {
+  font-size: 0.70rem;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+/* Estilização dos campos de input */
+.form-floating-custom {
+  position: relative;
+  margin-bottom: 14px;
+  text-align: start;
+}
+
+.form-floating-custom label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.input-login-voctt {
+  width: 100%;
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.85rem;
+  padding: 10px 14px;
+  transition: all 0.2s ease;
+}
+
+.input-login-voctt:focus {
+  outline: none;
+  border-color: #22c55e;
+  background: rgba(2, 6, 23, 0.85);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+}
+
+.input-login-voctt::placeholder {
+  color: #475569;
+}
+
+/* Botão de ação com a cor da marca */
+.btn-login-entrar {
+  width: 100%;
+  background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 11px 16px;
+  margin-top: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+  cursor: pointer;
+}
+
+.btn-login-entrar:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+  box-shadow: 0 6px 18px rgba(34, 197, 94, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-login-entrar:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Mensagens de feedback e rodapé */
+#msgErroLogin {
+  font-size: 0.72rem;
+  color: #f87171;
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 14px;
+  display: none;
+  text-align: center;
+}
+
+.login-rodape-privacidade {
+  font-size: 0.62rem;
+  color: #64748b;
+  margin-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 14px;
+}
