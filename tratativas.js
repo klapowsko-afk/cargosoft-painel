@@ -40,7 +40,7 @@ let postoAtivoTratativa = null;
         border-radius: 10px;
         padding: 16px;
         height: 100%;
-        min-height: 480px;
+        min-height: 500px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -117,9 +117,9 @@ let postoAtivoTratativa = null;
         background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
         border: 1px dashed #22c55e;
         border-radius: 8px;
-        padding: 10px 14px;
-        margin-top: 10px;
-        margin-bottom: 12px;
+        padding: 8px 12px;
+        margin-top: 8px;
+        margin-bottom: 8px;
         transition: all 0.25s ease;
       }
       .box-spread-saving.modo-alerta {
@@ -127,7 +127,7 @@ let postoAtivoTratativa = null;
         border-color: #ef4444;
       }
       .valor-destaque-spread {
-        font-size: 1.15rem;
+        font-size: 1.10rem;
         font-weight: 800;
         font-family: monospace;
       }
@@ -182,9 +182,8 @@ let postoAtivoTratativa = null;
                   <!-- LEQUE DE CARTÕES NAVEGÁVEIS POR SCROLL -->
                   <div class="rolodex-deck-wrapper my-3" id="areaDeckRolodex" onwheel="rolarLequeRolodex(event)">
                     <div class="text-center text-white-50 small" id="msgDeckVazio">
-                      <i class="bi bi-clock-history d-block fs-3 mb-2"></i>
-                      Nenhuma negociação passada registrada.<br>
-                      O registro atual inaugurará o histórico deste posto.
+                      <div class="spinner-border spinner-border-sm text-success mb-2" role="status"></div>
+                      <br>Buscando histórico deste posto...
                     </div>
                   </div>
 
@@ -193,7 +192,7 @@ let postoAtivoTratativa = null;
                     <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.68rem;" onclick="avancarRolodex(-1)">
                       <i class="bi bi-chevron-up me-1"></i> Mais Antigo
                     </button>
-                    <span class="text-white-50" style="font-size: 0.58rem;">Role o rato sobre o leque</span>
+                    <span class="text-white-50" style="font-size: 0.58rem;">Role o mouse sobre o leque</span>
                     <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.68rem;" onclick="avancarRolodex(1)">
                       Mais Recente <i class="bi bi-chevron-down ms-1"></i>
                     </button>
@@ -236,14 +235,20 @@ let postoAtivoTratativa = null;
                     <div class="row g-2">
                       
                       <!-- DECISÃO ESTRATÉGICA -->
-                      <div class="col-12">
+                      <div class="col-md-7">
                         <label class="form-label fw-bold text-dark small mb-1">Ação Comercial Definida:</label>
                         <select id="campoTratativaStatus" class="form-select form-select-sm" required onchange="alternarCamposDecisao()">
                           <option value="ACORDO_FECHADO">🟢 Acordo Fechado no Posto (Preço Negociado)</option>
-                          <option value="POSTO_BLOQUEADO">🔴 Bloquear Posto & Realocar Demanda na Rota</option>
+                          <option value="POSTO_BLOQUEADO">🔴 Bloquear Posto & Realocar Demanda</option>
                           <option value="EM_ABERTO">🟡 Em Aberto (Cotação em Andamento)</option>
                           <option value="SEM_RETORNO">⚪ Sem Retorno Comercial</option>
                         </select>
+                      </div>
+
+                      <!-- INÍCIO DA VIGÊNCIA -->
+                      <div class="col-md-5">
+                        <label class="form-label fw-bold text-dark small mb-1">Início da Vigência:</label>
+                        <input type="date" id="campoTratativaVigencia" class="form-control form-control-sm font-monospace" required>
                       </div>
 
                       <!-- CAMPO CONDICIONAL: PREÇO ACORDADO -->
@@ -284,7 +289,7 @@ let postoAtivoTratativa = null;
 
                       <!-- CONTACTOS -->
                       <div class="col-md-6">
-                        <label class="form-label fw-bold text-dark small mb-1">Responsável / Contacto:</label>
+                        <label class="form-label fw-bold text-dark small mb-1">Responsável / Contato:</label>
                         <input type="text" id="campoTratativaContato" class="form-control form-control-sm" placeholder="Nome do gerente comercial">
                       </div>
 
@@ -333,7 +338,7 @@ function gerarDocumentIdPosto(posto, uf) {
   return chave.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9_-]/g, "_").toUpperCase();
 }
 
-// 3. Leitura em lote de todas as tratativas
+// 3. Leitura em lote de todas as tratativas do Firestore
 async function carregarTodasTratativasFirestore() {
   try {
     const token = (typeof utilizadorAutenticado !== 'undefined' && utilizadorAutenticado) ? utilizadorAutenticado.idToken : "";
@@ -350,13 +355,13 @@ async function carregarTodasTratativasFirestore() {
         const docId = partes[partes.length - 1];
         const f = doc.fields || {};
 
-        // Extrai o histórico em array ou monta com o registo base
         let historicoCards = [];
         if (f.historico && f.historico.arrayValue && f.historico.arrayValue.values) {
           historicoCards = f.historico.arrayValue.values.map(v => {
             const m = v.mapValue?.fields || {};
             return {
               data: m.data?.stringValue || "",
+              vigencia: m.vigencia?.stringValue || "",
               autor: m.autor?.stringValue || "",
               status: m.status?.stringValue || "EM_ABERTO",
               preco: parseFloat(m.preco?.doubleValue || m.preco?.integerValue || 0),
@@ -369,6 +374,7 @@ async function carregarTodasTratativasFirestore() {
         } else if (f.atualizado_em) {
           historicoCards.push({
             data: f.atualizado_em?.timestampValue || "",
+            vigencia: f.vigencia?.stringValue || (f.atualizado_em?.timestampValue ? f.atualizado_em.timestampValue.substring(0, 10) : ""),
             autor: f.autor?.stringValue || "Gestor",
             status: f.status?.stringValue || "EM_ABERTO",
             preco: parseFloat(f.preco_acordado?.doubleValue || f.preco_acordado?.integerValue || 0),
@@ -386,6 +392,7 @@ async function carregarTodasTratativasFirestore() {
           contato: f.contato?.stringValue || "",
           telefone: f.telefone?.stringValue || "",
           notas: f.notas?.stringValue || "",
+          vigencia: f.vigencia?.stringValue || "",
           atualizado_em: f.atualizado_em?.timestampValue || "",
           historico: historicoCards
         };
@@ -402,13 +409,12 @@ function obterTratativaPosto(posto, uf) {
   return mapaTratativasCadastradas[docId] || null;
 }
 
-// 5. Variáveis de controlo do Leque Rolodex
+// 5. Variáveis de controle do Leque Rolodex
 let listaHistoricoAtiva = [];
 let indiceRolodexAtivo = 0;
 
-// 6. Abertura do Cockpit de Decisão
+// 6. Abertura do Cockpit de Decisão com busca pontual de salvaguarda
 async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp, ultimoPago) {
-  // Localiza o volume consumido no período através da base
   let volumeMesCalculo = 0;
   if (typeof baseRegistrosMensais !== 'undefined' && Array.isArray(baseRegistrosMensais)) {
     const registrosPosto = baseRegistrosMensais.filter(d => d.POSTO === nomePosto && d.UF_POSTO === uf);
@@ -425,7 +431,6 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
     volumeMes: volumeMesCalculo
   };
 
-  // Preenchimento dos dados visuais no cabeçalho
   document.getElementById('modalTratativaPostoNome').innerText = nomePosto;
   document.getElementById('modalTratativaUf').innerText = uf || '--';
   document.getElementById('modalTratativaSub').innerText = `Município: ${municipio || 'Não Identificado'} | Operação: ROTA`;
@@ -434,16 +439,86 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
   document.getElementById('modalCtxRefAnp').innerText = refAnp > 0 ? `R$ ${refAnp.toFixed(3)}` : '--';
   document.getElementById('modalCtxVolumeMensal').innerText = volumeMesCalculo > 0 ? `${Math.round(volumeMesCalculo).toLocaleString('pt-BR')} L` : '--';
 
-  // Popula o seletor de postos concorrentes da rota para realocação
   popularSeletorPostosDestino(nomePosto, uf);
 
-  // Carrega tratativa e histórico do Rolodex
-  const trat = obterTratativaPosto(nomePosto, uf);
+  // Data de vigência padrão = Hoje (formato YYYY-MM-DD)
+  const hojeStr = new Date().toISOString().substring(0, 10);
+  document.getElementById('campoTratativaVigencia').value = hojeStr;
+
+  // Mostra o modal Bootstrap de imediato
+  const modalEl = document.getElementById('modalTratativaComercial');
+  const bsModal = new bootstrap.Modal(modalEl);
+  bsModal.show();
+
+  // Verifica se o posto já está no cache local
+  let trat = obterTratativaPosto(nomePosto, uf);
+
+  // SALVAGUARDA: Se não estiver no cache, faz requisição GET direta no Firestore pelo documento do posto
+  if (!trat) {
+    const docId = gerarDocumentIdPosto(nomePosto, uf);
+    try {
+      const token = (typeof utilizadorAutenticado !== 'undefined' && utilizadorAutenticado) ? utilizadorAutenticado.idToken : "";
+      const headers = token ? { "Authorization": `Bearer ${token}` } : {};
+      const resp = await fetch(`${FIRESTORE_BASE_TRATATIVAS}/${docId}`, { headers });
+      
+      if (resp.ok) {
+        const docJson = await resp.json();
+        const f = docJson.fields || {};
+
+        let historicoResgatado = [];
+        if (f.historico && f.historico.arrayValue && f.historico.arrayValue.values) {
+          historicoResgatado = f.historico.arrayValue.values.map(v => {
+            const m = v.mapValue?.fields || {};
+            return {
+              data: m.data?.stringValue || "",
+              vigencia: m.vigencia?.stringValue || "",
+              autor: m.autor?.stringValue || "",
+              status: m.status?.stringValue || "EM_ABERTO",
+              preco: parseFloat(m.preco?.doubleValue || m.preco?.integerValue || 0),
+              saving: parseFloat(m.saving?.doubleValue || m.saving?.integerValue || 0),
+              notas: m.notas?.stringValue || "",
+              contato: m.contato?.stringValue || "",
+              posto_destino: m.posto_destino?.stringValue || ""
+            };
+          });
+        } else if (f.atualizado_em || f.preco_acordado) {
+          // Recupera dados gravados na versão plana anterior
+          historicoResgatado.push({
+            data: f.atualizado_em?.timestampValue || new Date().toISOString(),
+            vigencia: f.vigencia?.stringValue || (f.atualizado_em?.timestampValue ? f.atualizado_em.timestampValue.substring(0, 10) : hojeStr),
+            autor: f.autor?.stringValue || "willian.klapowsko@cargosoft.com.br",
+            status: f.status?.stringValue || "ACORDO_FECHADO",
+            preco: parseFloat(f.preco_acordado?.doubleValue || f.preco_acordado?.integerValue || 0),
+            saving: 0,
+            notas: f.notas?.stringValue || "",
+            contato: f.contato?.stringValue || "",
+            posto_destino: f.posto_destino?.stringValue || ""
+          });
+        }
+
+        trat = {
+          status: f.status?.stringValue || "ACORDO_FECHADO",
+          preco_acordado: parseFloat(f.preco_acordado?.doubleValue || f.preco_acordado?.integerValue || 0),
+          posto_destino: f.posto_destino?.stringValue || "",
+          contato: f.contato?.stringValue || "",
+          telefone: f.telefone?.stringValue || "",
+          notas: f.notas?.stringValue || "",
+          vigencia: f.vigencia?.stringValue || hojeStr,
+          atualizado_em: f.atualizado_em?.timestampValue || "",
+          historico: historicoResgatado
+        };
+        mapaTratativasCadastradas[docId] = trat;
+      }
+    } catch (e) {
+      console.warn("Falha na consulta pontual do posto:", e);
+    }
+  }
+
+  // Preenchimento do Rolodex e dos campos com o histórico obtido
   listaHistoricoAtiva = (trat && Array.isArray(trat.historico)) ? [...trat.historico] : [];
   indiceRolodexAtivo = 0;
   renderizarLequeRolodex();
 
-  // Preenche formulário
   if (trat) {
     document.getElementById('campoTratativaStatus').value = trat.status || "ACORDO_FECHADO";
     document.getElementById('campoTratativaPrecoAcordado').value = trat.preco_acordado > 0 ? trat.preco_acordado : "";
@@ -451,6 +526,9 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
     document.getElementById('campoTratativaContato').value = trat.contato || "";
     document.getElementById('campoTratativaTelefone').value = trat.telefone || "";
     document.getElementById('campoTratativaNotas').value = trat.notas || "";
+    if (trat.vigencia) {
+      document.getElementById('campoTratativaVigencia').value = trat.vigencia;
+    }
   } else {
     document.getElementById('campoTratativaStatus').value = "ACORDO_FECHADO";
     document.getElementById('campoTratativaPrecoAcordado').value = "";
@@ -463,7 +541,7 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
   alternarCamposDecisao();
   calcularSpreadTempoReal();
 
-  // Controlo de permissão RBAC
+  // Controle de permissão RBAC
   const emailLogado = (typeof utilizadorAutenticado !== 'undefined' && utilizadorAutenticado) ? utilizadorAutenticado.email : "";
   const ehAdmin = emailLogado.toLowerCase().includes("willian");
 
@@ -480,10 +558,6 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
     btnSalvar.style.display = 'none';
     campos.forEach(c => c.setAttribute('disabled', 'disabled'));
   }
-
-  const modalEl = document.getElementById('modalTratativaComercial');
-  const bsModal = new bootstrap.Modal(modalEl);
-  bsModal.show();
 }
 
 // 7. Popula a lista de postos para realocação de volume
@@ -646,19 +720,22 @@ function renderizarLequeRolodex() {
       ? '<span class="badge bg-success badge-rolodex-status">Acordo Fechado</span>'
       : (card.status === 'POSTO_BLOQUEADO' ? '<span class="badge bg-danger badge-rolodex-status">Bloqueado</span>' : '<span class="badge bg-warning text-dark badge-rolodex-status">Em Cotação</span>');
 
-    const dataFmt = card.data ? new Date(card.data).toLocaleDateString('pt-BR') : "--";
+    const dataRegFmt = card.data ? new Date(card.data).toLocaleDateString('pt-BR') : "--";
+    const vigenciaFmt = card.vigencia ? card.vigencia.split('-').reverse().join('/') : dataRegFmt;
 
     htmlCards += `
       <div class="rolodex-card-item ${classePosicao}" style="border-left-color: ${corBorda};" onclick="indiceRolodexAtivo = ${idx}; renderizarLequeRolodex();">
         <div class="d-flex justify-content-between align-items-center mb-1">
           ${badgeStatus}
-          <span class="font-monospace text-muted" style="font-size: 0.60rem;">${dataFmt}</span>
+          <span class="badge bg-light text-dark border font-monospace" style="font-size: 0.58rem;" title="Data de Início da Vigência">
+            Vigência: ${vigenciaFmt}
+          </span>
         </div>
         <div class="d-flex justify-content-between align-items-baseline">
           <span class="fw-bold font-monospace text-dark" style="font-size: 0.95rem;">
             ${card.preco > 0 ? `R$ ${card.preco.toFixed(3)}` : (card.posto_destino ? 'Migrado' : 'Sem Preço')}
           </span>
-          <span class="text-muted" style="font-size: 0.60rem;">Por: ${card.autor.split('@')[0]}</span>
+          <span class="text-muted" style="font-size: 0.60rem;">Por: ${(card.autor || 'Gestor').split('@')[0]}</span>
         </div>
         ${card.posto_destino ? `<div class="text-danger fw-bold mt-1" style="font-size:0.62rem;"><i class="bi bi-arrow-right me-1"></i>Destino: ${card.posto_destino}</div>` : ''}
         <div class="text-secondary small mt-1 text-truncate" style="font-size: 0.65rem;" title="${card.notas}">
@@ -671,7 +748,7 @@ function renderizarLequeRolodex() {
   container.innerHTML = htmlCards;
 }
 
-// 11. Gravação Completa no Firestore com acúmulo no histórico
+// 11. Gravação Completa no Firestore com acúmulo no histórico e vigência
 async function salvarTratativaFirestore(event) {
   event.preventDefault();
   if (!postoAtivoTratativa) return;
@@ -686,6 +763,7 @@ async function salvarTratativaFirestore(event) {
 
   const docId = gerarDocumentIdPosto(postoAtivoTratativa.nomePosto, postoAtivoTratativa.uf);
   const status = document.getElementById('campoTratativaStatus').value;
+  const vigencia = document.getElementById('campoTratativaVigencia').value || new Date().toISOString().substring(0, 10);
   const precoAcordado = parseFloat(document.getElementById('campoTratativaPrecoAcordado').value) || 0;
   const postoDestino = document.getElementById('campoPostoDestinoRealocacao').value;
   const contato = document.getElementById('campoTratativaContato').value.trim();
@@ -694,9 +772,10 @@ async function salvarTratativaFirestore(event) {
   const autorEmail = (typeof utilizadorAutenticado !== 'undefined' && utilizadorAutenticado) ? utilizadorAutenticado.email : "ADMIN";
   const token = (typeof utilizadorAutenticado !== 'undefined' && utilizadorAutenticado) ? utilizadorAutenticado.idToken : "";
 
-  // Cria a nova ficha para o Rolodex
+  // Nova ficha adicionada no topo do leque Rolodex
   const novaFicha = {
     data: new Date().toISOString(),
+    vigencia: vigencia,
     autor: autorEmail,
     status: status,
     preco: precoAcordado,
@@ -706,13 +785,13 @@ async function salvarTratativaFirestore(event) {
     posto_destino: postoDestino
   };
 
-  const historicoAtualizado = [novaFicha, ...listaHistoricoAtiva].slice(0, 15); // Guarda até 15 ciclos
+  const historicoAtualizado = [novaFicha, ...listaHistoricoAtiva].slice(0, 15);
 
-  // Converte array para estrutura REST do Firestore
   const arrayHistoricoFirestore = historicoAtualizado.map(h => ({
     mapValue: {
       fields: {
         data: { stringValue: h.data },
+        vigencia: { stringValue: h.vigencia || "" },
         autor: { stringValue: h.autor },
         status: { stringValue: h.status },
         preco: { doubleValue: h.preco },
@@ -730,6 +809,7 @@ async function salvarTratativaFirestore(event) {
       uf: { stringValue: postoAtivoTratativa.uf },
       municipio: { stringValue: postoAtivoTratativa.municipio || "" },
       status: { stringValue: status },
+      vigencia: { stringValue: vigencia },
       preco_acordado: { doubleValue: precoAcordado },
       posto_destino: { stringValue: postoDestino },
       contato: { stringValue: contato },
@@ -754,9 +834,9 @@ async function salvarTratativaFirestore(event) {
 
     if (!resp.ok) throw new Error(`Falha ao gravar no Firestore: HTTP ${resp.status}`);
 
-    // Atualiza cache em memória
     mapaTratativasCadastradas[docId] = {
       status,
+      vigencia,
       preco_acordado: precoAcordado,
       posto_destino: postoDestino,
       contato,
@@ -768,7 +848,6 @@ async function salvarTratativaFirestore(event) {
 
     txtBtn.innerHTML = `<i class="bi bi-check-all me-1"></i> Decisão Gravada!`;
 
-    // Atualiza a listagem do painel em tempo real
     if (typeof processarPainel === 'function') {
       processarPainel();
     }
