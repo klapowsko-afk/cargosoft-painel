@@ -597,7 +597,8 @@
     }
     .conf-ok { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
     .conf-quebra { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-    .conf-alerta { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .conf-alerta { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+    .conf-espera { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
     @media print {
       body { background: #ffffff !important; padding: 0 !important; }
@@ -666,7 +667,7 @@
         
         <!-- FILEIRA SUPERIOR -->
         <div class="row g-2 mb-2 flex-grow-1">
-          <!-- CARD 1: VOLUME & GASTO TOTAL COM GRÁFICO INTEGRAL AO FUNDO -->
+          <!-- CARD 1: VOLUME & GASTO TOTAL -->
           <div class="col-12 col-md-4">
             <div class="card-kpi">
               <div class="kpi-label">VOLUME & GASTO TOTAL</div>
@@ -679,7 +680,7 @@
             </div>
           </div>
           
-          <!-- CARD 2: PREÇO MÉDIO REAL COM DESTAQUE TIPOGRÁFICO -->
+          <!-- CARD 2: PREÇO MÉDIO REAL -->
           <div class="col-12 col-md-3">
             <div class="card-kpi">
               <div class="kpi-label" id="cardPrecoMedioLabel">PREÇO MÉDIO REAL</div>
@@ -690,7 +691,7 @@
             </div>
           </div>
 
-          <!-- CARD 3: POSTOS COM PRIORIDADE DE AÇÃO (TOP 3 COM DETALHAMENTO DE PREÇO/DATA) -->
+          <!-- CARD 3: POSTOS COM PRIORIDADE DE AÇÃO -->
           <div class="col-12 col-md-5">
             <div class="card-kpi card-kpi-ineficiencia">
               <div class="d-flex justify-content-between align-items-center mb-1">
@@ -969,7 +970,7 @@
               <i class="bi bi-shield-check me-1 text-success"></i> Gestão de Contratos, SLA e Auditoria de Preço na Bomba
             </h5>
             <span class="small text-white-50" style="font-size: 0.68rem;">
-              Conformidade entre Preço Acordado na Mesa vs. Preço Praticado pelo Posto na Rota &bull; Validação de Vigência e Saving Efetivo em Reais (R$)
+              Régua Comercial Completa: ANP Oficial &bull; Acordo na Mesa &bull; Preço na Bomba &bull; Auditoria Temporal em Reais (R$)
             </span>
           </div>
         </div>
@@ -1003,7 +1004,7 @@
 
         <div class="col-12 col-md-3">
           <div class="card-kpi card-kpi-alerta">
-            <div class="kpi-label text-danger">REAJUSTES SEM AVISO</div>
+            <div class="kpi-label text-danger">DESVIOS PÓS-VIGÊNCIA</div>
             <div class="my-auto py-1">
               <div class="kpi-val-grande text-danger" id="kpiAuditoriaDesviosQtd">--</div>
             </div>
@@ -1044,8 +1045,9 @@
             <select id="filtroAuditoriaStatus" class="form-select form-select-sm" style="min-width: 160px;" onchange="renderizarAbaAuditoriaComercial()">
               <option value="">Todos os Status</option>
               <option value="CONFORME">🟢 Em Conformidade</option>
-              <option value="QUEBRA">🔴 Quebra de Acordo (Preço Superior)</option>
-              <option value="COTACAO">🟡 Em Cotação / Aberto</option>
+              <option value="REAJUSTE">🟠 Aumento pós-Acordo</option>
+              <option value="QUEBRA">🔴 Quebra Imediata</option>
+              <option value="ESPERA">⚪ Aguardando Consumo</option>
             </select>
           </div>
 
@@ -1059,7 +1061,7 @@
         </span>
       </div>
 
-      <!-- TABELA ANALÍTICA DE AUDITORIA CONTRATUAL -->
+      <!-- TABELA ANALÍTICA DE AUDITORIA CONTRATUAL COM RÉGUA ANP -->
       <div class="table-responsive border rounded bg-white">
         <table class="table tabela-auditoria table-hover align-middle">
           <thead>
@@ -1067,10 +1069,11 @@
               <th class="text-start">Posto & Bandeira</th>
               <th>UF</th>
               <th>Status Contratual</th>
-              <th class="text-end">Preço Acordado</th>
+              <th class="text-end">Ref. ANP (Oficial)</th>
+              <th class="text-end">Acordo & Vigência</th>
               <th class="text-end">Último Pago (Bomba)</th>
               <th class="text-end">GAP Acordo (R$)</th>
-              <th>Início Vigência</th>
+              <th class="text-end">GAP ANP (R$)</th>
               <th class="text-end">Vol. Auditado</th>
               <th class="text-end">Saving Realizado (R$)</th>
               <th class="text-center">Ações</th>
@@ -1078,7 +1081,7 @@
           </thead>
           <tbody id="corpoTabelaAuditoria">
             <tr>
-              <td colspan="10" class="text-center py-4 text-muted">
+              <td colspan="11" class="text-center py-4 text-muted">
                 <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
                 Cruzando dados transacionais com o histórico de tratativas...
               </td>
@@ -1297,7 +1300,6 @@
         selectUf.appendChild(opt);
       });
 
-      // Popula também filtro de UF da Auditoria
       const selectAuditoriaUf = document.getElementById('filtroAuditoriaUf');
       if (selectAuditoriaUf) {
         selectAuditoriaUf.innerHTML = '<option value="">Todas</option>';
@@ -2089,7 +2091,7 @@
     }
 
     /* ==========================================================================
-       LÓGICA DA NOVA ABA: AUDITORIA COMERCIAL & GOVERNANÇA DE NEGOCIAÇÕES
+       LÓGICA DA ABA: AUDITORIA COMERCIAL COM TEMPORALIDADE RIGOROSA E RÉGUA ANP
        ========================================================================== */
     function renderizarAbaAuditoriaComercial() {
       const corpoTabela = document.getElementById('corpoTabelaAuditoria');
@@ -2100,14 +2102,13 @@
       const statusSel = document.getElementById('filtroAuditoriaStatus') ? document.getElementById('filtroAuditoriaStatus').value : "";
       const buscaTxt = document.getElementById('buscaAuditoriaTexto') ? document.getElementById('buscaAuditoriaTexto').value.trim().toLowerCase() : "";
 
-      // Verifica se existem tratativas cadastradas no módulo tratativas.js
       const mapaTrat = (typeof mapaTratativasCadastradas !== 'undefined') ? mapaTratativasCadastradas : {};
       const chavesTratativas = Object.keys(mapaTrat);
 
       if (chavesTratativas.length === 0) {
         corpoTabela.innerHTML = `
           <tr>
-            <td colspan="10" class="text-center py-5 text-muted">
+            <td colspan="11" class="text-center py-5 text-muted">
               <i class="bi bi-journal-x fs-2 d-block mb-2 text-secondary"></i>
               Nenhuma tratativa comercial foi registrada ainda.<br>
               Acesse o painel principal e clique no botão <strong>Tratativa</strong> em qualquer posto para cadastrar acordos.
@@ -2123,7 +2124,7 @@
       let somaSavingRealizadoTotal = 0;
       let totalAbastecimentosAuditados = 0;
       let totalAbastecimentosConformes = 0;
-      let qtdReajustesSemAviso = 0;
+      let qtdDesviosPosVigencia = 0;
       let somaDiasReacao = 0;
       let qtdComHistoricoMultiplo = 0;
 
@@ -2131,7 +2132,6 @@
         const trat = mapaTrat[docId];
         if (!trat) return;
 
-        // Recupera nome e UF do documento
         const partesDoc = docId.split('_');
         const ufDoc = partesDoc[partesDoc.length - 1];
         const nomeDoc = partesDoc.slice(0, partesDoc.length - 1).join(' ');
@@ -2142,7 +2142,6 @@
           (d.UF_POSTO === ufDoc && normalizarTexto(d.POSTO).includes(partesDoc[0]))
         );
 
-        // Identifica o último preço pago na bomba e o volume auditado
         let ultimoPrecoBomba = 0;
         let dataUltimoBomba = "";
         let volumeAuditado = 0;
@@ -2155,26 +2154,35 @@
             dataUltimoBomba = r.ULTIMA_DATA_MES;
             ultimoPrecoBomba = p;
           }
-          if (trat.vigencia && r.ULTIMA_DATA_MES && r.ULTIMA_DATA_MES >= trat.vigencia) {
+          // Volume estritamente pós-início da vigência
+          if (trat.vigencia && r.ULTIMA_DATA_MES && r.ULTIMA_DATA_MES.substring(0, 10) >= trat.vigencia) {
             volumeAuditado += v;
           } else {
             precoBaseHistorico = p;
           }
         });
 
-        if (volumeAuditado === 0) {
-          volumeAuditado = regsPosto.reduce((acc, c) => acc + parseFloat(c.LITROS_MES || 0), 0);
-        }
         if (precoBaseHistorico === 0) {
           precoBaseHistorico = trat.preco_acordado > 0 ? (trat.preco_acordado + 0.15) : ultimoPrecoBomba;
         }
 
+        // Puxa o referencial ANP vigente para o estado do posto
+        const anpUf = anpRevenda[trat.uf || ufDoc] || {};
+        const mesChave = dataUltimoBomba ? dataUltimoBomba.substring(0, 7) : '2026-10';
+        const refAnpValor = anpUf[mesChave] || anpUf['2026-10'] || 0;
+
         const precoAcordado = trat.preco_acordado || 0;
-        const gapAcordo = (ultimoPrecoBomba > 0 && precoAcordado > 0) ? (ultimoPrecoBomba - precoAcordado) : 0;
+
+        // CÁLCULO DA TEMPORALIDADE RIGOROSA (Vigência vs Última Compra)
+        const strDataVigencia = trat.vigencia || "";
+        const strDataCompra = (dataUltimoBomba || "").substring(0, 10);
+        const ehAbastecimentoPosVigencia = (strDataVigencia && strDataCompra && strDataCompra >= strDataVigencia);
 
         let statusClass = "conf-ok";
         let statusTexto = "🟢 Em Conformidade";
         let tipoConformidade = "CONFORME";
+        let gapAcordo = 0;
+        let savingItem = 0;
 
         if (trat.status === 'POSTO_BLOQUEADO') {
           statusClass = "conf-quebra";
@@ -2184,30 +2192,53 @@
           statusClass = "conf-alerta";
           statusTexto = "🟡 Em Cotação";
           tipoConformidade = "COTACAO";
-        } else if (gapAcordo > 0.005) {
-          statusClass = "conf-quebra";
-          statusTexto = "🔴 Quebra de Acordo";
-          tipoConformidade = "QUEBRA";
-          qtdReajustesSemAviso++;
+        } else if (!ehAbastecimentoPosVigencia) {
+          // COMPRA ANTERIOR À VIGÊNCIA (Caso Linhares) -> Neutro / Aguardando Consumo
+          statusClass = "conf-espera";
+          statusTexto = "⚪ Aguardando Consumo";
+          tipoConformidade = "ESPERA";
+          gapAcordo = 0;
+          savingItem = 0;
+        } else {
+          // COMPRA OCORREU DENTRO DO PERÍODO DO ACORDO
+          gapAcordo = (ultimoPrecoBomba > 0 && precoAcordado > 0) ? (ultimoPrecoBomba - precoAcordado) : 0;
+
+          if (gapAcordo > 0.005) {
+            // Calculo dos dias decorridos entre a data da vigência e o abastecimento com aumento
+            const dtVig = new Date(`${strDataVigencia}T12:00:00Z`);
+            const dtComp = new Date(`${strDataCompra}T12:00:00Z`);
+            const diasDecorridos = Math.max(0, Math.round((dtComp - dtVig) / (1000 * 60 * 60 * 24)));
+
+            qtdDesviosPosVigencia++;
+
+            if (diasDecorridos <= 2) {
+              statusClass = "conf-quebra";
+              statusTexto = `🔴 Quebra Imediata (Nunca Aplicado)`;
+              tipoConformidade = "QUEBRA";
+            } else {
+              statusClass = "conf-alerta";
+              statusTexto = `🟠 Aumento pós-Acordo (+${diasDecorridos}d)`;
+              tipoConformidade = "REAJUSTE";
+            }
+          } else {
+            statusClass = "conf-ok";
+            statusTexto = "🟢 Em Conformidade";
+            tipoConformidade = "CONFORME";
+            totalAbastecimentosConformes++;
+
+            if (volumeAuditado > 0) {
+              savingItem = (precoBaseHistorico - ultimoPrecoBomba) * volumeAuditado;
+              if (savingItem < 0) savingItem = (precoBaseHistorico - precoAcordado) * volumeAuditado;
+            }
+          }
+
+          totalAbastecimentosAuditados++;
+          if (savingItem > 0) somaSavingRealizadoTotal += savingItem;
         }
 
-        // Cálculo do saving realizado em reais (R$)
-        let savingItem = 0;
-        if (precoAcordado > 0 && ultimoPrecoBomba <= precoAcordado) {
-          savingItem = (precoBaseHistorico - ultimoPrecoBomba) * volumeAuditado;
-          if (savingItem < 0) savingItem = (precoBaseHistorico - precoAcordado) * volumeAuditado;
-        }
+        // GAP contra o mercado oficial da ANP
+        const gapAnp = (ultimoPrecoBomba > 0 && refAnpValor > 0) ? (ultimoPrecoBomba - refAnpValor) : 0;
 
-        if (savingItem > 0) {
-          somaSavingRealizadoTotal += savingItem;
-        }
-
-        totalAbastecimentosAuditados++;
-        if (tipoConformidade === 'CONFORME') {
-          totalAbastecimentosConformes++;
-        }
-
-        // Calcula tempo de reação se houver histórico com múltiplas negociações
         if (trat.historico && trat.historico.length >= 2) {
           const d1 = new Date(trat.historico[0].data || trat.historico[0].vigencia);
           const d2 = new Date(trat.historico[1].data || trat.historico[1].vigencia);
@@ -2223,10 +2254,13 @@
           statusTexto,
           statusClass,
           tipoConformidade,
+          refAnpValor,
           precoAcordado,
           ultimoPrecoBomba,
           dataUltimoBomba,
           gapAcordo,
+          gapAnp,
+          ehPosVigencia: ehAbastecimentoPosVigencia,
           vigencia: trat.vigencia || "--",
           volumeAuditado,
           savingItem,
@@ -2263,16 +2297,14 @@
 
       document.getElementById('lblAuditoriaContador').innerText = `${listaFiltrada.length} postos auditados`;
 
-      // Atualiza KPIs da Auditoria Comercial
       const aderenciaPerc = totalAbastecimentosAuditados > 0 ? ((totalAbastecimentosConformes / totalAbastecimentosAuditados) * 100) : 100;
       const mediaDiasReacao = qtdComHistoricoMultiplo > 0 ? Math.round(somaDiasReacao / qtdComHistoricoMultiplo) : 4;
-      atualizarCardsAuditoriaKPIs(aderenciaPerc, somaSavingRealizadoTotal, qtdReajustesSemAviso, mediaDiasReacao);
+      atualizarCardsAuditoriaKPIs(aderenciaPerc, somaSavingRealizadoTotal, qtdDesviosPosVigencia, mediaDiasReacao);
 
-      // Renderização da tabela
       if (listaFiltrada.length === 0) {
         corpoTabela.innerHTML = `
           <tr>
-            <td colspan="10" class="text-center py-4 text-muted">
+            <td colspan="11" class="text-center py-4 text-muted">
               Nenhum posto encontrado para a combinação de filtros selecionada.
             </td>
           </tr>
@@ -2284,46 +2316,73 @@
         const dataVigenciaFmt = p.vigencia !== '--' ? p.vigencia.split('-').reverse().join('/') : '--';
         const dataBombaFmt = formatarDataDiaMes(p.dataUltimoBomba);
 
-        let gapHtml = `<span class="text-muted font-monospace">R$ 0,000</span>`;
-        if (p.precoAcordado > 0 && p.ultimoPrecoBomba > 0) {
+        // Preço Acordado & Vigência integrados na mesma coluna
+        const precoAcordadoComVigenciaHtml = `
+          <div class="fw-bold font-monospace text-dark" style="font-size: 0.85rem;">
+            ${p.precoAcordado > 0 ? `R$ ${p.precoAcordado.toFixed(3)}` : '--'}
+          </div>
+          <div class="text-muted font-monospace" style="font-size: 0.58rem; line-height: 1;">
+            vigência: ${dataVigenciaFmt}
+          </div>
+        `;
+
+        // Formatação do GAP Acordo
+        let gapAcordoHtml = `<span class="text-muted font-monospace" style="font-size:0.68rem;">R$ 0,000</span>`;
+        if (p.ehPosVigencia && p.precoAcordado > 0 && p.ultimoPrecoBomba > 0) {
           if (p.gapAcordo > 0.005) {
-            gapHtml = `<span class="text-danger fw-bold font-monospace">+R$ ${p.gapAcordo.toFixed(3)}</span>`;
+            gapAcordoHtml = `<span class="text-danger fw-bold font-monospace" style="font-size:0.75rem;">+R$ ${p.gapAcordo.toFixed(3)}</span>`;
           } else if (p.gapAcordo < -0.005) {
-            gapHtml = `<span class="text-success fw-bold font-monospace">-R$ ${Math.abs(p.gapAcordo).toFixed(3)}</span>`;
+            gapAcordoHtml = `<span class="text-success fw-bold font-monospace" style="font-size:0.75rem;">-R$ ${Math.abs(p.gapAcordo).toFixed(3)}</span>`;
           } else {
-            gapHtml = `<span class="text-success font-monospace">R$ 0,000</span>`;
+            gapAcordoHtml = `<span class="text-success font-monospace" style="font-size:0.68rem;">R$ 0,000</span>`;
           }
         }
 
-        let savingHtml = `<span class="text-muted font-monospace">R$ 0,00</span>`;
-        if (p.savingItem > 0) {
-          savingHtml = `<span class="text-success fw-bold font-monospace">+R$ ${Math.round(p.savingItem).toLocaleString('pt-BR')}</span>`;
-        } else if (p.gapAcordo > 0.005 && p.volumeAuditado > 0) {
-          const perda = p.gapAcordo * p.volumeAuditado;
-          savingHtml = `<span class="text-danger fw-bold font-monospace">-R$ ${Math.round(perda).toLocaleString('pt-BR')}</span>`;
+        // Formatação do GAP ANP (Mercado)
+        let gapAnpHtml = `<span class="text-muted font-monospace" style="font-size:0.68rem;">--</span>`;
+        if (p.refAnpValor > 0 && p.ultimoPrecoBomba > 0) {
+          const sinal = p.gapAnp >= 0 ? "+" : "-";
+          const corAnp = p.gapAnp > 0.05 ? "text-danger" : "text-success";
+          gapAnpHtml = `<span class="${corAnp} fw-bold font-monospace" style="font-size:0.72rem;">${sinal}R$ ${Math.abs(p.gapAnp).toFixed(3)}</span>`;
+        }
+
+        // Formatação do Saving Realizado em Reais (R$)
+        let savingHtml = `<span class="text-muted font-monospace" style="font-size:0.70rem;">R$ 0,00</span>`;
+        if (p.ehPosVigencia) {
+          if (p.savingItem > 0) {
+            savingHtml = `<span class="text-success fw-bold font-monospace" style="font-size:0.78rem;">+R$ ${Math.round(p.savingItem).toLocaleString('pt-BR')}</span>`;
+          } else if (p.gapAcordo > 0.005 && p.volumeAuditado > 0) {
+            const perda = p.gapAcordo * p.volumeAuditado;
+            savingHtml = `<span class="text-danger fw-bold font-monospace" style="font-size:0.78rem;">-R$ ${Math.round(perda).toLocaleString('pt-BR')}</span>`;
+          }
         }
 
         return `
           <tr>
             <td class="text-start">
-              <span class="fw-bold text-dark d-block text-truncate" style="max-width: 250px;" title="${p.posto}">${p.posto}</span>
-              <span class="small text-muted" style="font-size: 0.65rem;" title="${p.notas}">${p.notas ? p.notas.substring(0, 42) + '...' : 'Sem notas adicionais'}</span>
+              <span class="fw-bold text-dark d-block text-truncate" style="max-width: 230px;" title="${p.posto}">${p.posto}</span>
+              <span class="small text-muted" style="font-size: 0.65rem;" title="${p.notas}">${p.notas ? p.notas.substring(0, 38) + '...' : 'Sem notas adicionais'}</span>
             </td>
             <td><span class="badge-uf">${p.uf}</span></td>
             <td><span class="badge-conformidade ${p.statusClass}">${p.statusTexto}</span></td>
-            <td class="text-end font-monospace fw-bold text-dark">
-              ${p.precoAcordado > 0 ? `R$ ${p.precoAcordado.toFixed(3)}` : '--'}
+            <td class="text-end font-monospace text-primary fw-semibold" style="font-size: 0.78rem;">
+              ${p.refAnpValor > 0 ? `R$ ${p.refAnpValor.toFixed(3)}` : '--'}
+            </td>
+            <td class="text-end">
+              ${precoAcordadoComVigenciaHtml}
             </td>
             <td class="text-end font-monospace">
-              <span class="fw-bold text-dark">${p.ultimoPrecoBomba > 0 ? `R$ ${p.ultimoPrecoBomba.toFixed(3)}` : '--'}</span>
+              <span class="fw-bold text-dark" style="font-size: 0.85rem;">${p.ultimoPrecoBomba > 0 ? `R$ ${p.ultimoPrecoBomba.toFixed(3)}` : '--'}</span>
               <div class="text-muted" style="font-size: 0.58rem;">em ${dataBombaFmt}</div>
             </td>
-            <td class="text-end">${gapHtml}</td>
-            <td class="font-monospace text-muted" style="font-size: 0.70rem;">${dataVigenciaFmt}</td>
-            <td class="text-end font-monospace fw-semibold">${Math.round(p.volumeAuditado).toLocaleString('pt-BR')} L</td>
+            <td class="text-end">${gapAcordoHtml}</td>
+            <td class="text-end">${gapAnpHtml}</td>
+            <td class="text-end font-monospace fw-semibold" style="font-size: 0.76rem;">
+              ${p.ehPosVigencia ? Math.round(p.volumeAuditado).toLocaleString('pt-BR') : 0} L
+            </td>
             <td class="text-end">${savingHtml}</td>
             <td class="text-center">
-              <button class="btn btn-sm btn-outline-success py-1 px-2 fw-bold" style="font-size: 0.68rem;" onclick="abrirModalTratativa('${p.posto.replace(/'/g, "\\'")}', '${p.uf}', '', ${p.ultimoPrecoBomba}, 0, ${p.ultimoPrecoBomba})">
+              <button class="btn btn-sm btn-outline-success py-1 px-2 fw-bold" style="font-size: 0.68rem;" onclick="abrirModalTratativa('${p.posto.replace(/'/g, "\\'")}', '${p.uf}', '', ${p.ultimoPrecoBomba}, ${p.refAnpValor}, ${p.ultimoPrecoBomba})">
                 <i class="bi bi-journal-text me-1"></i> Rolodex
               </button>
             </td>
