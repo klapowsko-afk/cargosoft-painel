@@ -14,10 +14,6 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
-  <!-- FIREBASE WEB SDK (COMPATÍVEL PARA CDN EM NAVEGADOR) -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
   <!-- MÓDULOS EXTERNOS DE DADOS E INTELIGÊNCIA -->
   <script src="cidades.js"></script>
   <script src="matrizes.js"></script>
@@ -795,24 +791,9 @@
   <div id="mapTooltip"></div>
 
   <script>
-    // =========================================================================
-    // INICIALIZAÇÃO FIREBASE (SDK COMPAT)
-    // =========================================================================
-    const firebaseConfig = {
-      apiKey: "AIzaSyDT2fbjOk1TvkzJhiw_Wm5Xf9sIO1WH-PA",
-      authDomain: "cargosoft-diesel.firebaseapp.com",
-      projectId: "cargosoft-diesel",
-      storageBucket: "cargosoft-diesel.firebasestorage.app",
-      messagingSenderId: "403028241165",
-      appId: "1:403028241165:web:586dba34713ed7c63b9e44"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.firestore();
-
     const WORKER_URL = "https://api-abastecimentos.klapowsko.workers.dev";
+    const FIRESTORE_REST_URL = "https://firestore.googleapis.com/v1/projects/cargosoft-diesel/databases/(default)/documents/anp_consolidada/mensal_2026";
+
     let baseRegistrosMensais = [];
     let dadosAnpBaseGlobal = null;
     let sparklineInstances = {};
@@ -828,6 +809,25 @@
 
     function normalizarTexto(txt) {
       return (txt || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    }
+
+    /**
+     * Decodificador dos nós de campos brutos da REST API do Firestore
+     */
+    function decodificarCampoFirestore(valorBruto) {
+      if (!valorBruto || typeof valorBruto !== 'object') return null;
+      if ('stringValue' in valorBruto) return valorBruto.stringValue;
+      if ('doubleValue' in valorBruto) return parseFloat(valorBruto.doubleValue);
+      if ('integerValue' in valorBruto) return parseInt(valorBruto.integerValue, 10);
+      if ('timestampValue' in valorBruto) return valorBruto.timestampValue;
+      if ('mapValue' in valorBruto && valorBruto.mapValue.fields) {
+        const resultado = {};
+        for (const [k, v] of Object.entries(valorBruto.mapValue.fields)) {
+          resultado[k] = decodificarCampoFirestore(v);
+        }
+        return resultado;
+      }
+      return null;
     }
 
     /**
@@ -878,27 +878,37 @@
       return dataStr.substring(0, 5);
     }
 
+    async function buscarDadosAnpFirestore() {
+      try {
+        const resp = await fetch(FIRESTORE_REST_URL);
+        if (!resp.ok) throw new Error(`Status ${resp.status}`);
+        const json = await resp.json();
+
+        if (json && json.fields) {
+          dadosAnpBaseGlobal = {};
+          for (const [campo, valorObj] of Object.entries(json.fields)) {
+            dadosAnpBaseGlobal[campo] = decodificarCampoFirestore(valorObj);
+          }
+
+          if (dadosAnpBaseGlobal.revenda) anpRevenda = dadosAnpBaseGlobal.revenda;
+          if (dadosAnpBaseGlobal.distribuicao) anpDistribuicao = dadosAnpBaseGlobal.distribuicao;
+
+          atualizarCardAnttOficial();
+          return;
+        }
+      } catch (err) {
+        console.warn("Falha ao buscar via Firestore REST:", err);
+      }
+      definirCardAnttIndisponivel();
+    }
+
     async function carregarDados() {
       const btn = document.getElementById('btnSincronizar');
       btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Buscando...`;
       btn.disabled = true;
 
       try {
-        // LEITURA DIRETA DO FIRESTORE (SEM ARQUIVOS JSON ESTÁTICOS)
-        try {
-          const docSnap = await db.collection('anp_consolidada').document('mensal_2026').get();
-          if (docSnap.exists) {
-            dadosAnpBaseGlobal = docSnap.data();
-            if (dadosAnpBaseGlobal.revenda) anpRevenda = dadosAnpBaseGlobal.revenda;
-            if (dadosAnpBaseGlobal.distribuicao) anpDistribuicao = dadosAnpBaseGlobal.distribuicao;
-            atualizarCardAnttOficial();
-          } else {
-            definirCardAnttIndisponivel();
-          }
-        } catch (e) {
-          console.error("Falha ao consultar Firestore:", e);
-          definirCardAnttIndisponivel();
-        }
+        await buscarDadosAnpFirestore();
 
         const resp = await fetch(WORKER_URL);
         const json = await resp.json();
