@@ -99,7 +99,7 @@
       color: #ffffff;
     }
 
-    /* CARDS KPIS COM ENCAIXE PRECISO */
+    /* CARDS KPIS COM ENCAIXE PRECISO E SIMÉTRICO */
     .card-kpi {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -107,11 +107,11 @@
       padding: 8px 12px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
       border-left: 4px solid var(--cargosoft-green);
-      min-height: 98px;
+      min-height: 108px;
       height: 100%;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: space-between;
       transition: transform 0.15s ease;
       position: relative;
       overflow: hidden;
@@ -141,6 +141,8 @@
       text-transform: uppercase;
       letter-spacing: 0.04em;
       margin-bottom: 2px;
+      position: relative;
+      z-index: 2;
     }
     .kpi-val {
       font-size: 1.15rem;
@@ -148,33 +150,77 @@
       color: var(--cargosoft-green);
       letter-spacing: -0.02em;
       line-height: 1.15;
+      position: relative;
+      z-index: 2;
     }
     .kpi-val-split {
-      font-size: 0.80rem;
+      font-size: 0.84rem;
       font-weight: 800;
       letter-spacing: -0.01em;
-      line-height: 1.35;
+      line-height: 1.4;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     .kpi-sub {
-      font-size: 0.60rem;
+      font-size: 0.62rem;
       color: var(--text-muted);
       margin-top: 1px;
+      position: relative;
+      z-index: 2;
     }
 
+    /* MINI GRÁFICO AO FUNDO INTEGRAL DO CARD */
     .sparkline-kpi-bg {
       position: absolute;
+      top: 0;
+      left: 0;
       right: 0;
       bottom: 0;
-      width: 110px;
-      height: 48px;
-      opacity: 0.25;
+      width: 100%;
+      height: 100%;
+      opacity: 0.16;
       pointer-events: none;
       z-index: 1;
     }
 
+    /* LISTA COMPACTA DOS TOP 3 POSTOS DE AÇÃO */
+    .lista-top3-acao {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      position: relative;
+      z-index: 2;
+      margin-top: 2px;
+    }
+    .item-top3-acao {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.66rem;
+      line-height: 1.25;
+      border-bottom: 1px dotted rgba(234, 88, 12, 0.2);
+      padding-bottom: 1px;
+    }
+    .item-top3-acao:last-child {
+      border-bottom: none;
+    }
+    .item-top3-nome {
+      max-width: 140px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text-dark);
+      font-weight: 700;
+    }
+    .item-top3-val {
+      font-weight: 800;
+      color: #dc2626;
+      font-family: monospace;
+      white-space: nowrap;
+    }
+
+    /* TABELA SINTÉTICA DE CONFERÊNCIA */
     .card-tabela-resumo {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -182,7 +228,7 @@
       padding: 6px 10px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
       height: 100%;
-      min-height: 98px;
+      min-height: 108px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -193,12 +239,13 @@
       width: 100%;
     }
     .tabela-sintetica th {
-      font-size: 0.60rem;
+      font-size: 0.58rem;
       font-weight: 800;
       color: var(--text-muted);
       text-transform: uppercase;
       border-bottom: 1px solid var(--border-color);
       padding: 3px 5px;
+      white-space: nowrap;
     }
     .tabela-sintetica td {
       padding: 3px 5px;
@@ -427,6 +474,31 @@
       border-top-color: rgba(15, 23, 42, 0.96) !important;
     }
 
+    /* TOOLTIP MICRO-DISCRETO APEXCHARTS */
+    .apexcharts-tooltip.apexcharts-theme-dark {
+      background: rgba(15, 23, 42, 0.94) !important;
+      border: 1px solid #334155 !important;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+      padding: 3px 6px !important;
+      font-size: 0.65rem !important;
+      line-height: 1.2 !important;
+      border-radius: 4px !important;
+    }
+    .apexcharts-tooltip-title {
+      font-size: 0.62rem !important;
+      padding: 2px 4px !important;
+      margin-bottom: 2px !important;
+      background: transparent !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      font-weight: 700 !important;
+    }
+    .apexcharts-tooltip-series-group {
+      padding: 1px 4px !important;
+    }
+    .apexcharts-tooltip-text {
+      font-size: 0.62rem !important;
+    }
+
     #secaoRoteirizador, #secaoMatrizesGerenciais {
       display: none;
     }
@@ -517,90 +589,109 @@
       </div>
     </div>
 
-    <!-- LINHA 2: GRID SIMÉTRICO REBALANCEADO -->
+    <!-- LINHA 2: GRID SIMÉTRICO REBALANCEADO (ALTURA SIMÉTRICA SEM VÃO) -->
     <div class="row g-2 mb-3 align-items-stretch">
       <div class="col-12 col-xl-8 d-flex flex-column justify-content-between">
         
         <!-- FILEIRA SUPERIOR -->
         <div class="row g-2 mb-2">
+          <!-- CARD 1 CONSOLIDADO: VOLUME & VALOR COM MESMA FONTE E GRÁFICO INTEGRAL AO FUNDO -->
           <div class="col-6 col-md-3">
             <div class="card-kpi">
               <div class="kpi-label">VOLUME & GASTO TOTAL</div>
-              <div class="kpi-val" id="cardVolume">-- L</div>
-              <div class="kpi-sub fw-bold" id="cardGasto" style="color: var(--cargosoft-green);">R$ --</div>
+              <div class="my-auto py-1">
+                <div class="kpi-val" id="cardVolume">-- L</div>
+                <div class="kpi-val mt-1" id="cardGasto">R$ --</div>
+              </div>
+              <div class="kpi-sub" style="font-size: 0.58rem;">Auditado na competência</div>
               <div id="sparkVolumeBg" class="sparkline-kpi-bg"></div>
             </div>
           </div>
           
+          <!-- CARD 2: PREÇO MÉDIO REAL -->
           <div class="col-6 col-md-3">
             <div class="card-kpi">
               <div class="kpi-label" id="cardPrecoMedioLabel">PREÇO MÉDIO REAL</div>
-              <div class="kpi-val" id="cardPrecoMedio">R$ --</div>
+              <div class="my-auto">
+                <div class="kpi-val" id="cardPrecoMedio">R$ --</div>
+              </div>
               <div class="kpi-sub" id="cardPrecoMedioSub">Média frota auditada</div>
             </div>
           </div>
 
+          <!-- CARD 3: POSTOS COM PRIORIDADE DE AÇÃO (TOP 3 RESUMIDO) -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-ineficiencia">
               <div class="d-flex justify-content-between align-items-center mb-1">
-                <div class="kpi-label text-warning-emphasis mb-0">TOP DESVIO NA MESA</div>
-                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.52rem;">PRIORIDADE</span>
+                <div class="kpi-label text-warning-emphasis mb-0">PRIORIDADE DE AÇÃO</div>
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.52rem;">TOP 3</span>
               </div>
-              <div class="kpi-val text-danger" id="cardTopDesvioVal">R$ 0,00</div>
-              <div class="kpi-sub text-truncate" id="cardTopDesvioNome" title="Posto com maior custo de ineficiência">Calculando...</div>
+              <div class="lista-top3-acao my-auto" id="listaTop3Acao">
+                <div class="text-muted small" style="font-size: 0.65rem;">Calculando...</div>
+              </div>
+              <div class="kpi-sub" style="font-size: 0.58rem;">Maior desvio financeiro acumulado</div>
             </div>
           </div>
           
+          <!-- CARD 4: PONTOS COM VOLUME -->
           <div class="col-6 col-md-3">
             <div class="card-kpi">
               <div class="kpi-label">PONTOS COM VOLUME</div>
-              <div class="kpi-val" id="cardPontos">--</div>
+              <div class="my-auto">
+                <div class="kpi-val" id="cardPontos">--</div>
+              </div>
               <div class="kpi-sub">Unidades ativas</div>
             </div>
           </div>
         </div>
 
-        <!-- FILEIRA INFERIOR -->
+        <!-- FILEIRA INFERIOR: RESPIRO E ESPAÇAMENTO EQUILIBRADO -->
         <div class="row g-2">
+          <!-- CARD MAIOR PREÇO UF -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-alerta">
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <div class="kpi-label text-danger mb-0">MAIOR PREÇO UF</div>
                 <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.52rem;">PICO RECENTE</span>
               </div>
-              <div id="cardMaiorConteudo" class="my-auto">
+              <div id="cardMaiorConteudo" class="my-auto py-1">
                 <div class="kpi-val text-danger" id="cardMaiorUf">--</div>
               </div>
               <div class="kpi-sub text-truncate" id="cardMaiorUfSub">Últimos 20 dias ativos</div>
             </div>
           </div>
 
+          <!-- CARD MENOR PREÇO UF -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-destaque">
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <div class="kpi-label text-success mb-0">MENOR PREÇO UF</div>
                 <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.52rem;">ECONOMIA RECENTE</span>
               </div>
-              <div id="cardMenorConteudo" class="my-auto">
+              <div id="cardMenorConteudo" class="my-auto py-1">
                 <div class="kpi-val text-success" id="cardMenorUf">--</div>
               </div>
               <div class="kpi-sub text-truncate" id="cardMenorUfSub">Últimos 20 dias ativos</div>
             </div>
           </div>
 
+          <!-- CARD ANP / ANTT BRASIL -->
           <div class="col-6 col-md-3">
             <div class="card-kpi card-kpi-anp">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="kpi-label text-primary">ANP / ANTT BRASIL</div>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <div class="kpi-label text-primary mb-0">ANP / ANTT BRASIL</div>
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.52rem;">OFICIAL</span>
               </div>
-              <div class="kpi-val text-primary" id="cardAnpAntt">Indisponível</div>
+              <div class="my-auto py-1">
+                <div class="kpi-val text-primary" id="cardAnpAntt">Indisponível</div>
+              </div>
               <div class="kpi-sub text-truncate" id="cardAnpAnttSub" style="font-size: 0.58rem;">
                 <i class="bi bi-clock-history me-1"></i>Aguardando publicação
               </div>
             </div>
           </div>
 
+          <!-- TABELA SINTÉTICA (VOL LTS EM UMA LINHA) -->
           <div class="col-6 col-md-3">
             <div class="card-tabela-resumo">
               <table class="table tabela-sintetica text-end">
@@ -608,7 +699,7 @@
                   <tr>
                     <th class="text-start">Tipo Operação</th>
                     <th>Qtd</th>
-                    <th>Volume (L)</th>
+                    <th>Vol (Lts)</th>
                     <th>Total (R$)</th>
                   </tr>
                 </thead>
@@ -674,7 +765,7 @@
           <div class="small text-muted" id="lblSubtituloTabela" style="font-size: 0.72rem;">Garagens internas (Barueri, Ribeirão, Eusébio, Colombo, etc.) e postos de rodovia</div>
         </div>
 
-        <!-- FILTROS OPERACIONAIS: UF, REDE, POSTO E TEXTO -->
+        <!-- FILTROS OPERACIONAIS -->
         <div class="d-flex align-items-center gap-2 flex-wrap">
           <div class="d-flex align-items-center gap-1">
             <label class="small fw-bold text-muted text-uppercase mb-0" style="font-size: 0.65rem;">UF:</label>
@@ -996,7 +1087,6 @@
         selectMes.appendChild(opt);
       });
 
-      // NOVO: POPULAR FILTRO SELECT DE UF
       const ufsUnicas = [...new Set(baseRegistrosMensais.map(d => d.UF_POSTO).filter(Boolean))].sort();
       const selectUf = document.getElementById('filtroUfSelect');
       selectUf.innerHTML = '<option value="">Todas</option>';
@@ -1224,7 +1314,7 @@
         baseCalculo = registrosModo.filter(d => d.MES_ANO === mesSel);
       }
 
-      // CORREÇÃO TEMPORAL JUSTA DA DISPERSÃO LOCAL
+      // Correção temporal justa para opção local
       let amostraTempoLocal = baseCalculo;
       if (mesSel === 'YTD') {
         let maxDataGeral = "";
@@ -1291,9 +1381,6 @@
         }
       });
 
-      let topPostoDesvio = null;
-      let maiorImpactoFinanceiro = 0;
-
       const listaPostos = Object.values(postosMap).map(p => {
         let precoMedioExibicao = 0;
 
@@ -1315,15 +1402,6 @@
         const gapPerc = refAnpValor > 0 ? ((gapMercado / refAnpValor) * 100) : 0;
 
         const impactoTotalReais = (gapMercado > 0 && p.LITROS_TOTAL > 0) ? (gapMercado * p.LITROS_TOTAL) : 0;
-
-        if (p.TIPO_OPERACAO === 'EXTERNO' && impactoTotalReais > maiorImpactoFinanceiro) {
-          maiorImpactoFinanceiro = impactoTotalReais;
-          topPostoDesvio = {
-            nome: p.POSTO,
-            uf: p.UF_POSTO,
-            impacto: impactoTotalReais
-          };
-        }
 
         const munNorm = normalizarTexto(p.MUNICIPIO_POSTO);
         const melhorLocal = melhorConcorrenteMunicipio[munNorm];
@@ -1366,6 +1444,7 @@
         precoMedioCard = somaLitrosCards > 0 ? (somaGastoCards / somaLitrosCards) : 0;
       }
 
+      // ATUALIZAÇÃO DO CARD 1 COM MESMA TIPOGRAFIA E TAMANHO
       document.getElementById('cardVolume').innerText = somaLitrosCards.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + " L";
       document.getElementById('cardGasto').innerText = "R$ " + somaGastoCards.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       document.getElementById('cardPrecoMedio').innerText = precoMedioCard > 0
@@ -1373,14 +1452,27 @@
         : "R$ 0,000";
       document.getElementById('cardPontos').innerText = listaPostos.length.toString();
 
-      if (topPostoDesvio && topPostoDesvio.impacto > 0) {
-        document.getElementById('cardTopDesvioVal').innerText = "R$ " + Math.round(topPostoDesvio.impacto).toLocaleString('pt-BR');
-        document.getElementById('cardTopDesvioNome').innerText = `${topPostoDesvio.uf} • ${topPostoDesvio.nome}`;
+      // ATUALIZAÇÃO DO CARD "POSTOS COM PRIORIDADE DE AÇÃO" (TOP 3 RESUMIDO)
+      const postosComDesvio = listaPostos
+        .filter(p => p.TIPO_OPERACAO === 'EXTERNO' && p.IMPACTO_REAIS > 0)
+        .sort((a, b) => b.IMPACTO_REAIS - a.IMPACTO_REAIS)
+        .slice(0, 3);
+
+      const containerTop3 = document.getElementById('listaTop3Acao');
+      if (postosComDesvio.length > 0) {
+        containerTop3.innerHTML = postosComDesvio.map(p => `
+          <div class="item-top3-acao">
+            <span class="item-top3-nome" title="${p.NOME_EXIBICAO}">
+              <strong>${p.UF_POSTO}</strong> &bull; ${p.NOME_EXIBICAO}
+            </span>
+            <span class="item-top3-val">+R$ ${Math.round(p.IMPACTO_REAIS).toLocaleString('pt-BR')}</span>
+          </div>
+        `).join('');
       } else {
-        document.getElementById('cardTopDesvioVal').innerText = "R$ 0,00";
-        document.getElementById('cardTopDesvioNome').innerText = "Sem desvios expressivos";
+        containerTop3.innerHTML = `<div class="text-muted small" style="font-size: 0.65rem;">Nenhum posto operando com ágio no filtro atual.</div>`;
       }
 
+      // RENDERIZAR MINI GRÁFICO AO FUNDO INTEGRAL DO CARD 1
       renderizarSparklineVolumeCard(mesesDisponiveis, registrosModo);
       atualizarCardsExtremosSemPonderada(registros, mesSel);
       renderizarTermometroPostos(listaPostos, mesesDisponiveis);
@@ -1407,8 +1499,8 @@
         series: [{ data: dadosVolume }],
         chart: {
           type: 'area',
-          height: 48,
-          width: 110,
+          height: '100%',
+          width: '100%',
           sparkline: { enabled: true },
           animations: { enabled: false }
         },
@@ -1416,7 +1508,7 @@
         stroke: { curve: 'smooth', width: 1.5 },
         fill: {
           type: 'solid',
-          opacity: 0.25
+          opacity: 0.22
         },
         tooltip: { enabled: false }
       };
@@ -1429,7 +1521,7 @@
       const containerMaior = document.getElementById('cardMaiorConteudo');
       const containerMenor = document.getElementById('cardMenorConteudo');
       const lblMaiorSub = document.getElementById('cardMaiorUfSub');
-      const lblMenorSub = document.getElementById('cardMaiorUfSub');
+      const lblMenorSub = document.getElementById('cardMenorUfSub');
 
       let amostra = todosRegistros.filter(d => parseFloat(d.ULTIMO_PRECO_MES || 0) > 0 && d.ULTIMA_DATA_MES);
 
@@ -1488,7 +1580,7 @@
               <span><span class="badge bg-danger-subtle text-danger border border-danger-subtle p-0 me-1" style="font-size:0.58rem;">ROTA</span>${extRota.max ? extRota.max.uf : '--'}</span>
               <span>R$ ${extRota.max ? extRota.max.preco.toFixed(3) : '--'}</span>
             </div>
-            <div class="kpi-val-split text-danger pt-1" style="border-top: 1px dotted #fecaca;" title="Maior Garagem: ${extInterno.max ? extInterno.max.posto : 'ND'}">
+            <div class="kpi-val-split text-danger pt-1 mt-1" style="border-top: 1px dotted #fecaca;" title="Maior Garagem: ${extInterno.max ? extInterno.max.posto : 'ND'}">
               <span><span class="badge bg-danger-subtle text-danger border border-danger-subtle p-0 me-1" style="font-size:0.58rem;">GARAGEM</span>${extInterno.max ? extInterno.max.uf : '--'}</span>
               <span>R$ ${extInterno.max ? extInterno.max.preco.toFixed(3) : '--'}</span>
             </div>
@@ -1505,7 +1597,7 @@
               <span><span class="badge bg-success-subtle text-success border border-success-subtle p-0 me-1" style="font-size:0.58rem;">ROTA</span>${extRota.min ? extRota.min.uf : '--'}</span>
               <span>R$ ${extRota.min ? extRota.min.preco.toFixed(3) : '--'}</span>
             </div>
-            <div class="kpi-val-split text-success pt-1" style="border-top: 1px dotted #bbf7d0;" title="Menor Garagem Ativa: ${extInterno.min ? extInterno.min.posto : 'ND'}">
+            <div class="kpi-val-split text-success pt-1 mt-1" style="border-top: 1px dotted #bbf7d0;" title="Menor Garagem Ativa: ${extInterno.min ? extInterno.min.posto : 'ND'}">
               <span><span class="badge bg-success-subtle text-success border border-success-subtle p-0 me-1" style="font-size:0.58rem;">GARAGEM</span>${extInterno.min ? extInterno.min.uf : '--'}</span>
               <span>R$ ${extInterno.min ? extInterno.min.preco.toFixed(3) : '--'}</span>
             </div>
@@ -1648,13 +1740,13 @@
             </div>
           </div>
 
-          <!-- COLUNA 2: LINHA DO TEMPO COM TOOLTIP ANALÍTICO -->
+          <!-- COLUNA 2: LINHA DO TEMPO COM TOOLTIP DISCRETO -->
           <div class="col-posto-grafico">
             ${marcadoresLinhasHtml}
             <div id="${chartDomId}" style="width: 100%; height: 100%;"></div>
           </div>
 
-          <!-- COLUNA 3: MÉTRICAS INTEGRADAS -->
+          <!-- COLUNA 3: MÉTRICAS INTEGRADAS (PREÇO MÉDIO NEUTRO) -->
           <div class="col-posto-metricas">
             <div class="col-m-vol">
               <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">Volume</div>
@@ -1663,7 +1755,7 @@
 
             <div class="col-m-pm">
               <div class="small text-muted text-uppercase" style="font-size: 0.58rem; font-weight: 800;">Preço Médio</div>
-              <div class="font-monospace fw-bold" style="font-size: 0.78rem; color: ${ehInterno ? '#2563eb' : '#c2410c'};">
+              <div class="font-monospace fw-bold text-dark" style="font-size: 0.78rem;">
                 R$ ${p.PRECO_MEDIO_EXIBICAO.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
               </div>
             </div>
@@ -1704,7 +1796,7 @@
         const corPago = ehInterno ? '#2563eb' : '#ea580c';
         const corAnpTracejado = '#64748b';
 
-        // WAVE COM TOOLTIP ANALÍTICO (DATA, PREÇO PAGO E ANP)
+        // WAVE COM TRAÇO MAIS FINO (1.2px) E TOOLTIP MICRO
         const optionsSpark = {
           series: [
             { name: ehInterno ? "Custo Interno" : "Preço Pago", data: dadosKmmMes },
@@ -1722,12 +1814,12 @@
           colors: [corPago, corAnpTracejado],
           stroke: { 
             curve: 'smooth', 
-            width: [2.2, 1.8],
+            width: [1.2, 1.2], // Traço mais fino e sutil
             dashArray: [0, 4]
           },
           fill: {
             type: ['solid', 'none'],
-            opacity: [0.30, 0]
+            opacity: [0.24, 0]
           },
           tooltip: {
             enabled: true,
@@ -1740,7 +1832,7 @@
             },
             y: {
               formatter: function(val) {
-                return val ? `R$ ${val.toFixed(3)}` : "Sem registro";
+                return val ? `R$ ${val.toFixed(3)}` : "Sem reg.";
               }
             }
           }
