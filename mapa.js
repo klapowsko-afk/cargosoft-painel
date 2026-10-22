@@ -12,6 +12,20 @@ let rotaGeometriaCache = [];
 let campoFocoAtivo = null;
 
 /**
+ * Obtém a lista de cidades suportando múltiplos padrões de estrutura
+ */
+function obterBaseCidadesNormalizada() {
+  const base = (typeof baseCidadesBrasil !== 'undefined' && Array.isArray(baseCidadesBrasil)) ? baseCidadesBrasil : [];
+  return base.map(item => {
+    const nome = item.nome || item.cidade || item.municipio || item.nome_municipio || '';
+    const uf = item.uf || item.estado || item.sigla_uf || '';
+    const lat = parseFloat(item.lat || item.latitude || (item.coordenadas ? item.coordenadas[0] : 0));
+    const lng = parseFloat(item.lng || item.longitude || (item.coordenadas ? item.coordenadas[1] : 0));
+    return { nome, uf, lat, lng };
+  }).filter(c => c.nome && !isNaN(c.lat) && !isNaN(c.lng));
+}
+
+/**
  * Inicializa o mapa principal do Roteirizador Leaflet
  */
 function inicializarMapaLeaflet() {
@@ -38,7 +52,7 @@ function inicializarMapaLeaflet() {
 
   marcadoresPostosGrupo = L.layerGroup().addTo(leafletMapInstancia);
 
-  // Escuta clique direto no mapa para preencher o campo em foco
+  // Escuta clique direto no mapa para preencher o campo ativo
   leafletMapInstancia.on('click', function(e) {
     if (campoFocoAtivo) {
       preencherPontoPorCoordenada(e.latlng.lat, e.latlng.lng, campoFocoAtivo);
@@ -75,21 +89,27 @@ function removerFocoInputs() {
     i.classList.remove('foco-ativo');
     i.blur();
   });
-  document.querySelectorAll('.autocomplete-list').forEach(l => l.style.display = 'none');
+  document.querySelectorAll('.autocomplete-list').forEach(l => {
+    l.style.display = 'none';
+  });
   campoFocoAtivo = null;
 }
 
 function tratarDigitacaoCidade(e) {
   const val = normalizarTexto(e.target.value);
   const itemPai = e.target.closest('.ponto-rota-item');
+  if (!itemPai) return;
+
   const listaSugestoes = itemPai.querySelector('.autocomplete-list');
+  if (!listaSugestoes) return;
 
   if (val.length < 2) {
     listaSugestoes.style.display = 'none';
     return;
   }
 
-  const cidadesEncontradas = listaCidades.filter(c => 
+  const baseCidades = obterBaseCidadesNormalizada();
+  const cidadesEncontradas = baseCidades.filter(c => 
     normalizarTexto(c.nome).includes(val) || normalizarTexto(c.uf).includes(val)
   ).slice(0, 8);
 
@@ -102,7 +122,7 @@ function tratarDigitacaoCidade(e) {
   listaSugestoes.innerHTML = cidadesEncontradas.map(c => `
     <div class="p-2 border-bottom small cursor-pointer hover-bg-light" 
          onclick="selecionarCidadeAutoComplete('${c.nome.replace(/'/g, "\\'")}', '${c.uf}', ${c.lat}, ${c.lng}, this)">
-      <i class="bi bi-geo-alt me-1 text-success"></i><strong>${c.nome}</strong> - ${c.uf}
+      <i class="bi bi-geo-alt me-1 text-success"></i><strong>${c.nome}</strong>${c.uf ? ' - ' + c.uf : ''}
     </div>
   `).join('');
 
@@ -111,18 +131,22 @@ function tratarDigitacaoCidade(e) {
 
 function selecionarCidadeAutoComplete(nome, uf, lat, lng, elem) {
   const itemPai = elem.closest('.ponto-rota-item');
+  if (!itemPai) return;
+
   const inputTexto = itemPai.querySelector('.input-cidade-rota');
   const inputCoord = itemPai.querySelector('.hidden-coord-rota');
   const listaSugestoes = itemPai.querySelector('.autocomplete-list');
 
-  inputTexto.value = `${nome}, ${uf}`;
-  inputCoord.value = JSON.stringify({ nome, uf, lat, lng });
-  listaSugestoes.style.display = 'none';
+  const textoFinal = uf ? `${nome}, ${uf}` : nome;
+  inputTexto.value = textoFinal;
+  inputCoord.value = JSON.stringify({ nome, uf, lat: Number(lat), lng: Number(lng) });
+
+  if (listaSugestoes) listaSugestoes.style.display = 'none';
   inputTexto.classList.remove('foco-ativo');
 }
 
 /**
- * Adiciona uma parada intermediária na rota
+ * Adiciona uma paragem intermediária na rota
  */
 function adicionarCampoParada() {
   const container = document.getElementById('containerPontosRota');
@@ -146,7 +170,6 @@ function adicionarCampoParada() {
     <div class="autocomplete-list shadow-sm" style="display: none;"></div>
   `;
 
-  // Insere antes do destino final
   const destino = container.children[container.children.length - 1];
   container.insertBefore(div, destino);
 
@@ -159,15 +182,16 @@ function removerCampoParada(elem) {
 }
 
 /**
- * Preenche cidade ao clicar no mapa
+ * Preenche a cidade ao clicar diretamente no mapa Leaflet
  */
 function preencherPontoPorCoordenada(lat, lng, itemPai) {
   if (!itemPai) return;
 
+  const baseCidades = obterBaseCidadesNormalizada();
   let cidadeMaisProxima = null;
   let menorDist = Infinity;
 
-  listaCidades.forEach(c => {
+  baseCidades.forEach(c => {
     const d = calcularDistanciaHaversine(lat, lng, c.lat, c.lng);
     if (d < menorDist) {
       menorDist = d;
@@ -175,15 +199,17 @@ function preencherPontoPorCoordenada(lat, lng, itemPai) {
     }
   });
 
-  if (cidadeMaisProxima && menorDist < 50) {
+  if (cidadeMaisProxima && menorDist < 80) {
     const inputTexto = itemPai.querySelector('.input-cidade-rota');
     const inputCoord = itemPai.querySelector('.hidden-coord-rota');
-    inputTexto.value = `${cidadeMaisProxima.nome}, ${cidadeMaisProxima.uf}`;
+
+    const textoFinal = cidadeMaisProxima.uf ? `${cidadeMaisProxima.nome}, ${cidadeMaisProxima.uf}` : cidadeMaisProxima.nome;
+    inputTexto.value = textoFinal;
     inputCoord.value = JSON.stringify({
       nome: cidadeMaisProxima.nome,
       uf: cidadeMaisProxima.uf,
-      lat: cidadeMaisProxima.lat,
-      lng: cidadeMaisProxima.lng
+      lat: Number(cidadeMaisProxima.lat),
+      lng: Number(cidadeMaisProxima.lng)
     });
     removerFocoInputs();
   }
@@ -204,7 +230,7 @@ function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
 }
 
 /**
- * Traça a rota física, mapeia postos e remove o contorno verde dos inputs
+ * Traça a rota física, mapeia postos e remove contornos visuais dos inputs
  */
 function calcularRotaLeaflet() {
   removerFocoInputs();
@@ -214,34 +240,58 @@ function calcularRotaLeaflet() {
 
   const itens = container.querySelectorAll('.ponto-rota-item');
   const waypoints = [];
+  const baseCidades = obterBaseCidadesNormalizada();
 
   itens.forEach(item => {
     const valCoord = item.querySelector('.hidden-coord-rota').value;
-    const txt = item.querySelector('.input-cidade-rota').value.trim();
+    let txt = item.querySelector('.input-cidade-rota').value.trim();
+
+    // Sanitiza qualquer texto 'undefined' residual
+    txt = txt.replace(/,\s*undefined/gi, '').trim();
+    item.querySelector('.input-cidade-rota').value = txt;
+
+    let coordValida = null;
 
     if (valCoord) {
       try {
         const parsed = JSON.parse(valCoord);
-        waypoints.push(L.latLng(parsed.lat, parsed.lng));
+        if (parsed && !isNaN(parsed.lat) && !isNaN(parsed.lng)) {
+          coordValida = L.latLng(parsed.lat, parsed.lng);
+        }
       } catch(e) {}
-    } else if (txt) {
-      const encontrada = listaCidades.find(c => 
-        normalizarTexto(`${c.nome}, ${c.uf}`).includes(normalizarTexto(txt)) ||
-        normalizarTexto(c.nome) === normalizarTexto(txt)
-      );
+    }
+
+    if (!coordValida && txt) {
+      const partes = txt.split(',').map(s => normalizarTexto(s.trim()));
+      const nomeBusca = partes[0] || '';
+      const ufBusca = partes[1] || '';
+
+      const encontrada = baseCidades.find(c => {
+        const nomeIgual = normalizarTexto(c.nome) === nomeBusca;
+        const ufIgual = !ufBusca || normalizarTexto(c.uf) === ufBusca;
+        return nomeIgual && ufIgual;
+      }) || baseCidades.find(c => normalizarTexto(c.nome).includes(nomeBusca));
+
       if (encontrada) {
-        waypoints.push(L.latLng(encontrada.lat, encontrada.lng));
+        coordValida = L.latLng(encontrada.lat, encontrada.lng);
+        item.querySelector('.hidden-coord-rota').value = JSON.stringify(encontrada);
       }
+    }
+
+    if (coordValida) {
+      waypoints.push(coordValida);
     }
   });
 
   if (waypoints.length < 2) {
-    alert("Por favor, selecione ao menos a Cidade de Origem e a Cidade de Destino.");
+    alert("Por favor, selecione ao menos a Cidade de Origem e a Cidade de Destino válidas.");
     return;
   }
 
-  if (leafletRoutingControl) {
-    try { leafletMapInstancia.removeControl(leafletRoutingControl); } catch(e){}
+  if (leafletRoutingControl && leafletMapInstancia) {
+    try {
+      leafletMapInstancia.removeControl(leafletRoutingControl);
+    } catch(e){}
   }
   if (marcadoresPostosGrupo) {
     marcadoresPostosGrupo.clearLayers();
@@ -279,7 +329,7 @@ function calcularRotaLeaflet() {
 }
 
 /**
- * Mapeia os postos de combustível na rodovia aplicando o novo raio expandido (até 400 km)
+ * Mapeia os postos de combustível na rodovia aplicando o raio expandido (até 400 km)
  */
 function mapearPostosNoCorredor(coordenadasRota) {
   if (!marcadoresPostosGrupo || !coordenadasRota || coordenadasRota.length === 0) return;
@@ -300,7 +350,7 @@ function mapearPostosNoCorredor(coordenadasRota) {
       }
     }
 
-    // Raio expandido cortado agora em até 400 km
+    // Corte estrito em até 400 km
     if (menorDistanciaRota <= 400) {
       postosNoCorredor.push({
         ...p,
@@ -394,9 +444,10 @@ function obterCoordenadaPosto(posto) {
   const munNorm = normalizarTexto(posto.MUNICIPIO_POSTO);
   const ufNorm = (posto.UF_POSTO || '').toUpperCase().trim();
 
-  const cidade = listaCidades.find(c => 
+  const baseCidades = obterBaseCidadesNormalizada();
+  const cidade = baseCidades.find(c => 
     normalizarTexto(c.nome) === munNorm && c.uf.toUpperCase() === ufNorm
-  );
+  ) || baseCidades.find(c => normalizarTexto(c.nome) === munNorm);
 
   if (cidade) {
     return { lat: cidade.lat, lng: cidade.lng };
