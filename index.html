@@ -133,6 +133,10 @@
     .card-kpi-destaque {
       border-left: 4px solid #059669 !important;
     }
+    .card-kpi-info {
+      border-left: 4px solid #0284c7 !important;
+      background: linear-gradient(to right, #f0f9ff 0%, #ffffff 100%);
+    }
     .card-kpi-ineficiencia {
       border-left: 4px solid #ea580c !important;
       background: linear-gradient(to right, #fff7ed 0%, #ffffff 100%);
@@ -561,9 +565,36 @@
       border-radius: 10px;
       padding: 12px 18px;
       color: #ffffff;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.08);
     }
+    
+    /* BANNER FLUXOGRAMA METODOLÓGICO */
+    .box-metodologia-fluxo {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 14px 18px;
+      color: #e2e8f0;
+      margin-bottom: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    }
+    .card-fluxo-passo {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 10px;
+      height: 100%;
+    }
+    .card-fluxo-passo.destaque-verde {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.08);
+    }
+    .card-fluxo-passo.destaque-azul {
+      border-color: #0284c7;
+      background: rgba(2, 132, 199, 0.08);
+    }
+
     .tabela-auditoria {
       font-size: 0.74rem;
       width: 100%;
@@ -596,9 +627,36 @@
       gap: 3px;
     }
     .conf-ok { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .conf-blindado { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
     .conf-quebra { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
     .conf-alerta { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
     .conf-espera { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+    /* LINHA DE MICRO AUDITORIA EXPANSÍVEL (GAVETA) */
+    .linha-detalhe-gaveta {
+      background: #f8fafc !important;
+      border-bottom: 2px solid #cbd5e1;
+    }
+    .tabela-micro-gaveta {
+      font-size: 0.68rem;
+      background: #ffffff;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 0;
+    }
+    .tabela-micro-gaveta th {
+      background: #f1f5f9;
+      font-size: 0.58rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #475569;
+      padding: 4px 8px;
+    }
+    .tabela-micro-gaveta td {
+      padding: 4px 8px;
+      vertical-align: middle;
+    }
 
     @media print {
       body { background: #ffffff !important; padding: 0 !important; }
@@ -975,8 +1033,60 @@
           </div>
         </div>
         <div class="d-flex align-items-center gap-2">
-          <span class="badge bg-white text-dark font-monospace px-2 py-1" style="font-size: 0.65rem;">VOCTT Auditoria Contratual</span>
+          <button class="btn btn-sm btn-outline-light py-1 px-2 fw-semibold" style="font-size: 0.68rem;" onclick="alternarVisibilidadeFluxoMetodologia()">
+            <i class="bi bi-diagram-3 me-1"></i> Metodologia & Fluxograma
+          </button>
+          <span class="badge bg-white text-dark font-monospace px-2 py-1" style="font-size: 0.65rem;">VOCTT Auditoria</span>
           <img src="logo_voctt.png" alt="VOCTT" class="brand-logo-voctt" style="height: 36px; width: 36px; border-color: rgba(255,255,255,0.4);">
+        </div>
+      </div>
+
+      <!-- BANNER EXPLICATIVO / FLUXOGRAMA METODOLÓGICO RETRÁTIL -->
+      <div id="boxFluxoMetodologia" class="box-metodologia-fluxo" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 border-secondary mb-3">
+          <span class="fw-bold text-uppercase text-white small" style="letter-spacing: 0.05em;">
+            <i class="bi bi-diagram-3-fill me-1 text-success"></i> Árvore de Decisão: Auditoria Justa & Governança de Spreads
+          </span>
+          <span class="text-white-50 small cursor-pointer" onclick="alternarVisibilidadeFluxoMetodologia()" style="font-size: 0.68rem;">
+            <i class="bi bi-x-circle me-1"></i> Fechar Metodologia
+          </span>
+        </div>
+        <div class="row g-2 text-start">
+          <div class="col-12 col-md-3">
+            <div class="card-fluxo-passo">
+              <div class="text-warning fw-bold mb-1" style="font-size: 0.70rem;">1. ACORDO TRAVADO</div>
+              <div class="small text-white-50" style="font-size: 0.65rem; line-height: 1.3;">
+                Preço negociado na mesa com data de vigência. Se o posto faturar até o combinado: 
+                <span class="text-success fw-bold d-block mt-1">🟢 Em Conformidade</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-3">
+            <div class="card-fluxo-passo destaque-azul">
+              <div class="text-info fw-bold mb-1" style="font-size: 0.70rem;">2. SUBIDA COM MARGEM</div>
+              <div class="small text-white-50" style="font-size: 0.65rem; line-height: 1.3;">
+                Bomba subiu pós-acordo, mas <strong>continua abaixo da ANP estadual</strong>. O posto acompanhou refinaria mantendo parceria:
+                <span class="text-info fw-bold d-block mt-1">🔵 Margem Preservada</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-3">
+            <div class="card-fluxo-passo">
+              <div class="text-danger fw-bold mb-1" style="font-size: 0.70rem;">3. EROSÃO OU QUEBRA</div>
+              <div class="small text-white-50" style="font-size: 0.65rem; line-height: 1.3;">
+                Se a bomba subiu nos primeiros 2 dias (quebra direta) ou cobrou acima da média ANP:
+                <span class="text-danger fw-bold d-block mt-1">🔴 Quebra / Repasse Tóxico</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-3">
+            <div class="card-fluxo-passo destaque-verde">
+              <div class="text-success fw-bold mb-1" style="font-size: 0.70rem;">4. CÁLCULO DO SAVING</div>
+              <div class="small text-white-50" style="font-size: 0.65rem; line-height: 1.3;">
+                Saving Real = <strong>(Preço ANP - Preço Pago) x Litragem</strong>. Mede o dinheiro que a gestão poupou da bomba comum rodoviária.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -998,7 +1108,7 @@
             <div class="my-auto py-1">
               <div class="kpi-val-grande text-success" id="kpiAuditoriaSavingTotal">R$ --</div>
             </div>
-            <div class="kpi-sub">Economia real auditada em bomba</div>
+            <div class="kpi-sub">Economia real auditada vs ANP</div>
           </div>
         </div>
 
@@ -1008,17 +1118,17 @@
             <div class="my-auto py-1">
               <div class="kpi-val-grande text-danger" id="kpiAuditoriaDesviosQtd">--</div>
             </div>
-            <div class="kpi-sub text-danger" id="kpiAuditoriaPerdaSub">Postos com cobrança acima do acordado</div>
+            <div class="kpi-sub text-danger" id="kpiAuditoriaPerdaSub">Cobranças acima da mesa</div>
           </div>
         </div>
 
         <div class="col-12 col-md-3">
-          <div class="card-kpi card-kpi-anp">
-            <div class="kpi-label text-primary">SLA DE RENEGOCIAÇÃO</div>
+          <div class="card-kpi card-kpi-info">
+            <div class="kpi-label text-primary">MARGEM PRESERVADA</div>
             <div class="my-auto py-1">
-              <div class="kpi-val-grande text-primary" id="kpiAuditoriaTempoReacao">-- dias</div>
+              <div class="kpi-val-grande text-primary" id="kpiAuditoriaMargemPreservada">--</div>
             </div>
-            <div class="kpi-sub">Tempo médio de resposta comercial</div>
+            <div class="kpi-sub">Postos reajustados abaixo da ANP</div>
           </div>
         </div>
       </div>
@@ -1042,10 +1152,11 @@
 
           <div class="d-flex align-items-center gap-1">
             <label class="small fw-bold text-muted text-uppercase mb-0" style="font-size: 0.65rem;">Conformidade:</label>
-            <select id="filtroAuditoriaStatus" class="form-select form-select-sm" style="min-width: 160px;" onchange="renderizarAbaAuditoriaComercial()">
+            <select id="filtroAuditoriaStatus" class="form-select form-select-sm" style="min-width: 175px;" onchange="renderizarAbaAuditoriaComercial()">
               <option value="">Todos os Status</option>
               <option value="CONFORME">🟢 Em Conformidade</option>
-              <option value="REAJUSTE">🟠 Aumento pós-Acordo</option>
+              <option value="BLINDADO">🔵 Margem Preservada (ANP)</option>
+              <option value="REAJUSTE">🟠 Reajuste em Avaliação</option>
               <option value="QUEBRA">🔴 Quebra Imediata</option>
               <option value="ESPERA">⚪ Aguardando Consumo</option>
             </select>
@@ -1076,7 +1187,7 @@
               <th class="text-end">GAP ANP (R$)</th>
               <th class="text-end">Vol. Auditado</th>
               <th class="text-end">Saving Realizado (R$)</th>
-              <th class="text-center">Ações</th>
+              <th class="text-center">Ações & Detalhes</th>
             </tr>
           </thead>
           <tbody id="corpoTabelaAuditoria">
@@ -1129,6 +1240,13 @@
 
     let anpDistribuicao = {};
     let anpRevenda = {};
+
+    function alternarVisibilidadeFluxoMetodologia() {
+      const box = document.getElementById('boxFluxoMetodologia');
+      if (box) {
+        box.style.display = (box.style.display === 'none' || box.style.display === '') ? 'block' : 'none';
+      }
+    }
 
     function normalizarTexto(txt) {
       return (txt || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
@@ -2051,7 +2169,7 @@
           colors: [corPago, corAnpTracejado],
           stroke: { 
             curve: 'smooth', 
-            width: [1.2, 1.2],
+            width: [1.2, 1.2], 
             dashArray: [0, 4]
           },
           fill: {
@@ -2091,7 +2209,7 @@
     }
 
     /* ==========================================================================
-       LÓGICA DA ABA: AUDITORIA COMERCIAL COM TEMPORALIDADE RIGOROSA E RÉGUA ANP
+       LÓGICA DA ABA: AUDITORIA COMERCIAL COM TEMPORALIDADE RIGOROSA, PRESERVAÇÃO DE MARGEM E GAVETA MICRO
        ========================================================================== */
     function renderizarAbaAuditoriaComercial() {
       const corpoTabela = document.getElementById('corpoTabelaAuditoria');
@@ -2125,8 +2243,7 @@
       let totalAbastecimentosAuditados = 0;
       let totalAbastecimentosConformes = 0;
       let qtdDesviosPosVigencia = 0;
-      let somaDiasReacao = 0;
-      let qtdComHistoricoMultiplo = 0;
+      let qtdMargemPreservada = 0;
 
       chavesTratativas.forEach(docId => {
         const trat = mapaTrat[docId];
@@ -2184,6 +2301,8 @@
         let gapAcordo = 0;
         let savingItem = 0;
 
+        const gapAnp = (ultimoPrecoBomba > 0 && refAnpValor > 0) ? (ultimoPrecoBomba - refAnpValor) : 0;
+
         if (trat.status === 'POSTO_BLOQUEADO') {
           statusClass = "conf-quebra";
           statusTexto = "🔴 Posto Bloqueado";
@@ -2204,21 +2323,35 @@
           gapAcordo = (ultimoPrecoBomba > 0 && precoAcordado > 0) ? (ultimoPrecoBomba - precoAcordado) : 0;
 
           if (gapAcordo > 0.005) {
-            // Calculo dos dias decorridos entre a data da vigência e o abastecimento com aumento
+            // Dias decorridos entre a vigência e o reajuste
             const dtVig = new Date(`${strDataVigencia}T12:00:00Z`);
             const dtComp = new Date(`${strDataCompra}T12:00:00Z`);
             const diasDecorridos = Math.max(0, Math.round((dtComp - dtVig) / (1000 * 60 * 60 * 24)));
 
-            qtdDesviosPosVigencia++;
-
             if (diasDecorridos <= 2) {
+              // Quebra precoce (má-fé ou nunca praticado na bomba)
               statusClass = "conf-quebra";
-              statusTexto = `🔴 Quebra Imediata (Nunca Aplicado)`;
+              statusTexto = `🔴 Quebra Imediata (${diasDecorridos}d)`;
               tipoConformidade = "QUEBRA";
+              qtdDesviosPosVigencia++;
+            } else if (gapAnp < -0.05) {
+              // SUBIU, MAS PRESERVOU A MARGEM ABAIXO DA ANP! (Parceria de mercado real)
+              statusClass = "conf-blindado";
+              statusTexto = `🔵 Margem Preservada (+${diasDecorridos}d)`;
+              tipoConformidade = "BLINDADO";
+              qtdMargemPreservada++;
+              totalAbastecimentosConformes++; // Conta favorável para governança de compra
+
+              // Saving real contra o mercado de balcão oficial
+              if (volumeAuditado > 0 && refAnpValor > 0) {
+                savingItem = (refAnpValor - ultimoPrecoBomba) * volumeAuditado;
+              }
             } else {
+              // Subiu e encostou ou passou da ANP (Erosão de margem)
               statusClass = "conf-alerta";
-              statusTexto = `🟠 Aumento pós-Acordo (+${diasDecorridos}d)`;
+              statusTexto = `🟠 Reajuste em Avaliação (+${diasDecorridos}d)`;
               tipoConformidade = "REAJUSTE";
+              qtdDesviosPosVigencia++;
             }
           } else {
             statusClass = "conf-ok";
@@ -2228,23 +2361,14 @@
 
             if (volumeAuditado > 0) {
               savingItem = (precoBaseHistorico - ultimoPrecoBomba) * volumeAuditado;
-              if (savingItem < 0) savingItem = (precoBaseHistorico - precoAcordado) * volumeAuditado;
+              if (savingItem <= 0 && refAnpValor > 0) {
+                savingItem = (refAnpValor - precoAcordado) * volumeAuditado;
+              }
             }
           }
 
           totalAbastecimentosAuditados++;
           if (savingItem > 0) somaSavingRealizadoTotal += savingItem;
-        }
-
-        // GAP contra o mercado oficial da ANP
-        const gapAnp = (ultimoPrecoBomba > 0 && refAnpValor > 0) ? (ultimoPrecoBomba - refAnpValor) : 0;
-
-        if (trat.historico && trat.historico.length >= 2) {
-          const d1 = new Date(trat.historico[0].data || trat.historico[0].vigencia);
-          const d2 = new Date(trat.historico[1].data || trat.historico[1].vigencia);
-          const diffDias = Math.max(1, Math.round(Math.abs(d1 - d2) / (1000 * 60 * 60 * 24)));
-          somaDiasReacao += diffDias;
-          qtdComHistoricoMultiplo++;
         }
 
         listaAuditoria.push({
@@ -2264,7 +2388,8 @@
           vigencia: trat.vigencia || "--",
           volumeAuditado,
           savingItem,
-          notas: trat.notas || ""
+          notas: trat.notas || "",
+          historicoTransacoes: regsPosto
         });
       });
 
@@ -2298,8 +2423,7 @@
       document.getElementById('lblAuditoriaContador').innerText = `${listaFiltrada.length} postos auditados`;
 
       const aderenciaPerc = totalAbastecimentosAuditados > 0 ? ((totalAbastecimentosConformes / totalAbastecimentosAuditados) * 100) : 100;
-      const mediaDiasReacao = qtdComHistoricoMultiplo > 0 ? Math.round(somaDiasReacao / qtdComHistoricoMultiplo) : 4;
-      atualizarCardsAuditoriaKPIs(aderenciaPerc, somaSavingRealizadoTotal, qtdDesviosPosVigencia, mediaDiasReacao);
+      atualizarCardsAuditoriaKPIs(aderenciaPerc, somaSavingRealizadoTotal, qtdDesviosPosVigencia, qtdMargemPreservada);
 
       if (listaFiltrada.length === 0) {
         corpoTabela.innerHTML = `
@@ -2312,7 +2436,8 @@
         return;
       }
 
-      corpoTabela.innerHTML = listaFiltrada.map(p => {
+      corpoTabela.innerHTML = listaFiltrada.map((p, idx) => {
+        const idGaveta = `gaveta-micro-${idx}`;
         const dataVigenciaFmt = p.vigencia !== '--' ? p.vigencia.split('-').reverse().join('/') : '--';
         const dataBombaFmt = formatarDataDiaMes(p.dataUltimoBomba);
 
@@ -2351,10 +2476,43 @@
         if (p.ehPosVigencia) {
           if (p.savingItem > 0) {
             savingHtml = `<span class="text-success fw-bold font-monospace" style="font-size:0.78rem;">+R$ ${Math.round(p.savingItem).toLocaleString('pt-BR')}</span>`;
-          } else if (p.gapAcordo > 0.005 && p.volumeAuditado > 0) {
+          } else if (p.tipoConformidade === 'QUEBRA' && p.volumeAuditado > 0) {
             const perda = p.gapAcordo * p.volumeAuditado;
             savingHtml = `<span class="text-danger fw-bold font-monospace" style="font-size:0.78rem;">-R$ ${Math.round(perda).toLocaleString('pt-BR')}</span>`;
           }
+        }
+
+        // Montagem das linhas da micro-tabela oculta
+        let linhasMicroHtml = "";
+        if (Array.isArray(p.historicoTransacoes) && p.historicoTransacoes.length > 0) {
+          linhasMicroHtml = p.historicoTransacoes.map(t => {
+            const pMes = parseFloat(t.PRECO_MEDIO_MES || 0);
+            const ultMes = parseFloat(t.ULTIMO_PRECO_MES || 0);
+            const lts = parseFloat(t.LITROS_MES || 0);
+            const dtFmt = formatarDataDiaMes(t.ULTIMA_DATA_MES);
+            const ehPos = (p.vigencia && t.ULTIMA_DATA_MES && t.ULTIMA_DATA_MES.substring(0,10) >= p.vigencia);
+            
+            const anpMes = (anpRevenda[p.uf] && anpRevenda[p.uf][t.MES_ANO]) ? anpRevenda[p.uf][t.MES_ANO] : p.refAnpValor;
+            const diffAnp = (pMes > 0 && anpMes > 0) ? (pMes - anpMes) : 0;
+            const savingMicro = diffAnp < 0 ? Math.abs(diffAnp * lts) : 0;
+
+            return `
+              <tr>
+                <td class="font-monospace text-dark fw-bold">${t.MES_ANO}</td>
+                <td class="font-monospace text-muted">${dtFmt}</td>
+                <td class="text-end font-monospace">${Math.round(lts).toLocaleString('pt-BR')} L</td>
+                <td class="text-end font-monospace fw-bold text-dark">R$ ${pMes.toFixed(3)}</td>
+                <td class="text-end font-monospace text-secondary">R$ ${ultMes.toFixed(3)}</td>
+                <td class="text-end font-monospace text-primary">${anpMes > 0 ? `R$ ${anpMes.toFixed(3)}` : '--'}</td>
+                <td class="text-center">${ehPos ? '<span class="badge bg-success" style="font-size:0.55rem;">PÓS-ACORDO</span>' : '<span class="badge bg-secondary" style="font-size:0.55rem;">PRÉ-ACORDO</span>'}</td>
+                <td class="text-end font-monospace ${diffAnp < 0 ? 'text-success fw-bold' : 'text-danger'}">
+                  ${diffAnp < 0 ? `+R$ ${Math.round(savingMicro).toLocaleString('pt-BR')}` : (diffAnp > 0 ? `-R$ ${Math.round(diffAnp * lts).toLocaleString('pt-BR')}` : 'R$ 0')}
+                </td>
+              </tr>
+            `;
+          }).join('');
+        } else {
+          linhasMicroHtml = `<tr><td colspan="8" class="text-center text-muted">Sem detalhamento transacional registrado.</td></tr>`;
         }
 
         return `
@@ -2382,27 +2540,70 @@
             </td>
             <td class="text-end">${savingHtml}</td>
             <td class="text-center">
-              <button class="btn btn-sm btn-outline-success py-1 px-2 fw-bold" style="font-size: 0.68rem;" onclick="abrirModalTratativa('${p.posto.replace(/'/g, "\\'")}', '${p.uf}', '', ${p.ultimoPrecoBomba}, ${p.refAnpValor}, ${p.ultimoPrecoBomba})">
-                <i class="bi bi-journal-text me-1"></i> Rolodex
-              </button>
+              <div class="d-flex justify-content-center gap-1">
+                <button class="btn btn-sm btn-outline-secondary py-0 px-2 fw-bold" style="font-size: 0.65rem;" onclick="alternarGavetaMicro('${idGaveta}')" title="Ver Abastecimentos Mês a Mês">
+                  <i class="bi bi-search me-1"></i> Micro
+                </button>
+                <button class="btn btn-sm btn-outline-success py-0 px-2 fw-bold" style="font-size: 0.65rem;" onclick="abrirModalTratativa('${p.posto.replace(/'/g, "\\'")}', '${p.uf}', '', ${p.ultimoPrecoBomba}, ${p.refAnpValor}, ${p.ultimoPrecoBomba})">
+                  <i class="bi bi-journal-text me-1"></i> Rolodex
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- GAVETA OCULTA DE AUDITORIA MICRO (DRILL-DOWN) -->
+          <tr id="${idGaveta}" class="linha-detalhe-gaveta" style="display: none;">
+            <td colspan="11" class="p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-dark small">
+                  <i class="bi bi-list-nested me-1 text-primary"></i> Micro-Auditoria Transacional: ${p.posto} (${p.uf})
+                </span>
+                <span class="badge bg-light text-secondary border font-monospace" style="font-size:0.60rem;">
+                  Competências Registradas no KMM
+                </span>
+              </div>
+              <table class="table tabela-micro-gaveta">
+                <thead>
+                  <tr>
+                    <th>Competência</th>
+                    <th>Última Data</th>
+                    <th class="text-end">Volume Auditado</th>
+                    <th class="text-end">Preço Médio</th>
+                    <th class="text-end">Último Pago</th>
+                    <th class="text-end">Ref. ANP Mês</th>
+                    <th class="text-center">Enquadramento</th>
+                    <th class="text-end">Saving Real (vs ANP)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${linhasMicroHtml}
+                </tbody>
+              </table>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    function atualizarCardsAuditoriaKPIs(aderenciaPerc, savingTotal, desviosQtd, diasReacao) {
+    function alternarGavetaMicro(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'table-row' : 'none';
+      }
+    }
+
+    function atualizarCardsAuditoriaKPIs(aderenciaPerc, savingTotal, desviosQtd, margemPreservadaQtd) {
       document.getElementById('kpiAuditoriaAderencia').innerText = `${aderenciaPerc.toFixed(1).replace('.', ',')}%`;
       document.getElementById('kpiAuditoriaSavingTotal').innerText = `R$ ${Math.round(savingTotal).toLocaleString('pt-BR')}`;
       document.getElementById('kpiAuditoriaDesviosQtd').innerText = desviosQtd;
-      document.getElementById('kpiAuditoriaTempoReacao').innerText = `${diasReacao} dias`;
+      document.getElementById('kpiAuditoriaMargemPreservada').innerText = margemPreservadaQtd;
 
       const subPerda = document.getElementById('kpiAuditoriaPerdaSub');
       if (desviosQtd > 0) {
-        subPerda.innerText = `${desviosQtd} redes com cobrança acima da mesa`;
+        subPerda.innerText = `${desviosQtd} postos com cobrança acima da mesa`;
         subPerda.className = "kpi-sub text-danger fw-bold";
       } else {
-        subPerda.innerText = "Nenhuma quebra de contrato identificada";
+        subPerda.innerText = "Nenhuma quebra imediata identificada";
         subPerda.className = "kpi-sub text-success";
       }
     }
