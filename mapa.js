@@ -89,16 +89,15 @@ async function inicializarMiniMapaBrasil() {
  */
 function obterCorPorVolume(vol) {
   if (!vol || vol === 0) return '#e2e8f0';
-  if (vol < 50000) return '#4ade80';       // Verde claro para ativação inicial
-  if (vol < 150000) return '#22c55e';      // Verde VOCTT
-  if (vol < 350000) return '#1c483a';      // Verde institucional Cargosoft
-  if (vol < 700000) return '#14352a';      // Verde escuro Cargosoft
-  return '#062316';                         // Verde petróleo profundo VOCTT
+  if (vol < 50000) return '#4ade80';
+  if (vol < 150000) return '#22c55e';
+  if (vol < 350000) return '#1c483a';
+  if (vol < 700000) return '#14352a';
+  return '#062316';
 }
 
 /**
  * Monta o conteúdo HTML do resumo de abastecimento para o tooltip.
- * Garante a separação de SP entre Barueri e Ribeirão Preto checando Posto e Município.
  */
 function gerarConteudoTooltipUf(uf) {
   const mesSel = document.getElementById('filtroMesAno') ? document.getElementById('filtroMesAno').value : 'YTD';
@@ -113,7 +112,6 @@ function gerarConteudoTooltipUf(uf) {
   const valExterno = regs.filter(d => d.TIPO_OPERACAO === 'EXTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
   const medExterno = litExterno > 0 ? (valExterno / litExterno) : 0;
 
-  // Tratamento específico de discriminação para São Paulo (Barueri vs. Ribeirão Preto)
   if (uf === 'SP') {
     const regsBarueri = regs.filter(d => {
       if (d.TIPO_OPERACAO !== 'INTERNO') return false;
@@ -152,7 +150,6 @@ function gerarConteudoTooltipUf(uf) {
     `;
   }
 
-  // Demais UFs
   const litInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
   const valInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
   const medInterno = litInterno > 0 ? (valInterno / litInterno) : 0;
@@ -503,7 +500,7 @@ function obterCoordenadasItem(itemEl) {
 }
 
 function calcularRotaLeaflet() {
-  // Remove contorno verde e tira o foco dos inputs de rota
+  // 1. Remove o foco e a borda verde dos campos de entrada
   document.querySelectorAll('.input-cidade-rota').forEach(el => {
     el.classList.remove('foco-ativo');
     el.blur();
@@ -556,7 +553,7 @@ function plotarPostosComDuploRaio(routeCoords) {
   const registrosRef = (typeof baseRegistrosMensais !== 'undefined' && Array.isArray(baseRegistrosMensais)) ? baseRegistrosMensais : [];
   const listaCidadesRef = (typeof listaCidades !== 'undefined' && Array.isArray(listaCidades)) ? listaCidades : [];
 
-  // Agrupamento prévio para obter apenas o último preço mais recente por posto/município
+  // Deduplicação dos postos para reter apenas o último registro ativo
   const mapaPostosConsolidado = {};
   registrosRef.forEach(d => {
     const nome = (d.POSTO || '').trim();
@@ -602,10 +599,10 @@ function plotarPostosComDuploRaio(routeCoords) {
     for (const pt of amostraRota) {
       const d = calcularDistanciaKm(achada.lat, achada.lon, pt.lat, pt.lng);
       if (d < menorDist) menorDist = d;
-      if (menorDist <= 200) break;
+      // Removido o 'break' prematuro para calcular a menor distância real até a rodovia
     }
 
-    // Raio expandido reduzido para 201 a 400 km
+    // 2. Raio expandido reduzido para 201 a 400 km
     if (menorDist <= 400) {
       let corPin = "#94a3b8";
       let statusTexto = "Posto em Raio Expandido de Apoio";
@@ -647,7 +644,11 @@ function plotarPostosComDuploRaio(routeCoords) {
     }
   });
 
-  postosSugeridosUltimaRota.sort((a, b) => a.preco - b.preco);
+  // 3. Ordenação para o relatório priorizando postos no corredor direto
+  postosSugeridosUltimaRota.sort((a, b) => {
+    if (a.distancia !== b.distancia) return a.distancia - b.distancia;
+    return a.preco - b.preco;
+  });
 }
 
 function imprimirRoteiroViagem() {
