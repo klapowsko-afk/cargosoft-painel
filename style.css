@@ -1,0 +1,655 @@
+/* ==========================================================================
+   FOLHA DE ESTILOS GERAIS - CARGOSOFT | VOCTT DATA ANALYTICS DIESEL
+   ========================================================================== */
+
+:root {
+  --cargosoft-green: #1c483a;
+  --cargosoft-green-hover: #14352a;
+  --bg-page: #f8fafc;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --text-dark: #0f172a;
+  --text-muted: #64748b;
+}
+
+body {
+  background-color: var(--bg-page);
+  background-image: url('fundo.png');
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-size: 500px auto;
+  color: var(--text-dark);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  padding: 10px 16px;
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* CABEÇALHO SUPERIOR */
+.header-bar {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 8px 18px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+.brand-logo-cargo { 
+  height: 40px; 
+  width: auto; 
+  object-fit: contain; 
+}
+.brand-logo-voctt { 
+  height: 40px; 
+  width: auto; 
+  border-radius: 50%; 
+  border: 2px solid var(--border-color); 
+}
+
+/* BARRA SUPERIOR MESTRE */
+.cockpit-bar-mestre {
+  background: linear-gradient(135deg, #062316 0%, #0f3d26 50%, #144e31 100%);
+  border-radius: 10px;
+  padding: 6px 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+.cockpit-bar-mestre .form-select {
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.cockpit-bar-mestre .form-select option {
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.btn-toggle-tipo {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-toggle-tipo.active {
+  background: #22c55e !important;
+  color: #052e16 !important;
+  border-color: #22c55e !important;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+}
+.btn-toggle-tipo:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* CARDS KPIS COM ENCAIXE PRECISO E SIMÉTRICO */
+.card-kpi {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+  border-left: 4px solid var(--cargosoft-green);
+  min-height: 122px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.15s ease;
+  position: relative;
+  overflow: hidden;
+}
+.card-kpi:hover {
+  transform: translateY(-2px);
+}
+.card-kpi-anp {
+  border-left: 4px solid #0284c7 !important;
+  background: linear-gradient(to right, #f0f9ff 0%, #ffffff 100%);
+}
+.card-kpi-alerta {
+  border-left: 4px solid #b91c1c !important;
+}
+.card-kpi-destaque {
+  border-left: 4px solid #059669 !important;
+}
+.card-kpi-info {
+  border-left: 4px solid #0284c7 !important;
+  background: linear-gradient(to right, #f0f9ff 0%, #ffffff 100%);
+}
+.card-kpi-ineficiencia {
+  border-left: 4px solid #ea580c !important;
+  background: linear-gradient(to right, #fff7ed 0%, #ffffff 100%);
+}
+
+.kpi-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+  position: relative;
+  z-index: 2;
+}
+.kpi-val {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--cargosoft-green);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  position: relative;
+  z-index: 2;
+}
+.kpi-val-grande {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  position: relative;
+  z-index: 2;
+}
+.kpi-val-split {
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.kpi-sub {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin-top: 1px;
+  position: relative;
+  z-index: 2;
+}
+
+/* MINI GRÁFICO AO FUNDO INTEGRAL DO CARD */
+.sparkline-kpi-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.16;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* LISTA DOS TOP 3 POSTOS DE AÇÃO AMPLIADA */
+.lista-top3-acao {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+  z-index: 2;
+  margin: auto 0;
+}
+.item-top3-acao {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.67rem;
+  line-height: 1.25;
+  border-bottom: 1px dotted rgba(234, 88, 12, 0.25);
+  padding-bottom: 2px;
+}
+.item-top3-acao:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.item-top3-dados {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+.item-top3-nome {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-dark);
+  font-weight: 700;
+  max-width: 175px;
+}
+.item-top3-historico {
+  font-size: 0.60rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-family: monospace;
+}
+.item-top3-val {
+  font-weight: 800;
+  color: #dc2626;
+  font-family: monospace;
+  white-space: nowrap;
+  margin-left: 6px;
+}
+
+/* TABELA SINTÉTICA DE CONFERÊNCIA */
+.card-tabela-resumo {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+  height: 100%;
+  min-height: 122px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.tabela-sintetica {
+  font-size: 0.68rem;
+  margin-bottom: 0;
+  width: 100%;
+}
+.tabela-sintetica th {
+  font-size: 0.60rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-color);
+  padding: 4px 6px;
+  white-space: nowrap;
+}
+.tabela-sintetica td {
+  padding: 4px 6px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+
+.panel-box {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  margin-bottom: 20px;
+  position: relative;
+}
+.panel-header {
+  padding: 8px 16px;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.card-posto-termometro {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+.card-posto-termometro:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  border-color: #cbd5e1;
+  z-index: 10;
+}
+.card-posto-termometro.zebrado-sutil {
+  background: linear-gradient(to right, #f8fafc 0%, #f1f5f9 60%, #ffffff 100%);
+}
+
+.col-posto-identificacao {
+  width: 310px;
+  min-width: 310px;
+  max-width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nome-posto-completo {
+  font-size: 0.80rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.col-posto-grafico {
+  flex: 1;
+  height: 48px;
+  position: relative;
+  min-width: 130px;
+}
+
+.linha-corte-tempo {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  width: 2px;
+  background-color: #64748b;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.col-posto-metricas {
+  width: 660px;
+  min-width: 660px;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.col-m-vol { width: 75px; flex-shrink: 0; }
+.col-m-pm { width: 85px; flex-shrink: 0; }
+.col-m-anp { width: 75px; flex-shrink: 0; }
+.col-m-gap { width: 105px; flex-shrink: 0; }
+.col-m-ult { width: 90px; flex-shrink: 0; }
+.col-m-impacto { width: 100px; flex-shrink: 0; }
+.col-m-btn { width: 85px; flex-shrink: 0; text-align: right; }
+
+.clickable-posto {
+  cursor: pointer;
+  text-decoration: underline dotted #94a3b8;
+}
+.clickable-posto:hover {
+  color: #2563eb !important;
+}
+
+.badge-uf {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 3px 6px;
+  border-radius: 5px;
+  font-weight: 800;
+  font-size: 0.70rem;
+  letter-spacing: 0.03em;
+}
+
+.badge-tipo {
+  font-size: 0.60rem;
+  font-weight: 800;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+.tipo-rota { background: #ffedd5; color: #c2410c; }
+.tipo-interno { background: #dcfce7; color: #15803d; }
+
+.badge-dispersao-local {
+  font-size: 0.58rem;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-left: 4px;
+  font-weight: 600;
+  cursor: help;
+}
+
+.btn-sync {
+  background: var(--cargosoft-green);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.80rem;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+}
+.btn-sync:hover { background: var(--cargosoft-green-hover); color: #ffffff; }
+
+.btn-tratativa {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  color: var(--cargosoft-green);
+  font-size: 0.70rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 5px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.btn-tratativa:hover {
+  background: var(--cargosoft-green);
+  color: #ffffff;
+  border-color: var(--cargosoft-green);
+}
+
+.legend-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 3px;
+}
+
+.map-container {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 8px 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  height: 100%;
+  min-height: 255px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+#miniMapaBrasil {
+  width: 100%;
+  height: 215px;
+  min-height: 215px;
+  background: #ffffff;
+  border-radius: 6px;
+  z-index: 2;
+}
+#miniMapaBrasil .leaflet-control-attribution,
+#miniMapaBrasil .leaflet-control-zoom {
+  display: none !important;
+}
+
+.custom-leaflet-tooltip {
+  background: rgba(15, 23, 42, 0.96) !important;
+  border: 1px solid #334155 !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25) !important;
+  padding: 6px 10px !important;
+  z-index: 1050 !important;
+}
+.custom-leaflet-tooltip:before {
+  border-top-color: rgba(15, 23, 42, 0.96) !important;
+}
+
+/* TOOLTIP APEXCHARTS */
+.apexcharts-tooltip.apexcharts-theme-dark {
+  background: rgba(15, 23, 42, 0.96) !important;
+  border: 1px solid #334155 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  padding: 2px 6px !important;
+  font-size: 0.62rem !important;
+  border-radius: 4px !important;
+}
+.apexcharts-tooltip-title {
+  font-size: 0.60rem !important;
+  padding: 1px 3px !important;
+  margin-bottom: 2px !important;
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+  font-weight: 700 !important;
+}
+.apexcharts-tooltip-series-group {
+  padding: 1px 2px !important;
+}
+.apexcharts-tooltip-text {
+  font-size: 0.60rem !important;
+  line-height: 1.15 !important;
+}
+
+#secaoRoteirizador, #secaoMatrizesGerenciais, #secaoAuditoriaComercial {
+  display: none;
+}
+#mapLeaflet {
+  height: 580px;
+  width: 100%;
+  border-radius: 8px;
+  z-index: 5;
+}
+.leaflet-routing-container {
+  display: none !important;
+}
+
+.autocomplete-list {
+  z-index: 1060;
+  position: absolute;
+  width: 100%;
+  top: 100%;
+  left: 0;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  max-height: 190px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.input-cidade-rota.foco-ativo {
+  border-color: #16a34a !important;
+  box-shadow: 0 0 0 0.2rem rgba(22, 163, 74, 0.25) !important;
+}
+
+/* ABA DE AUDITORIA COMERCIAL */
+.header-auditoria-banner {
+  background: linear-gradient(135deg, #062316 0%, #0f3d26 50%, #144e31 100%);
+  border-radius: 10px;
+  padding: 12px 18px;
+  color: #ffffff;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+/* BANNER FLUXOGRAMA METODOLÓGICO */
+.box-metodologia-fluxo {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 14px 18px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+.card-fluxo-passo {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 10px;
+  height: 100%;
+}
+.card-fluxo-passo.destaque-verde {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.08);
+}
+.card-fluxo-passo.destaque-azul {
+  border-color: #0284c7;
+  background: rgba(2, 132, 199, 0.08);
+}
+
+.tabela-auditoria {
+  font-size: 0.74rem;
+  width: 100%;
+  margin-bottom: 0;
+}
+.tabela-auditoria th {
+  background: #f8fafc;
+  font-size: 0.64rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 2px solid var(--border-color);
+  padding: 8px 10px;
+  white-space: nowrap;
+  user-select: none;
+}
+.tabela-auditoria td {
+  padding: 8px 10px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+.badge-conformidade {
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 3px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.conf-ok { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.conf-blindado { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+.conf-quebra { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.conf-alerta { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+.conf-espera { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+/* LINHA DE MICRO AUDITORIA EXPANSÍVEL (GAVETA) */
+.linha-detalhe-gaveta {
+  background: #f8fafc !important;
+  border-bottom: 2px solid #cbd5e1;
+}
+.tabela-micro-gaveta {
+  font-size: 0.68rem;
+  background: #ffffff;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 0;
+}
+.tabela-micro-gaveta th {
+  background: #f1f5f9;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #475569;
+  padding: 4px 8px;
+}
+.tabela-micro-gaveta td {
+  padding: 4px 8px;
+  vertical-align: middle;
+}
+
+@media print {
+  body { background: #ffffff !important; padding: 0 !important; }
+  .header-bar, .cockpit-bar-mestre, .card-kpi, .card-tabela-resumo, .map-container, #secaoPainelPrincipal, #secaoMatrizesGerenciais, #secaoAuditoriaComercial, #btnSincronizar { display: none !important; }
+  #secaoRoteirizador { display: block !important; border: none !important; }
+  #areaImpressaoRoteiro { display: block !important; }
+}
