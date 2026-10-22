@@ -126,6 +126,10 @@ let postoAtivoTratativa = null;
         background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
         border-color: #ef4444;
       }
+      .box-spread-saving.modo-avoidance {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border-color: #0284c7;
+      }
       .valor-destaque-spread {
         font-size: 1.10rem;
         font-weight: 800;
@@ -254,10 +258,20 @@ let postoAtivoTratativa = null;
                         <input type="date" id="campoTratativaVigencia" class="form-control form-control-sm font-monospace" required>
                       </div>
 
-                      <!-- CAMPO CONDICIONAL: PREÇO ACORDADO -->
+                      <!-- PREÇO ACORDADO & PREÇO PROPOSTO (COST AVOIDANCE) -->
                       <div class="col-12" id="boxPrecoAcordado">
-                        <label class="form-label fw-bold text-dark small mb-1">Preço Negociado na Mesa (R$/L):</label>
-                        <input type="number" step="0.001" id="campoTratativaPrecoAcordado" class="form-control form-control-sm font-monospace" placeholder="Ex: 6.450" oninput="calcularSpreadTempoReal()">
+                        <div class="row g-2">
+                          <div class="col-6">
+                            <label class="form-label fw-bold text-dark small mb-1">Preço Negociado (R$/L):</label>
+                            <input type="number" step="0.001" id="campoTratativaPrecoAcordado" class="form-control form-control-sm font-monospace" placeholder="Ex: 6.450" oninput="calcularSpreadTempoReal()">
+                          </div>
+                          <div class="col-6">
+                            <label class="form-label fw-bold text-muted small mb-1" title="Preço de tabela, repasse pretendido ou bomba sem negociação">
+                              Preço Proposto / Balcão:
+                            </label>
+                            <input type="number" step="0.001" id="campoTratativaPrecoProposto" class="form-control form-control-sm font-monospace" placeholder="Ex: 6.840 (Opcional)" oninput="calcularSpreadTempoReal()">
+                          </div>
+                        </div>
                       </div>
 
                       <!-- CAMPO CONDICIONAL: REALOCAÇÃO DE POSTO -->
@@ -284,7 +298,7 @@ let postoAtivoTratativa = null;
                             </div>
                             <div class="text-end">
                               <span class="valor-destaque-spread text-success" id="valSpreadMensal">R$ 0,00</span>
-                              <div class="text-muted" style="font-size: 0.56rem;">Impacto Mensal Estimado</div>
+                              <div class="text-muted" style="font-size: 0.56rem;" id="lblSubSpreadMensal">Impacto Mensal Estimado</div>
                             </div>
                           </div>
                         </div>
@@ -368,6 +382,7 @@ async function carregarTodasTratativasFirestore() {
               autor: m.autor?.stringValue || "",
               status: m.status?.stringValue || "EM_ABERTO",
               preco: parseFloat(m.preco?.doubleValue || m.preco?.integerValue || 0),
+              preco_proposto: parseFloat(m.preco_proposto?.doubleValue || m.preco_proposto?.integerValue || 0),
               saving: parseFloat(m.saving?.doubleValue || m.saving?.integerValue || 0),
               notas: m.notas?.stringValue || "",
               contato: m.contato?.stringValue || "",
@@ -381,6 +396,7 @@ async function carregarTodasTratativasFirestore() {
             autor: f.autor?.stringValue || "Gestor",
             status: f.status?.stringValue || "EM_ABERTO",
             preco: parseFloat(f.preco_acordado?.doubleValue || f.preco_acordado?.integerValue || 0),
+            preco_proposto: parseFloat(f.preco_proposto?.doubleValue || f.preco_proposto?.integerValue || 0),
             saving: 0,
             notas: f.notas?.stringValue || "",
             contato: f.contato?.stringValue || "",
@@ -391,6 +407,7 @@ async function carregarTodasTratativasFirestore() {
         mapaTratativasCadastradas[docId] = {
           status: f.status?.stringValue || "EM_ABERTO",
           preco_acordado: parseFloat(f.preco_acordado?.doubleValue || f.preco_acordado?.integerValue || 0),
+          preco_proposto: parseFloat(f.preco_proposto?.doubleValue || f.preco_proposto?.integerValue || 0),
           posto_destino: f.posto_destino?.stringValue || "",
           contato: f.contato?.stringValue || "",
           telefone: f.telefone?.stringValue || "",
@@ -429,7 +446,6 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
     const registrosDoPosto = baseRegistrosMensais.filter(d => d.POSTO === nomePosto && d.UF_POSTO === uf);
 
     if (mesFiltroAtivo !== 'YTD') {
-      // Competência específica selecionada: pega o volume e o último preço daquele mês
       const regMes = registrosDoPosto.find(d => d.MES_ANO === mesFiltroAtivo);
       if (regMes) {
         volumeMesCalculo = parseFloat(regMes.LITROS_MES || 0);
@@ -442,7 +458,6 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
       }
       subVolumeTexto = `Litragem em ${mesFiltroAtivo}`;
     } else {
-      // Ano Completo (YTD): Média cirúrgica dos últimos até 3 meses ativos do posto
       const mesesComConsumo = registrosDoPosto
         .filter(d => parseFloat(d.LITROS_MES || 0) > 0)
         .sort((a, b) => (b.MES_ANO || '').localeCompare(a.MES_ANO || ''))
@@ -454,7 +469,6 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
         subVolumeTexto = `Média de ${mesesComConsumo.length} ${mesesComConsumo.length === 1 ? 'mês ativo' : 'meses ativos'}`;
       }
 
-      // Último preço absoluto do posto na base inteira
       let maxData = "";
       registrosDoPosto.forEach(d => {
         if (d.ULTIMA_DATA_MES && d.ULTIMA_DATA_MES > maxData) {
@@ -491,18 +505,15 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
 
   popularSeletorPostosDestino(nomePosto, uf);
 
-  // Data de vigência padrão = Hoje
   const hojeStr = new Date().toISOString().substring(0, 10);
   document.getElementById('campoTratativaVigencia').value = hojeStr;
 
-  // Mostra o modal de imediato
   const modalEl = document.getElementById('modalTratativaComercial');
   const bsModal = new bootstrap.Modal(modalEl);
   bsModal.show();
 
   let trat = obterTratativaPosto(nomePosto, uf);
 
-  // Consulta pontual de salvaguarda caso o posto não esteja no cache em memória
   if (!trat) {
     const docId = gerarDocumentIdPosto(nomePosto, uf);
     try {
@@ -524,6 +535,7 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
               autor: m.autor?.stringValue || "",
               status: m.status?.stringValue || "EM_ABERTO",
               preco: parseFloat(m.preco?.doubleValue || m.preco?.integerValue || 0),
+              preco_proposto: parseFloat(m.preco_proposto?.doubleValue || m.preco_proposto?.integerValue || 0),
               saving: parseFloat(m.saving?.doubleValue || m.saving?.integerValue || 0),
               notas: m.notas?.stringValue || "",
               contato: m.contato?.stringValue || "",
@@ -537,6 +549,7 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
             autor: f.autor?.stringValue || "willian.klapowsko@cargosoft.com.br",
             status: f.status?.stringValue || "ACORDO_FECHADO",
             preco: parseFloat(f.preco_acordado?.doubleValue || f.preco_acordado?.integerValue || 0),
+            preco_proposto: parseFloat(f.preco_proposto?.doubleValue || f.preco_proposto?.integerValue || 0),
             saving: 0,
             notas: f.notas?.stringValue || "",
             contato: f.contato?.stringValue || "",
@@ -547,6 +560,7 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
         trat = {
           status: f.status?.stringValue || "ACORDO_FECHADO",
           preco_acordado: parseFloat(f.preco_acordado?.doubleValue || f.preco_acordado?.integerValue || 0),
+          preco_proposto: parseFloat(f.preco_proposto?.doubleValue || f.preco_proposto?.integerValue || 0),
           posto_destino: f.posto_destino?.stringValue || "",
           contato: f.contato?.stringValue || "",
           telefone: f.telefone?.stringValue || "",
@@ -562,7 +576,6 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
     }
   }
 
-  // Preenchimento do Rolodex e dos campos com o histórico obtido
   listaHistoricoAtiva = (trat && Array.isArray(trat.historico)) ? [...trat.historico] : [];
   indiceRolodexAtivo = 0;
   renderizarLequeRolodex();
@@ -570,6 +583,7 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
   if (trat) {
     document.getElementById('campoTratativaStatus').value = trat.status || "ACORDO_FECHADO";
     document.getElementById('campoTratativaPrecoAcordado').value = trat.preco_acordado > 0 ? trat.preco_acordado : "";
+    document.getElementById('campoTratativaPrecoProposto').value = trat.preco_proposto > 0 ? trat.preco_proposto : "";
     document.getElementById('campoPostoDestinoRealocacao').value = trat.posto_destino || "";
     document.getElementById('campoTratativaContato').value = trat.contato || "";
     document.getElementById('campoTratativaTelefone').value = trat.telefone || "";
@@ -580,6 +594,7 @@ async function abrirModalTratativa(nomePosto, uf, municipio, precoMedio, refAnp,
   } else {
     document.getElementById('campoTratativaStatus').value = "ACORDO_FECHADO";
     document.getElementById('campoTratativaPrecoAcordado').value = "";
+    document.getElementById('campoTratativaPrecoProposto').value = "";
     document.getElementById('campoPostoDestinoRealocacao').value = "";
     document.getElementById('campoTratativaContato').value = "";
     document.getElementById('campoTratativaTelefone').value = "";
@@ -657,7 +672,7 @@ function alternarCamposDecisao() {
   calcularSpreadTempoReal();
 }
 
-// 9. Cálculo em tempo real do Spread e Saving Projetado
+// 9. Cálculo em tempo real do Spread, Cost Avoidance e Saving Projetado
 function calcularSpreadTempoReal() {
   if (!postoAtivoTratativa) return;
 
@@ -669,28 +684,50 @@ function calcularSpreadTempoReal() {
   const lblTitulo = document.getElementById('lblTituloSpread');
   const lblDesc = document.getElementById('lblDescricaoSpread');
   const valSpread = document.getElementById('valSpreadMensal');
+  const lblSub = document.getElementById('lblSubSpreadMensal');
 
-  box.classList.remove('modo-alerta');
+  box.classList.remove('modo-alerta', 'modo-avoidance');
 
   if (status === 'ACORDO_FECHADO') {
     const precoAcordado = parseFloat(document.getElementById('campoTratativaPrecoAcordado').value) || 0;
-    if (precoAcordado > 0 && precoBase > 0) {
-      const diffPorLitro = precoBase - precoAcordado;
-      const savingTotal = diffPorLitro * volume;
+    const precoProposto = parseFloat(document.getElementById('campoTratativaPrecoProposto').value) || 0;
 
-      if (diffPorLitro >= 0) {
-        lblTitulo.innerText = "Spread de Redução de Preço";
-        lblDesc.innerHTML = `Desconto de <strong>R$ ${diffPorLitro.toFixed(3)}/L</strong> sobre o último preço pago.`;
-        valSpread.innerText = `+ R$ ${Math.round(savingTotal).toLocaleString('pt-BR')}`;
-        valSpread.className = "valor-destaque-spread text-success";
-      } else {
-        box.classList.add('modo-alerta');
-        lblTitulo.innerText = "Acréscimo no Valor de Bomba";
-        lblDesc.innerHTML = `Preço acordado é <strong>R$ ${Math.abs(diffPorLitro).toFixed(3)}/L superior</strong> ao histórico.`;
-        valSpread.innerText = `- R$ ${Math.round(Math.abs(savingTotal)).toLocaleString('pt-BR')}`;
-        valSpread.className = "valor-destaque-spread text-danger";
+    if (precoAcordado > 0) {
+      // CENÁRIO A: COST AVOIDANCE (Quando o posto pediu um valor maior e você segurou abaixo)
+      if (precoProposto > precoAcordado) {
+        const diffAvoidance = precoProposto - precoAcordado;
+        const totalAvoidance = diffAvoidance * volume;
+
+        box.classList.add('modo-avoidance');
+        lblTitulo.innerText = "🛡️ Proteção de Caixa (Cost Avoidance)";
+        lblDesc.innerHTML = `Alta evitada de <strong>R$ ${diffAvoidance.toFixed(3)}/L</strong> frente ao balcão/proposta pretendida.`;
+        valSpread.innerText = `+ R$ ${Math.round(totalAvoidance).toLocaleString('pt-BR')}`;
+        valSpread.className = "valor-destaque-spread text-primary";
+        lblSub.innerText = "Custo Evitado Projetado";
+        return;
       }
-      return;
+
+      // CENÁRIO B: SPREAD DIRETO VS ÚLTIMO PAGO
+      if (precoBase > 0) {
+        const diffPorLitro = precoBase - precoAcordado;
+        const savingTotal = diffPorLitro * volume;
+
+        if (diffPorLitro >= 0) {
+          lblTitulo.innerText = "Spread de Redução de Preço";
+          lblDesc.innerHTML = `Desconto de <strong>R$ ${diffPorLitro.toFixed(3)}/L</strong> sobre o último preço pago.`;
+          valSpread.innerText = `+ R$ ${Math.round(savingTotal).toLocaleString('pt-BR')}`;
+          valSpread.className = "valor-destaque-spread text-success";
+          lblSub.innerText = "Impacto Mensal Estimado";
+        } else {
+          box.classList.add('modo-alerta');
+          lblTitulo.innerText = "Reajuste Aceito na Mesa";
+          lblDesc.innerHTML = `Preço acordado é <strong>R$ ${Math.abs(diffPorLitro).toFixed(3)}/L superior</strong> ao último pago.`;
+          valSpread.innerText = `- R$ ${Math.round(Math.abs(savingTotal)).toLocaleString('pt-BR')}`;
+          valSpread.className = "valor-destaque-spread text-danger";
+          lblSub.innerText = "Acréscimo de Custo";
+        }
+        return;
+      }
     }
   } else if (status === 'POSTO_BLOQUEADO') {
     const sel = document.getElementById('campoPostoDestinoRealocacao');
@@ -705,6 +742,7 @@ function calcularSpreadTempoReal() {
       lblDesc.innerHTML = `Migração de volume para posto mais barato (-R$ ${diffPorLitro.toFixed(3)}/L).`;
       valSpread.innerText = `+ R$ ${Math.round(savingTotal).toLocaleString('pt-BR')}`;
       valSpread.className = "valor-destaque-spread text-success";
+      lblSub.innerText = "Impacto Mensal Estimado";
       return;
     }
   }
@@ -713,6 +751,7 @@ function calcularSpreadTempoReal() {
   lblDesc.innerText = "Defina o valor acordado ou selecione o posto substituto.";
   valSpread.innerText = "R$ 0,00";
   valSpread.className = "valor-destaque-spread text-muted";
+  lblSub.innerText = "Impacto Mensal Estimado";
 }
 
 // 10. Motor Visual do Leque Rolodex (Wheel & Click)
@@ -721,9 +760,9 @@ function rolarLequeRolodex(event) {
   if (listaHistoricoAtiva.length <= 1) return;
 
   if (event.deltaY > 0) {
-    avancarRolodex(1); // Desce para os mais antigos
+    avancarRolodex(1);
   } else {
-    avancarRolodex(-1); // Sobe para os mais recentes
+    avancarRolodex(-1);
   }
 }
 
@@ -765,16 +804,25 @@ function renderizarLequeRolodex() {
 
     const corBorda = card.status === 'ACORDO_FECHADO' ? '#22c55e' : (card.status === 'POSTO_BLOQUEADO' ? '#ef4444' : '#eab308');
     const badgeStatus = card.status === 'ACORDO_FECHADO' 
-      ? '<span class="badge bg-success badge-rolodex-status">Acordo Fechado</span>'
+      ? '<span class="badge bg-success badge-rolodex-status">Acordo Fechado</span>' 
       : (card.status === 'POSTO_BLOQUEADO' ? '<span class="badge bg-danger badge-rolodex-status">Bloqueado</span>' : '<span class="badge bg-warning text-dark badge-rolodex-status">Em Cotação</span>');
 
     const dataRegFmt = card.data ? new Date(card.data).toLocaleDateString('pt-BR') : "--";
     const vigenciaFmt = card.vigencia ? card.vigencia.split('-').reverse().join('/') : dataRegFmt;
 
+    let tagAvoidanceHtml = "";
+    if (card.preco_proposto && card.preco_proposto > card.preco) {
+      const avoid = card.preco_proposto - card.preco;
+      tagAvoidanceHtml = `<span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1" style="font-size:0.55rem;">Avoidance: -R$ ${avoid.toFixed(3)}</span>`;
+    }
+
     htmlCards += `
       <div class="rolodex-card-item ${classePosicao}" style="border-left-color: ${corBorda};" onclick="indiceRolodexAtivo = ${idx}; renderizarLequeRolodex();">
         <div class="d-flex justify-content-between align-items-center mb-1">
-          ${badgeStatus}
+          <div>
+            ${badgeStatus}
+            ${tagAvoidanceHtml}
+          </div>
           <span class="badge bg-light text-dark border font-monospace" style="font-size: 0.58rem;" title="Data de Início da Vigência">
             Vigência: ${vigenciaFmt}
           </span>
@@ -813,6 +861,7 @@ async function salvarTratativaFirestore(event) {
   const status = document.getElementById('campoTratativaStatus').value;
   const vigencia = document.getElementById('campoTratativaVigencia').value || new Date().toISOString().substring(0, 10);
   const precoAcordado = parseFloat(document.getElementById('campoTratativaPrecoAcordado').value) || 0;
+  const precoProposto = parseFloat(document.getElementById('campoTratativaPrecoProposto').value) || 0;
   const postoDestino = document.getElementById('campoPostoDestinoRealocacao').value;
   const contato = document.getElementById('campoTratativaContato').value.trim();
   const telefone = document.getElementById('campoTratativaTelefone').value.trim();
@@ -827,6 +876,7 @@ async function salvarTratativaFirestore(event) {
     autor: autorEmail,
     status: status,
     preco: precoAcordado,
+    preco_proposto: precoProposto,
     saving: 0,
     notas: notas,
     contato: contato,
@@ -843,6 +893,7 @@ async function salvarTratativaFirestore(event) {
         autor: { stringValue: h.autor },
         status: { stringValue: h.status },
         preco: { doubleValue: h.preco },
+        preco_proposto: { doubleValue: h.preco_proposto || 0 },
         saving: { doubleValue: h.saving },
         notas: { stringValue: h.notas },
         contato: { stringValue: h.contato },
@@ -859,6 +910,7 @@ async function salvarTratativaFirestore(event) {
       status: { stringValue: status },
       vigencia: { stringValue: vigencia },
       preco_acordado: { doubleValue: precoAcordado },
+      preco_proposto: { doubleValue: precoProposto },
       posto_destino: { stringValue: postoDestino },
       contato: { stringValue: contato },
       telefone: { stringValue: telefone },
@@ -886,6 +938,7 @@ async function salvarTratativaFirestore(event) {
       status,
       vigencia,
       preco_acordado: precoAcordado,
+      preco_proposto: precoProposto,
       posto_destino: postoDestino,
       contato,
       telefone,
