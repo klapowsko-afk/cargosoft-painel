@@ -1,670 +1,617 @@
-/* ==========================================================================
-   MÓDULO DE ROTEIRIZAÇÃO, GEOLOCALIZAÇÃO & MAPAS LEAFLET
-   CARGOSOFT | VOCTT DATA ANALYTICS DIESEL
-   ========================================================================== */
-
-let leafletMapInstancia = null;
-let leafletRoutingControl = null;
-let miniMapaBrasilInstancia = null;
-let geojsonBrasilCamada = null;
-let marcadoresPostosGrupo = null;
-let rotaGeometriaCache = [];
-let campoFocoAtivo = null;
+d98adf8c499e8528ad702365979206e5fb802319
 
 /**
- * Valida e garante que Latitude e Longitude estejam na ordem correta para o Brasil
+ * CARGOSOFT | Data Analytics Diesel
+ * Módulo de Inteligência Geográfica: Mini Mapa do Brasil & Roteirizador de Postos
+ * Arquivo: mapa.js
  */
-function corrigirCoordenadasBrasil(valor1, valor2) {
-  let v1 = parseFloat(valor1);
-  let v2 = parseFloat(valor2);
 
-  if (isNaN(v1) || isNaN(v2)) return null;
+// URL da malha GeoJSON oficial dos 27 estados do Brasil
+const GEOJSON_BR_URL = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson";
 
-  // No Brasil: Latitude fica entre +5.5 e -34.0; Longitude fica entre -34.0 e -74.0
-  // Se o valor 1 estiver na faixa de longitude e o valor 2 na de latitude, inverte
-  if (v1 < -34 && v2 > -35 && v2 < 6) {
-    return { lat: v2, lng: v1 };
-  }
-  return { lat: v1, lng: v2 };
+// Dicionário de conversão Nome do Estado -> Sigla UF da Base KMM
+const DE_PARA_NOMES_UFS = {
+  "ACRE": "AC", "ALAGOAS": "AL", "AMAPA": "AP", "AMAZONAS": "AM", "BAHIA": "BA",
+  "CEARA": "CE", "DISTRITO FEDERAL": "DF", "ESPIRITO SANTO": "ES", "GOIAS": "GO",
+  "MARANHAO": "MA", "MATO GROSSO": "MT", "MATO GROSSO DO SUL": "MS", "MINAS GERAIS": "MG",
+  "PARA": "PA", "PARAIBA": "PB", "PARANA": "PR", "PERNAMBUCO": "PE", "PIAUI": "PI",
+  "RIO DE JANEIRO": "RJ", "RIO GRANDE DO NORTE": "RN", "RIO GRANDE DO SUL": "RS",
+  "RONDONIA": "RO", "RORAIMA": "RR", "SANTA CATARINA": "SC", "SAO PAULO": "SP",
+  "SERGIPE": "SE", "TOCANTINS": "TO"
+};
+
+// Variáveis de controle do Mini Mapa do Brasil
+let miniMapaLeaflet = null;
+let camadaGeoJsonBrasil = null;
+let dadosGeoJsonBr = null;
+
+// Variáveis de controle do Roteirizador de Postos
+let leafletMapInstance = null;
+let routingControlInstance = null;
+let markersPostosLeaflet = [];
+let markersWaypoints = [];
+let campoFocoAtivo = null;
+let postosSugeridosUltimaRota = [];
+
+// =========================================================================
+// 1. MINI MAPA LEAFLET: MALHA OFICIAL DOS 27 ESTADOS (FILTRO POR UF)
+// =========================================================================
+
+/**
+ * Converte qualquer variação de nome ou sigla da feature GeoJSON na UF de 2 letras da base KMM.
+ */
+function extrairSiglaUf(props) {
+  if (!props) return "";
+  if (props.sigla && props.sigla.length === 2) return props.sigla.toUpperCase();
+  if (props.UF && props.UF.length === 2) return props.UF.toUpperCase();
+  if (props.id && props.id.length === 2) return props.id.toUpperCase();
+  
+  const nomeLimpo = (props.name || props.nome || props.NOME || '')
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    
+  return DE_PARA_NOMES_UFS[nomeLimpo] || (nomeLimpo.length === 2 ? nomeLimpo : "");
 }
 
 /**
- * Normaliza e carrega a base de cidades
+ * Inicializa a instância do Mini Mapa Leaflet do Brasil com suporte a zoom fracionário.
  */
-function obterBaseCidadesNormalizada() {
-  const base = (typeof baseCidadesBrasil !== 'undefined' && Array.isArray(baseCidadesBrasil)) ? baseCidadesBrasil : [];
-  const lista = [];
+async function inicializarMiniMapaBrasil() {
+  const mapContainer = document.getElementById('miniMapaBrasil');
+  if (!mapContainer || miniMapaLeaflet) return;
 
-  base.forEach(item => {
-    const nome = item.nome || item.cidade || item.municipio || '';
-    const uf = item.uf || item.estado || '';
-    
-    let rawLat = item.lat !== undefined ? item.lat : (item.latitude !== undefined ? item.latitude : (item.coordenadas ? item.coordenadas[0] : null));
-    let rawLng = item.lng !== undefined ? item.lng : (item.longitude !== undefined ? item.longitude : (item.coordenadas ? item.coordenadas[1] : null));
+  miniMapaLeaflet = L.map('miniMapaBrasil', {
+    zoomControl: false,
+    attributionControl: false,
+    dragging: false,
+    scrollWheelZoom: false,
+    doubleClickZoom: false,
+    boxZoom: false,
+    touchZoom: false,
+    zoomSnap: 0.05,
+    zoomDelta: 0.1
+  }).setView([-14.235, -51.925], 3.8);
 
-    const coords = corrigirCoordenadasBrasil(rawLat, rawLng);
-    if (nome && coords) {
-      lista.push({
-        nome: nome.trim(),
-        uf: uf.trim().toUpperCase(),
-        lat: coords.lat,
-        lng: coords.lng
+  try {
+    const resp = await fetch(GEOJSON_BR_URL);
+    if (!resp.ok) throw new Error("Falha na resposta do servidor GeoJSON");
+    dadosGeoJsonBr = await resp.json();
+    atualizarCoresMiniMapa();
+  } catch (err) {
+    console.error("Erro ao carregar a malha GeoJSON oficial dos estados:", err);
+  }
+}
+
+/**
+ * Retorna a tonalidade institucional de verde proporcional ao volume consumido.
+ */
+function obterCorPorVolume(vol) {
+  if (!vol || vol === 0) return '#e2e8f0';
+  if (vol < 50000) return '#4ade80';
+  if (vol < 200000) return '#16a34a';
+  if (vol < 500000) return '#15803d';
+  return '#052e16';
+}
+
+/**
+ * Monta o conteúdo HTML do resumo de abastecimento para o tooltip nativo.
+ */
+function gerarConteudoTooltipUf(uf) {
+  const mesSel = document.getElementById('filtroMesAno') ? document.getElementById('filtroMesAno').value : 'YTD';
+  let regs = (typeof baseRegistrosMensais !== 'undefined' && Array.isArray(baseRegistrosMensais)) ? baseRegistrosMensais : [];
+  regs = regs.filter(d => d.UF_POSTO === uf);
+
+  if (mesSel !== 'YTD') {
+    regs = regs.filter(d => d.MES_ANO === mesSel);
+  }
+
+  const litInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
+  const valInterno = regs.filter(d => d.TIPO_OPERACAO === 'INTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
+  const medInterno = litInterno > 0 ? (valInterno / litInterno) : 0;
+
+  const litExterno = regs.filter(d => d.TIPO_OPERACAO === 'EXTERNO').reduce((a, c) => a + parseFloat(c.LITROS_MES || 0), 0);
+  const valExterno = regs.filter(d => d.TIPO_OPERACAO === 'EXTERNO').reduce((a, c) => a + parseFloat(c.VALOR_TOTAL_MES || 0), 0);
+  const medExterno = litExterno > 0 ? (valExterno / litExterno) : 0;
+
+  const totalL = litInterno + litExterno;
+
+  if (totalL === 0) {
+    return `<div style="font-size:0.75rem; padding: 2px;"><strong>${uf}</strong><br><span style="color:#94a3b8;">Sem movimento no período</span></div>`;
+  }
+
+  return `
+    <div style="font-size:0.75rem; line-height: 1.35; padding: 2px;">
+      <strong style="color: #22c55e;">${uf} &bull; Resumo Operacional</strong><br>
+      Total: <b>${Math.round(totalL).toLocaleString('pt-BR')} L</b><br>
+      <span style="color:#86efac;">Tanques Próprios:</span> ${Math.round(litInterno).toLocaleString('pt-BR')} L ${medInterno > 0 ? '(R$ ' + medInterno.toFixed(3) + ')' : ''}<br>
+      <span style="color:#fdba74;">Rota Rodoviária:</span> ${Math.round(litExterno).toLocaleString('pt-BR')} L ${medExterno > 0 ? '(R$ ' + medExterno.toFixed(3) + ')' : ''}
+    </div>
+  `;
+}
+
+/**
+ * Atualiza os polígonos, contornos, tooltips nativos e cores do Mini Mapa do Brasil.
+ */
+function atualizarCoresMiniMapa() {
+  if (!miniMapaLeaflet || !dadosGeoJsonBr) return;
+
+  if (camadaGeoJsonBrasil) {
+    miniMapaLeaflet.removeLayer(camadaGeoJsonBrasil);
+  }
+
+  const mesSel = document.getElementById('filtroMesAno') ? document.getElementById('filtroMesAno').value : 'YTD';
+  let regs = (typeof baseRegistrosMensais !== 'undefined' && Array.isArray(baseRegistrosMensais)) ? baseRegistrosMensais : [];
+
+  if (mesSel !== 'YTD') {
+    regs = regs.filter(d => d.MES_ANO === mesSel);
+  }
+
+  const volPorUf = {};
+  regs.forEach(d => {
+    if (!d.UF_POSTO) return;
+    volPorUf[d.UF_POSTO] = (volPorUf[d.UF_POSTO] || 0) + parseFloat(d.LITROS_MES || 0);
+  });
+
+  camadaGeoJsonBrasil = L.geoJSON(dadosGeoJsonBr, {
+    style: function(feature) {
+      const sigla = extrairSiglaUf(feature.properties);
+      const vol = volPorUf[sigla] || 0;
+      const selecionado = (typeof ufFiltrada !== 'undefined' && ufFiltrada === sigla);
+
+      return {
+        fillColor: obterCorPorVolume(vol),
+        weight: selecionado ? 2.5 : 0.8,
+        opacity: 1,
+        color: selecionado ? '#f59e0b' : '#ffffff',
+        fillOpacity: 0.95
+      };
+    },
+    onEachFeature: function(feature, layer) {
+      const sigla = extrairSiglaUf(feature.properties);
+
+      layer.bindTooltip(() => gerarConteudoTooltipUf(sigla), {
+        sticky: true,
+        direction: 'auto',
+        className: 'custom-leaflet-tooltip'
+      });
+
+      layer.on('mouseover', function(e) {
+        const l = e.target;
+        l.setStyle({
+          weight: 2,
+          color: '#0f172a'
+        });
+        const lblHover = document.getElementById('lblHoverEstado');
+        if (lblHover) lblHover.innerText = `Estado: ${sigla}`;
+      });
+
+      layer.on('mouseout', function(e) {
+        camadaGeoJsonBrasil.resetStyle(e.target);
+        if (typeof ufFiltrada !== 'undefined' && ufFiltrada === sigla) {
+          e.target.setStyle({ weight: 2.5, color: '#f59e0b' });
+        }
+        const lblHover = document.getElementById('lblHoverEstado');
+        if (lblHover) {
+          lblHover.innerText = (typeof ufFiltrada !== 'undefined' && ufFiltrada) ? `Filtrando por ${ufFiltrada}` : 'Passe o mouse ou clique';
+        }
+      });
+
+      layer.on('click', function() {
+        if (typeof ufFiltrada !== 'undefined' && ufFiltrada === sigla) {
+          if (typeof limparFiltroUf === 'function') limparFiltroUf();
+        } else {
+          ufFiltrada = sigla;
+          const badgeUf = document.getElementById('badgeFiltroUf');
+          const lblUf = document.getElementById('lblUfAtiva');
+          if (badgeUf) badgeUf.style.display = 'inline-block';
+          if (lblUf) lblUf.innerText = sigla;
+          atualizarCoresMiniMapa();
+          if (typeof processarPainel === 'function') processarPainel();
+        }
       });
     }
-  });
+  }).addTo(miniMapaLeaflet);
 
-  return lista;
-}
-
-/**
- * Inicializa o mapa principal do Roteirizador Leaflet
- */
-function inicializarMapaLeaflet() {
-  const container = document.getElementById('mapLeaflet');
-  if (!container) return;
-
-  if (leafletMapInstancia) {
-    setTimeout(() => {
-      leafletMapInstancia.invalidateSize();
-    }, 200);
-    return;
-  }
-
-  leafletMapInstancia = L.map('mapLeaflet', {
-    center: [-15.7801, -47.9292],
-    zoom: 4,
-    zoomControl: true
-  });
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(leafletMapInstancia);
-
-  marcadoresPostosGrupo = L.layerGroup().addTo(leafletMapInstancia);
-
-  leafletMapInstancia.on('click', function(e) {
-    if (campoFocoAtivo) {
-      preencherPontoPorCoordenada(e.latlng.lat, e.latlng.lng, campoFocoAtivo);
-    }
-  });
-
-  configurarInputsAutocomplete();
-
+  // Redimensionamento sem margens brancas para preenchimento máximo
   setTimeout(() => {
-    leafletMapInstancia.invalidateSize();
-  }, 250);
+    if (miniMapaLeaflet && camadaGeoJsonBrasil) {
+      miniMapaLeaflet.invalidateSize();
+      miniMapaLeaflet.fitBounds(camadaGeoJsonBrasil.getBounds(), {
+        padding: [0, 0],
+        maxZoom: 5.5
+      });
+    }
+  }, 100);
 }
 
-/**
- * Configuração dos campos de busca de cidade
- */
-function configurarInputsAutocomplete() {
-  const container = document.getElementById('containerPontosRota');
-  if (!container) return;
+// =========================================================================
+// 2. ROTEIRIZADOR DE POSTOS (LEAFLET + AUTOCOMPLETE + CORREDORES DE ABASTECIMENTO)
+// =========================================================================
 
-  container.querySelectorAll('.input-cidade-rota').forEach(input => {
-    input.removeEventListener('focus', tratarFocoInput);
-    input.addEventListener('focus', tratarFocoInput);
+function normalizarTextoBusca(txt) {
+  return (txt || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
 
-    input.removeEventListener('input', tratarDigitacaoCidade);
-    input.addEventListener('input', tratarDigitacaoCidade);
+function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+function configurarAutocompletarItem(itemEl) {
+  const input = itemEl.querySelector('.input-cidade-rota');
+  const hiddenCoord = itemEl.querySelector('.hidden-coord-rota');
+  const lista = itemEl.querySelector('.autocomplete-list');
+  const listaCidadesRef = (typeof listaCidades !== 'undefined' && Array.isArray(listaCidades)) ? listaCidades : [];
+
+  input.addEventListener('focus', () => {
+    document.querySelectorAll('.input-cidade-rota').forEach(el => el.classList.remove('foco-ativo'));
+    input.classList.add('foco-ativo');
+    campoFocoAtivo = itemEl;
   });
-}
 
-function tratarFocoInput(e) {
-  document.querySelectorAll('.input-cidade-rota').forEach(i => i.classList.remove('foco-ativo'));
-  e.target.classList.add('foco-ativo');
-  campoFocoAtivo = e.target.closest('.ponto-rota-item');
-}
+  input.addEventListener('input', () => {
+    const termo = normalizarTextoBusca(input.value);
 
-function removerFocoInputs() {
-  document.querySelectorAll('.input-cidade-rota').forEach(i => {
-    i.classList.remove('foco-ativo');
-    i.blur();
+    if (termo.length < 2) {
+      lista.style.display = "none";
+      lista.innerHTML = "";
+      hiddenCoord.value = "";
+      return;
+    }
+
+    const filtradas = listaCidadesRef.filter(c => normalizarTextoBusca(c.nome).includes(termo)).slice(0, 8);
+
+    lista.innerHTML = "";
+    if (filtradas.length === 0) {
+      lista.style.display = "none";
+      return;
+    }
+
+    filtradas.forEach(cidade => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "list-group-item list-group-item-action small py-2 text-start";
+      btn.style.fontSize = "0.75rem";
+      btn.innerText = cidade.nome;
+
+      btn.onclick = () => {
+        input.value = cidade.nome;
+        hiddenCoord.value = `${cidade.lat},${cidade.lon}`;
+        lista.style.display = "none";
+        lista.innerHTML = "";
+        atualizarMarcadoresWaypoints();
+      };
+
+      lista.appendChild(btn);
+    });
+
+    lista.style.display = "block";
   });
-  document.querySelectorAll('.autocomplete-list').forEach(l => {
-    l.style.display = 'none';
-  });
-  campoFocoAtivo = null;
-}
-
-function tratarDigitacaoCidade(e) {
-  const val = normalizarTexto(e.target.value);
-  const itemPai = e.target.closest('.ponto-rota-item');
-  if (!itemPai) return;
-
-  const listaSugestoes = itemPai.querySelector('.autocomplete-list');
-  if (!listaSugestoes) return;
-
-  if (val.length < 2) {
-    listaSugestoes.style.display = 'none';
-    return;
-  }
-
-  const baseCidades = obterBaseCidadesNormalizada();
-  const cidadesEncontradas = baseCidades.filter(c => 
-    normalizarTexto(c.nome).includes(val) || normalizarTexto(c.uf).includes(val)
-  ).slice(0, 8);
-
-  if (cidadesEncontradas.length === 0) {
-    listaSugestoes.innerHTML = `<div class="p-2 small text-muted">Nenhuma cidade localizada</div>`;
-    listaSugestoes.style.display = 'block';
-    return;
-  }
-
-  listaSugestoes.innerHTML = cidadesEncontradas.map(c => `
-    <div class="p-2 border-bottom small cursor-pointer hover-bg-light" 
-         onclick="selecionarCidadeAutoComplete('${c.nome.replace(/'/g, "\\'")}', '${c.uf}', ${c.lat}, ${c.lng}, this)">
-      <i class="bi bi-geo-alt me-1 text-success"></i><strong>${c.nome}</strong>${c.uf ? ' - ' + c.uf : ''}
-    </div>
-  `).join('');
-
-  listaSugestoes.style.display = 'block';
-}
-
-function selecionarCidadeAutoComplete(nome, uf, lat, lng, elem) {
-  const itemPai = elem.closest('.ponto-rota-item');
-  if (!itemPai) return;
-
-  const inputTexto = itemPai.querySelector('.input-cidade-rota');
-  const inputCoord = itemPai.querySelector('.hidden-coord-rota');
-  const listaSugestoes = itemPai.querySelector('.autocomplete-list');
-
-  const textoFinal = uf ? `${nome}, ${uf}` : nome;
-  inputTexto.value = textoFinal;
-  inputCoord.value = JSON.stringify({ nome, uf, lat: Number(lat), lng: Number(lng) });
-
-  if (listaSugestoes) listaSugestoes.style.display = 'none';
-  inputTexto.classList.remove('foco-ativo');
 }
 
 function adicionarCampoParada() {
   const container = document.getElementById('containerPontosRota');
-  if (!container) return;
+  const itens = container.querySelectorAll('.ponto-rota-item');
 
-  const totalPontos = container.querySelectorAll('.ponto-rota-item').length;
-  const div = document.createElement('div');
-  div.className = "mb-2 position-relative ponto-rota-item";
-  div.dataset.index = totalPontos;
-  div.innerHTML = `
+  if (itens.length >= 5) {
+    alert("Limite máximo de 5 pontos na rota atingido.");
+    return;
+  }
+
+  const novoIndex = itens.length;
+  const novoItem = document.createElement('div');
+  novoItem.className = 'mb-2 position-relative ponto-rota-item';
+  novoItem.setAttribute('data-index', novoIndex);
+  novoItem.innerHTML = `
     <label class="small fw-bold text-dark mb-1 d-flex justify-content-between">
       <span>Parada Intermediária:</span>
-      <span class="text-danger cursor-pointer" onclick="removerCampoParada(this)" style="font-size: 0.65rem;">
-        <i class="bi bi-trash"></i> Remover
-      </span>
+      <span class="text-danger cursor-pointer" onclick="removerCampoParada(this)" title="Remover"><i class="bi bi-trash"></i></span>
     </label>
     <input type="text" class="form-control form-control-sm input-cidade-rota" placeholder="Digite ou clique no mapa..." autocomplete="off">
     <input type="hidden" class="hidden-coord-rota">
     <div class="autocomplete-list shadow-sm" style="display: none;"></div>
   `;
 
-  const destino = container.children[container.children.length - 1];
-  container.insertBefore(div, destino);
-  configurarInputsAutocomplete();
+  container.insertBefore(novoItem, itens[itens.length - 1]);
+  configurarAutocompletarItem(novoItem);
+  renumerarRotulos();
 }
 
-function removerCampoParada(elem) {
-  const item = elem.closest('.ponto-rota-item');
-  if (item) item.remove();
+function removerCampoParada(btnEl) {
+  const item = btnEl.closest('.ponto-rota-item');
+  item.remove();
+  renumerarRotulos();
+  atualizarMarcadoresWaypoints();
 }
 
-function preencherPontoPorCoordenada(lat, lng, itemPai) {
-  if (!itemPai) return;
-
-  const baseCidades = obterBaseCidadesNormalizada();
-  let cidadeMaisProxima = null;
-  let menorDist = Infinity;
-
-  baseCidades.forEach(c => {
-    const d = calcularDistanciaHaversine(lat, lng, c.lat, c.lng);
-    if (d < menorDist) {
-      menorDist = d;
-      cidadeMaisProxima = c;
-    }
-  });
-
-  if (cidadeMaisProxima && menorDist < 80) {
-    const inputTexto = itemPai.querySelector('.input-cidade-rota');
-    const inputCoord = itemPai.querySelector('.hidden-coord-rota');
-
-    const textoFinal = cidadeMaisProxima.uf ? `${cidadeMaisProxima.nome}, ${cidadeMaisProxima.uf}` : cidadeMaisProxima.nome;
-    inputTexto.value = textoFinal;
-    inputCoord.value = JSON.stringify({
-      nome: cidadeMaisProxima.nome,
-      uf: cidadeMaisProxima.uf,
-      lat: Number(cidadeMaisProxima.lat),
-      lng: Number(cidadeMaisProxima.lng)
-    });
-    removerFocoInputs();
-  }
-}
-
-function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
-}
-
-/**
- * Traça a rota pelo OSRM Leaflet Routing Machine
- */
-function calcularRotaLeaflet() {
-  removerFocoInputs();
-
-  const container = document.getElementById('containerPontosRota');
-  if (!container) return;
-
-  const itens = container.querySelectorAll('.ponto-rota-item');
-  const waypoints = [];
-  const baseCidades = obterBaseCidadesNormalizada();
-
-  itens.forEach(item => {
-    const valCoord = item.querySelector('.hidden-coord-rota').value;
-    let txt = item.querySelector('.input-cidade-rota').value.trim();
-    txt = txt.replace(/,\s*undefined/gi, '').trim();
-    item.querySelector('.input-cidade-rota').value = txt;
-
-    let pontoLat = null;
-    let pontoLng = null;
-
-    if (valCoord) {
-      try {
-        const parsed = JSON.parse(valCoord);
-        const coords = corrigirCoordenadasBrasil(parsed.lat, parsed.lng);
-        if (coords) {
-          pontoLat = coords.lat;
-          pontoLng = coords.lng;
-        }
-      } catch(e) {}
-    }
-
-    if (pontoLat === null && txt) {
-      const partes = txt.split(',').map(s => normalizarTexto(s.trim()));
-      const nomeBusca = partes[0] || '';
-      const ufBusca = partes[1] || '';
-
-      const encontrada = baseCidades.find(c => {
-        const nomeIgual = normalizarTexto(c.nome) === nomeBusca;
-        const ufIgual = !ufBusca || normalizarTexto(c.uf) === ufBusca;
-        return nomeIgual && ufIgual;
-      }) || baseCidades.find(c => normalizarTexto(c.nome).includes(nomeBusca));
-
-      if (encontrada) {
-        pontoLat = encontrada.lat;
-        pontoLng = encontrada.lng;
-        item.querySelector('.hidden-coord-rota').value = JSON.stringify(encontrada);
-      }
-    }
-
-    if (pontoLat !== null && pontoLng !== null) {
-      waypoints.push(L.latLng(pontoLat, pontoLng));
-    }
-  });
-
-  if (waypoints.length < 2) {
-    alert("Por favor, selecione ao menos a Cidade de Origem e a Cidade de Destino.");
-    return;
-  }
-
-  if (leafletRoutingControl && leafletMapInstancia) {
-    try {
-      leafletMapInstancia.removeControl(leafletRoutingControl);
-    } catch(e){}
-  }
-  if (marcadoresPostosGrupo) {
-    marcadoresPostosGrupo.clearLayers();
-  }
-
-  leafletRoutingControl = L.Routing.control({
-    waypoints: waypoints,
-    routeWhileDragging: false,
-    addWaypoints: false,
-    draggableWaypoints: false,
-    fitSelectedRoutes: true,
-    show: false,
-    lineOptions: {
-      styles: [{ color: '#1c483a', opacity: 0.85, weight: 6 }]
-    },
-    createMarker: function(i, wp) {
-      return L.marker(wp.latLng, {
-        icon: L.icon({
-          iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-          iconSize: [25, 41],
-          iconAnchor: [12, 41]
-        })
-      });
-    }
-  }).addTo(leafletMapInstancia);
-
-  leafletRoutingControl.on('routesfound', function(e) {
-    const rotas = e.routes;
-    if (rotas && rotas.length > 0) {
-      rotaGeometriaCache = rotas[0].coordinates;
-      mapearPostosNoCorredor(rotaGeometriaCache);
-    }
-  });
-}
-
-/**
- * Mapeia postos respeitando o raio direto (200 km) e o expandido (até 400 km)
- */
-function mapearPostosNoCorredor(coordenadasRota) {
-  if (!marcadoresPostosGrupo || !coordenadasRota || coordenadasRota.length === 0) return;
-  marcadoresPostosGrupo.clearLayers();
-
-  const postosAvaliados = consolidarPostosMaisRecentes();
-  const postosNoCorredor = [];
-
-  postosAvaliados.forEach(p => {
-    const coordPosto = obterCoordenadaPosto(p);
-    if (!coordPosto) return;
-
-    let menorDistanciaRota = Infinity;
-    for (let i = 0; i < coordenadasRota.length; i += 8) {
-      const d = calcularDistanciaHaversine(coordPosto.lat, coordPosto.lng, coordenadasRota[i].lat, coordenadasRota[i].lng);
-      if (d < menorDistanciaRota) {
-        menorDistanciaRota = d;
-      }
-    }
-
-    if (menorDistanciaRota <= 400) {
-      postosNoCorredor.push({
-        ...p,
-        lat: coordPosto.lat,
-        lng: coordPosto.lng,
-        distanciaKm: Math.round(menorDistanciaRota)
-      });
-    }
-  });
-
-  postosNoCorredor.forEach(p => {
-    let corPin = "#94a3b8"; // 201 a 400 km
-    if (p.distanciaKm <= 200) {
-      if (p.PRECO_BASE <= 6.60) corPin = "#16a34a";
-      else if (p.PRECO_BASE <= 6.90) corPin = "#eab308";
-      else corPin = "#dc2626";
-    }
-
-    const marker = L.circleMarker([p.lat, p.lng], {
-      radius: p.distanciaKm <= 200 ? 7 : 5,
-      fillColor: corPin,
-      color: "#ffffff",
-      weight: 1.5,
-      opacity: 1,
-      fillOpacity: 0.95
-    });
-
-    const precoFmt = p.PRECO_BASE > 0 ? `R$ ${p.PRECO_BASE.toFixed(3)}` : 'Sem reg.';
-    const dataFmt = formatarDataDiaMes(p.DATA_RECENTE);
-
-    marker.bindPopup(`
-      <div style="font-size: 0.75rem; min-width: 190px;">
-        <strong style="color: #0f172a; display: block; margin-bottom: 2px;">${p.POSTO}</strong>
-        <span class="badge bg-dark text-white" style="font-size: 0.60rem;">${p.UF_POSTO}</span>
-        <span class="text-muted" style="font-size: 0.65rem;">${p.MUNICIPIO_POSTO || ''}</span>
-        <hr style="margin: 4px 0;">
-        <div><strong>Último Pago:</strong> <span style="color:#16a34a; font-weight:800;">${precoFmt}</span></div>
-        <div><strong>Data:</strong> ${dataFmt}</div>
-        <div><strong>Desvio da Rota:</strong> ~${p.distanciaKm} km</div>
-      </div>
-    `);
-
-    marcadoresPostosGrupo.addLayer(marker);
-  });
-
-  gerarTabelaRoteiroImpressao(postosNoCorredor);
-}
-
-/**
- * Agrupa os postos por nome e praça única, pegando apenas o valor do último mês ativo
- */
-function consolidarPostosMaisRecentes() {
-  const mapaUnicos = {};
-  const base = (typeof baseRegistrosMensais !== 'undefined' && Array.isArray(baseRegistrosMensais)) ? baseRegistrosMensais : [];
-
-  base.forEach(d => {
-    const nome = normalizarTexto(d.POSTO);
-    const mun = normalizarTexto(d.MUNICIPIO_POSTO || '');
-    const uf = d.UF_POSTO || '';
-    const chave = `${nome}_${mun}_${uf}_${d.TIPO_OPERACAO}`;
-
-    const preco = parseFloat(d.ULTIMO_PRECO_MES || d.PRECO_MEDIO_MES || 0);
-    const data = d.ULTIMA_DATA_MES || "";
-
-    if (!mapaUnicos[chave]) {
-      mapaUnicos[chave] = {
-        POSTO: d.POSTO,
-        UF_POSTO: d.UF_POSTO,
-        MUNICIPIO_POSTO: d.MUNICIPIO_POSTO,
-        TIPO_OPERACAO: d.TIPO_OPERACAO,
-        PRECO_BASE: preco,
-        DATA_RECENTE: data
-      };
+function renumerarRotulos() {
+  const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
+  itens.forEach((el, idx) => {
+    const label = el.querySelector('label span');
+    if (idx === 0) {
+      label.innerText = "1. Cidade de Origem:";
+    } else if (idx === itens.length - 1) {
+      label.innerText = `${idx + 1}. Cidade de Destino:`;
     } else {
-      if (data && data > mapaUnicos[chave].DATA_RECENTE) {
-        mapaUnicos[chave].DATA_RECENTE = data;
-        mapaUnicos[chave].PRECO_BASE = preco;
-      }
+      label.innerText = `${idx + 1}. Parada Intermediária:`;
     }
   });
-
-  return Object.values(mapaUnicos);
 }
 
-function obterCoordenadaPosto(posto) {
-  if (!posto.MUNICIPIO_POSTO) return null;
-  const munNorm = normalizarTexto(posto.MUNICIPIO_POSTO);
-  const ufNorm = (posto.UF_POSTO || '').toUpperCase().trim();
+document.addEventListener("click", (e) => {
+  document.querySelectorAll('.autocomplete-list').forEach(list => {
+    if (!list.closest('.ponto-rota-item').contains(e.target)) {
+      list.style.display = "none";
+    }
+  });
+});
 
-  const baseCidades = obterBaseCidadesNormalizada();
-  const cidade = baseCidades.find(c => 
-    normalizarTexto(c.nome) === munNorm && c.uf === ufNorm
-  ) || baseCidades.find(c => normalizarTexto(c.nome) === munNorm);
+function inicializarMapaLeaflet() {
+  if (!leafletMapInstance) {
+    leafletMapInstance = L.map('mapLeaflet').setView([-20.0, -48.0], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(leafletMapInstance);
 
-  if (cidade) {
-    return { lat: cidade.lat, lng: cidade.lng };
+    document.querySelectorAll('.ponto-rota-item').forEach(configurarAutocompletarItem);
+
+    const primeiro = document.querySelector('.ponto-rota-item');
+    if (primeiro) {
+      primeiro.querySelector('.input-cidade-rota').classList.add('foco-ativo');
+      campoFocoAtivo = primeiro;
+    }
+
+    leafletMapInstance.on('click', function(e) {
+      if (!campoFocoAtivo) return;
+
+      const lat = parseFloat(e.latlng.lat.toFixed(4));
+      const lon = parseFloat(e.latlng.lng.toFixed(4));
+      const listaCidadesRef = (typeof listaCidades !== 'undefined' && Array.isArray(listaCidades)) ? listaCidades : [];
+
+      let cidadeMaisProxima = "Ponto no Mapa";
+      let menorDist = Infinity;
+      listaCidadesRef.forEach(c => {
+        const d = calcularDistanciaKm(lat, lon, c.lat, c.lon);
+        if (d < menorDist && d < 60) {
+          menorDist = d;
+          cidadeMaisProxima = c.nome;
+        }
+      });
+
+      const input = campoFocoAtivo.querySelector('.input-cidade-rota');
+      const hidden = campoFocoAtivo.querySelector('.hidden-coord-rota');
+      input.value = cidadeMaisProxima !== "Ponto no Mapa" ? cidadeMaisProxima : `Coord: ${lat}, ${lon}`;
+      hidden.value = `${lat},${lon}`;
+
+      atualizarMarcadoresWaypoints();
+      avancarParaProximoCampo();
+    });
+  }
+  setTimeout(() => {
+    if (leafletMapInstance) leafletMapInstance.invalidateSize();
+  }, 250);
+}
+
+function avancarParaProximoCampo() {
+  const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
+  for (const it of itens) {
+    const h = it.querySelector('.hidden-coord-rota');
+    if (!h.value) {
+      document.querySelectorAll('.input-cidade-rota').forEach(el => el.classList.remove('foco-ativo'));
+      it.querySelector('.input-cidade-rota').classList.add('foco-ativo');
+      campoFocoAtivo = it;
+      return;
+    }
+  }
+}
+
+function atualizarMarcadoresWaypoints() {
+  if (!leafletMapInstance) return;
+  markersWaypoints.forEach(m => leafletMapInstance.removeLayer(m));
+  markersWaypoints = [];
+
+  const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
+  itens.forEach((it, idx) => {
+    const hidden = it.querySelector('.hidden-coord-rota');
+    const input = it.querySelector('.input-cidade-rota');
+    if (hidden.value) {
+      const [lat, lon] = hidden.value.split(',').map(Number);
+      const cor = idx === 0 ? "#16a34a" : (idx === itens.length - 1 ? "#dc2626" : "#2563eb");
+      const m = L.circleMarker([lat, lon], {
+        radius: 8,
+        fillColor: cor,
+        color: "#ffffff",
+        weight: 2,
+        fillOpacity: 1
+      }).addTo(leafletMapInstance);
+      m.bindPopup(`<b>${idx + 1}. ${input.value}</b>`);
+      markersWaypoints.push(m);
+    }
+  });
+}
+
+function obterCoordenadasItem(itemEl) {
+  const hidden = itemEl.querySelector('.hidden-coord-rota');
+  const input = itemEl.querySelector('.input-cidade-rota');
+
+  if (hidden.value) {
+    return hidden.value.split(',').map(Number);
+  }
+
+  if (input.value.trim()) {
+    const termo = normalizarTextoBusca(input.value);
+    const listaCidadesRef = (typeof listaCidades !== 'undefined' && Array.isArray(listaCidades)) ? listaCidades : [];
+    const achada = listaCidadesRef.find(c => normalizarTextoBusca(c.nome).includes(termo));
+    if (achada) {
+      hidden.value = `${achada.lat},${achada.lon}`;
+      return [achada.lat, achada.lon];
+    }
   }
   return null;
 }
 
-/**
- * Tabela compacta e deduplicada para não ultrapassar 2 páginas de impressão
- */
-function gerarTabelaRoteiroImpressao(postos) {
-  const container = document.getElementById('areaImpressaoRoteiro');
-  const conteudo = document.getElementById('conteudoRoteiroImpresso');
-  if (!container || !conteudo) return;
+function calcularRotaLeaflet() {
+  if (!leafletMapInstance) return;
 
-  if (postos.length === 0) {
-    conteudo.innerHTML = `<div class="p-3 text-muted small">Nenhum posto localizado no corredor logístico.</div>`;
-    container.style.display = 'block';
+  const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
+  const waypoints = [];
+
+  itens.forEach(it => {
+    const coords = obterCoordenadasItem(it);
+    if (coords) {
+      waypoints.push(L.latLng(coords[0], coords[1]));
+    }
+  });
+
+  if (waypoints.length < 2) {
+    alert("Preencha ao menos uma Cidade de Origem e uma Cidade de Destino válidas.");
     return;
   }
 
-  const postosOrdenados = [...postos].sort((a, b) => {
-    if (a.TIPO_OPERACAO === 'INTERNO' && b.TIPO_OPERACAO !== 'INTERNO') return -1;
-    if (a.TIPO_OPERACAO !== 'INTERNO' && b.TIPO_OPERACAO === 'INTERNO') return 1;
-    if (a.distanciaKm !== b.distanciaKm) return a.distanciaKm - b.distanciaKm;
-    return a.PRECO_BASE - b.PRECO_BASE;
+  if (routingControlInstance) {
+    leafletMapInstance.removeControl(routingControlInstance);
+  }
+
+  routingControlInstance = L.Routing.control({
+    waypoints: waypoints,
+    routeWhileDragging: false,
+    addWaypoints: false,
+    showAlternatives: false,
+    lineOptions: {
+      styles: [{ color: '#1c483a', weight: 5, opacity: 0.85 }]
+    }
+  }).addTo(leafletMapInstance);
+
+  routingControlInstance.on('routesfound', function(e) {
+    const routeCoords = e.routes[0].coordinates;
+    plotarPostosComDuploRaio(routeCoords);
+  });
+}
+
+function plotarPostosComDuploRaio(routeCoords) {
+  if (!leafletMapInstance) return;
+  markersPostosLeaflet.forEach(m => leafletMapInstance.removeLayer(m));
+  markersPostosLeaflet = [];
+  postosSugeridosUltimaRota = [];
+
+  const registrosRef = (typeof baseRegistrosMensais !== 'undefined' && Array.isArray(baseRegistrosMensais)) ? baseRegistrosMensais : [];
+  const listaCidadesRef = (typeof listaCidades !== 'undefined' && Array.isArray(listaCidades)) ? listaCidades : [];
+
+  const postos = [...new Set(registrosRef.map(d => ({
+    posto: d.POSTO,
+    municipio: (d.MUNICIPIO_POSTO || '').toUpperCase(),
+    uf: d.UF_POSTO,
+    preco: parseFloat(d.ULTIMO_PRECO_MES || 0),
+    tipo: d.TIPO_OPERACAO
+  })))];
+
+  const amostraRota = [];
+  const passo = Math.max(1, Math.floor(routeCoords.length / 80));
+  for (let i = 0; i < routeCoords.length; i += passo) {
+    amostraRota.push(routeCoords[i]);
+  }
+
+  postos.forEach(p => {
+    if (!p.municipio || p.municipio === 'ND') return;
+
+    const achada = listaCidadesRef.find(c =>
+      normalizarTextoBusca(c.nome).includes(normalizarTextoBusca(p.municipio))
+    );
+    if (!achada) return;
+
+    let menorDist = Infinity;
+    for (const pt of amostraRota) {
+      const d = calcularDistanciaKm(achada.lat, achada.lon, pt.lat, pt.lng);
+      if (d < menorDist) menorDist = d;
+      if (menorDist <= 200) break;
+    }
+
+    if (menorDist <= 600) {
+      let corPin = "#94a3b8";
+      let statusTexto = "Posto em Raio Expandido de Apoio";
+
+      if (menorDist <= 200) {
+        corPin = p.preco < 6.40 ? "#16a34a" : (p.preco < 6.75 ? "#eab308" : "#dc2626");
+        statusTexto = p.preco < 6.40 ? "Recomendado (Melhor Preço)" : (p.preco < 6.75 ? "Preço Aceitável" : "Alerta de Preço Alto");
+      }
+
+      const marker = L.circleMarker([achada.lat, achada.lon], {
+        radius: 8,
+        fillColor: corPin,
+        color: "#ffffff",
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.95
+      }).addTo(leafletMapInstance);
+
+      marker.bindPopup(`
+        <strong style="color:#1c483a;">${p.posto}</strong><br>
+        Cidade: ${p.municipio}/${p.uf}<br>
+        Último Preço: <b>R$ ${p.preco.toFixed(3)}</b><br>
+        Tipo: ${p.tipo}<br>
+        Status: <b>${statusTexto}</b><br>
+        <span class="small text-muted">Aprox. ${Math.round(menorDist)} km da rota</span>
+      `);
+
+      markersPostosLeaflet.push(marker);
+
+      if (menorDist <= 200) {
+        postosSugeridosUltimaRota.push({
+          posto: p.posto,
+          cidade: `${p.municipio}/${p.uf}`,
+          preco: p.preco,
+          distancia: Math.round(menorDist),
+          tipo: p.tipo
+        });
+      }
+    }
   });
 
-  const postosPrioritarios = postosOrdenados.filter(p => p.distanciaKm <= 200).slice(0, 30);
-
-  conteudo.innerHTML = `
-    <table class="table table-sm table-bordered tabela-sintetica mt-2" style="font-size: 0.65rem;">
-      <thead class="table-light">
-        <tr>
-          <th>Posto / Bandeira</th>
-          <th>Cidade / UF</th>
-          <th class="text-end">Último Pago</th>
-          <th class="text-end">Desvio da Rota</th>
-          <th class="text-center">Operação</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${postosPrioritarios.map(p => `
-          <tr>
-            <td class="fw-bold text-dark text-truncate" style="max-width: 260px;">${p.POSTO}</td>
-            <td>${p.MUNICIPIO_POSTO || 'ND'} / ${p.UF_POSTO}</td>
-            <td class="text-end font-monospace fw-bold text-success">
-              ${p.PRECO_BASE > 0 ? `R$ ${p.PRECO_BASE.toFixed(3)}` : '--'}
-            </td>
-            <td class="text-end font-monospace">${p.distanciaKm} km</td>
-            <td class="text-center">
-              <span class="badge ${p.TIPO_OPERACAO === 'INTERNO' ? 'bg-success' : 'bg-secondary'}" style="font-size: 0.55rem;">
-                ${p.TIPO_OPERACAO}
-              </span>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
-
-  container.style.display = 'block';
+  postosSugeridosUltimaRota.sort((a, b) => a.preco - b.preco);
 }
 
 function imprimirRoteiroViagem() {
-  window.print();
-}
-
-/**
- * Inicializa o Mini Mapa com GeoJSON servido por CDN estável (jsDelivr)
- */
-async function inicializarMiniMapaBrasil() {
-  const container = document.getElementById('miniMapaBrasil');
-  if (!container) return;
-
-  if (miniMapaBrasilInstancia) {
-    miniMapaBrasilInstancia.invalidateSize();
+  if (postosSugeridosUltimaRota.length === 0) {
+    alert("Trace uma rota primeiro para mapear os postos antes de imprimir.");
     return;
   }
 
-  miniMapaBrasilInstancia = L.map('miniMapaBrasil', {
-    center: [-14.235, -51.925],
-    zoom: 3.2,
-    zoomControl: false,
-    attributionControl: false,
-    dragging: false,
-    scrollWheelZoom: false,
-    doubleClickZoom: false,
-    boxZoom: false
+  const container = document.getElementById('conteudoRoteiroImpresso');
+  const area = document.getElementById('areaImpressaoRoteiro');
+  if (!container || !area) return;
+
+  let htmlTabela = `
+    <table class="table table-sm table-bordered mt-2 small">
+      <thead class="table-dark">
+        <tr>
+          <th>Posto / Bandeira</th>
+          <th>Cidade / UF</th>
+          <th>Preço Base Registrado</th>
+          <th>Desvio da Rota</th>
+          <th>Operação</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  postosSugeridosUltimaRota.forEach(p => {
+    htmlTabela += `
+      <tr>
+        <td><b>${p.posto}</b></td>
+        <td>${p.cidade}</td>
+        <td class="text-success fw-bold">R$ ${p.preco.toFixed(3)}</td>
+        <td>${p.distancia} km</td>
+        <td>${p.tipo}</td>
+      </tr>
+    `;
   });
 
-  try {
-    // CDN rápida e com cabeçalhos de CORS 100% liberados
-    const resp = await fetch('https://cdn.jsdelivr.net/gh/codeforamerica/click_testing@master/geo/brazil-states.geojson');
-    const geojsonData = await resp.json();
-
-    geojsonBrasilCamada = L.geoJson(geojsonData, {
-      style: estiloPadraoEstado,
-      onEachFeature: function(feature, layer) {
-        layer.on({
-          mouseover: destacarEstadoHover,
-          mouseout: resetarEstadoHover,
-          click: selecionarEstadoMapaClique
-        });
-      }
-    }).addTo(miniMapaBrasilInstancia);
-
-    atualizarCoresMiniMapa();
-    setTimeout(() => {
-      miniMapaBrasilInstancia.invalidateSize();
-    }, 200);
-  } catch(e) {
-    console.warn("Falha ao carregar malha GeoJSON do Brasil:", e);
-  }
-}
-
-function estiloPadraoEstado(feature) {
-  return {
-    fillColor: '#e2e8f0',
-    weight: 1,
-    opacity: 1,
-    color: '#ffffff',
-    fillOpacity: 0.85
-  };
-}
-
-function destacarEstadoHover(e) {
-  const layer = e.target;
-  const uf = layer.feature.id || (layer.feature.properties ? layer.feature.properties.sigla : '');
-  const lbl = document.getElementById('lblHoverEstado');
-  if (lbl) lbl.innerText = `Estado: ${uf}`;
-
-  layer.setStyle({
-    weight: 2,
-    color: '#0f172a',
-    fillOpacity: 1
-  });
-}
-
-function resetarEstadoHover(e) {
-  if (geojsonBrasilCamada) {
-    geojsonBrasilCamada.resetStyle(e.target);
-  }
-  atualizarCoresMiniMapa();
-  const lbl = document.getElementById('lblHoverEstado');
-  if (lbl) lbl.innerText = "Passe o mouse ou clique";
-}
-
-function selecionarEstadoMapaClique(e) {
-  const uf = e.target.feature.id || (e.target.feature.properties ? e.target.feature.properties.sigla : '');
-  const selectUf = document.getElementById('filtroUfSelect');
-  if (selectUf) {
-    selectUf.value = (selectUf.value === uf) ? "" : uf;
-    aplicarFiltroUfSelect();
-  }
-}
-
-function atualizarCoresMiniMapa() {
-  if (!geojsonBrasilCamada) return;
-
-  const volumesPorUf = {};
-  const base = (typeof baseRegistrosMensais !== 'undefined' && Array.isArray(baseRegistrosMensais)) ? baseRegistrosMensais : [];
-
-  base.forEach(d => {
-    if (d.UF_POSTO) {
-      volumesPorUf[d.UF_POSTO] = (volumesPorUf[d.UF_POSTO] || 0) + parseFloat(d.LITROS_MES || 0);
-    }
-  });
-
-  const maxVol = Math.max(...Object.values(volumesPorUf), 1);
-
-  geojsonBrasilCamada.eachLayer(layer => {
-    const uf = layer.feature.id || (layer.feature.properties ? layer.feature.properties.sigla : '');
-    const vol = volumesPorUf[uf] || 0;
-
-    let cor = '#e2e8f0';
-    if (vol > 0) {
-      const perc = vol / maxVol;
-      if (perc > 0.6) cor = '#062316';
-      else if (perc > 0.3) cor = '#1c483a';
-      else if (perc > 0.1) cor = '#22c55e';
-      else cor = '#4ade80';
-    }
-
-    if (ufFiltrada && ufFiltrada === uf) {
-      layer.setStyle({
-        fillColor: '#2563eb',
-        color: '#0f172a',
-        weight: 2,
-        fillOpacity: 1
-      });
-    } else {
-      layer.setStyle({
-        fillColor: cor,
-        color: '#ffffff',
-        weight: 1,
-        fillOpacity: 0.85
-      });
-    }
-  });
+  htmlTabela += `</tbody></table>`;
+  container.innerHTML = htmlTabela;
+  area.style.display = "block";
+  window.print();
 }
