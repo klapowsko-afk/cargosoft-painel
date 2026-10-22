@@ -12,32 +12,63 @@ let rotaGeometriaCache = [];
 let campoFocoAtivo = null;
 
 /**
- * Obtém a lista de cidades suportando múltiplos padrões de estrutura
+ * Valida e garante que Latitude e Longitude estejam na ordem correta para o Brasil
+ */
+function corrigirCoordenadasBrasil(valor1, valor2) {
+  let v1 = parseFloat(valor1);
+  let v2 = parseFloat(valor2);
+
+  if (isNaN(v1) || isNaN(v2)) return null;
+
+  // No Brasil: Latitude fica entre +5.5 e -34.0; Longitude fica entre -34.0 e -74.0
+  // Se o valor 1 estiver na faixa de longitude e o valor 2 na de latitude, inverte
+  if (v1 < -34 && v2 > -35 && v2 < 6) {
+    return { lat: v2, lng: v1 };
+  }
+  return { lat: v1, lng: v2 };
+}
+
+/**
+ * Normaliza e carrega a base de cidades
  */
 function obterBaseCidadesNormalizada() {
   const base = (typeof baseCidadesBrasil !== 'undefined' && Array.isArray(baseCidadesBrasil)) ? baseCidadesBrasil : [];
-  return base.map(item => {
-    const nome = item.nome || item.cidade || item.municipio || item.nome_municipio || '';
-    const uf = item.uf || item.estado || item.sigla_uf || '';
-    const lat = parseFloat(item.lat || item.latitude || (item.coordenadas ? item.coordenadas[0] : 0));
-    const lng = parseFloat(item.lng || item.longitude || (item.coordenadas ? item.coordenadas[1] : 0));
-    return { nome, uf, lat, lng };
-  }).filter(c => c.nome && !isNaN(c.lat) && !isNaN(c.lng));
+  const lista = [];
+
+  base.forEach(item => {
+    const nome = item.nome || item.cidade || item.municipio || '';
+    const uf = item.uf || item.estado || '';
+    
+    let rawLat = item.lat !== undefined ? item.lat : (item.latitude !== undefined ? item.latitude : (item.coordenadas ? item.coordenadas[0] : null));
+    let rawLng = item.lng !== undefined ? item.lng : (item.longitude !== undefined ? item.longitude : (item.coordenadas ? item.coordenadas[1] : null));
+
+    const coords = corrigirCoordenadasBrasil(rawLat, rawLng);
+    if (nome && coords) {
+      lista.push({
+        nome: nome.trim(),
+        uf: uf.trim().toUpperCase(),
+        lat: coords.lat,
+        lng: coords.lng
+      });
+    }
+  });
+
+  return lista;
 }
 
 /**
  * Inicializa o mapa principal do Roteirizador Leaflet
  */
 function inicializarMapaLeaflet() {
+  const container = document.getElementById('mapLeaflet');
+  if (!container) return;
+
   if (leafletMapInstancia) {
     setTimeout(() => {
       leafletMapInstancia.invalidateSize();
-    }, 250);
+    }, 200);
     return;
   }
-
-  const container = document.getElementById('mapLeaflet');
-  if (!container) return;
 
   leafletMapInstancia = L.map('mapLeaflet', {
     center: [-15.7801, -47.9292],
@@ -52,7 +83,6 @@ function inicializarMapaLeaflet() {
 
   marcadoresPostosGrupo = L.layerGroup().addTo(leafletMapInstancia);
 
-  // Escuta clique direto no mapa para preencher o campo ativo
   leafletMapInstancia.on('click', function(e) {
     if (campoFocoAtivo) {
       preencherPontoPorCoordenada(e.latlng.lat, e.latlng.lng, campoFocoAtivo);
@@ -60,10 +90,14 @@ function inicializarMapaLeaflet() {
   });
 
   configurarInputsAutocomplete();
+
+  setTimeout(() => {
+    leafletMapInstancia.invalidateSize();
+  }, 250);
 }
 
 /**
- * Configura eventos e busca dinâmica nos campos de cidades
+ * Configuração dos campos de busca de cidade
  */
 function configurarInputsAutocomplete() {
   const container = document.getElementById('containerPontosRota');
@@ -145,19 +179,14 @@ function selecionarCidadeAutoComplete(nome, uf, lat, lng, elem) {
   inputTexto.classList.remove('foco-ativo');
 }
 
-/**
- * Adiciona uma paragem intermediária na rota
- */
 function adicionarCampoParada() {
   const container = document.getElementById('containerPontosRota');
   if (!container) return;
 
   const totalPontos = container.querySelectorAll('.ponto-rota-item').length;
-  const novoIdx = totalPontos;
-
   const div = document.createElement('div');
   div.className = "mb-2 position-relative ponto-rota-item";
-  div.dataset.index = novoIdx;
+  div.dataset.index = totalPontos;
   div.innerHTML = `
     <label class="small fw-bold text-dark mb-1 d-flex justify-content-between">
       <span>Parada Intermediária:</span>
@@ -172,7 +201,6 @@ function adicionarCampoParada() {
 
   const destino = container.children[container.children.length - 1];
   container.insertBefore(div, destino);
-
   configurarInputsAutocomplete();
 }
 
@@ -181,9 +209,6 @@ function removerCampoParada(elem) {
   if (item) item.remove();
 }
 
-/**
- * Preenche a cidade ao clicar diretamente no mapa Leaflet
- */
 function preencherPontoPorCoordenada(lat, lng, itemPai) {
   if (!itemPai) return;
 
@@ -215,9 +240,6 @@ function preencherPontoPorCoordenada(lat, lng, itemPai) {
   }
 }
 
-/**
- * Cálculo geodésico Haversine (em km)
- */
 function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -230,7 +252,7 @@ function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
 }
 
 /**
- * Traça a rota física, mapeia postos e remove contornos visuais dos inputs
+ * Traça a rota pelo OSRM Leaflet Routing Machine
  */
 function calcularRotaLeaflet() {
   removerFocoInputs();
@@ -245,23 +267,24 @@ function calcularRotaLeaflet() {
   itens.forEach(item => {
     const valCoord = item.querySelector('.hidden-coord-rota').value;
     let txt = item.querySelector('.input-cidade-rota').value.trim();
-
-    // Sanitiza qualquer texto 'undefined' residual
     txt = txt.replace(/,\s*undefined/gi, '').trim();
     item.querySelector('.input-cidade-rota').value = txt;
 
-    let coordValida = null;
+    let pontoLat = null;
+    let pontoLng = null;
 
     if (valCoord) {
       try {
         const parsed = JSON.parse(valCoord);
-        if (parsed && !isNaN(parsed.lat) && !isNaN(parsed.lng)) {
-          coordValida = L.latLng(parsed.lat, parsed.lng);
+        const coords = corrigirCoordenadasBrasil(parsed.lat, parsed.lng);
+        if (coords) {
+          pontoLat = coords.lat;
+          pontoLng = coords.lng;
         }
       } catch(e) {}
     }
 
-    if (!coordValida && txt) {
+    if (pontoLat === null && txt) {
       const partes = txt.split(',').map(s => normalizarTexto(s.trim()));
       const nomeBusca = partes[0] || '';
       const ufBusca = partes[1] || '';
@@ -273,18 +296,19 @@ function calcularRotaLeaflet() {
       }) || baseCidades.find(c => normalizarTexto(c.nome).includes(nomeBusca));
 
       if (encontrada) {
-        coordValida = L.latLng(encontrada.lat, encontrada.lng);
+        pontoLat = encontrada.lat;
+        pontoLng = encontrada.lng;
         item.querySelector('.hidden-coord-rota').value = JSON.stringify(encontrada);
       }
     }
 
-    if (coordValida) {
-      waypoints.push(coordValida);
+    if (pontoLat !== null && pontoLng !== null) {
+      waypoints.push(L.latLng(pontoLat, pontoLng));
     }
   });
 
   if (waypoints.length < 2) {
-    alert("Por favor, selecione ao menos a Cidade de Origem e a Cidade de Destino válidas.");
+    alert("Por favor, selecione ao menos a Cidade de Origem e a Cidade de Destino.");
     return;
   }
 
@@ -329,7 +353,7 @@ function calcularRotaLeaflet() {
 }
 
 /**
- * Mapeia os postos de combustível na rodovia aplicando o raio expandido (até 400 km)
+ * Mapeia postos respeitando o raio direto (200 km) e o expandido (até 400 km)
  */
 function mapearPostosNoCorredor(coordenadasRota) {
   if (!marcadoresPostosGrupo || !coordenadasRota || coordenadasRota.length === 0) return;
@@ -350,7 +374,6 @@ function mapearPostosNoCorredor(coordenadasRota) {
       }
     }
 
-    // Corte estrito em até 400 km
     if (menorDistanciaRota <= 400) {
       postosNoCorredor.push({
         ...p,
@@ -361,13 +384,12 @@ function mapearPostosNoCorredor(coordenadasRota) {
     }
   });
 
-  // Renderiza no mapa com cores semafóricas
   postosNoCorredor.forEach(p => {
-    let corPin = "#94a3b8"; // 201 a 400 km (Apoio / Expandido)
+    let corPin = "#94a3b8"; // 201 a 400 km
     if (p.distanciaKm <= 200) {
-      if (p.PRECO_BASE <= 6.60) corPin = "#16a34a"; // Menor preço
-      else if (p.PRECO_BASE <= 6.90) corPin = "#eab308"; // Preço aceitável
-      else corPin = "#dc2626"; // Preço alto
+      if (p.PRECO_BASE <= 6.60) corPin = "#16a34a";
+      else if (p.PRECO_BASE <= 6.90) corPin = "#eab308";
+      else corPin = "#dc2626";
     }
 
     const marker = L.circleMarker([p.lat, p.lng], {
@@ -401,7 +423,7 @@ function mapearPostosNoCorredor(coordenadasRota) {
 }
 
 /**
- * Consolida a base de registros agrupando por Posto e Município único (Elimina duplicidades)
+ * Agrupa os postos por nome e praça única, pegando apenas o valor do último mês ativo
  */
 function consolidarPostosMaisRecentes() {
   const mapaUnicos = {};
@@ -436,9 +458,6 @@ function consolidarPostosMaisRecentes() {
   return Object.values(mapaUnicos);
 }
 
-/**
- * Obtém coordenadas aproximadas por cidade
- */
 function obterCoordenadaPosto(posto) {
   if (!posto.MUNICIPIO_POSTO) return null;
   const munNorm = normalizarTexto(posto.MUNICIPIO_POSTO);
@@ -446,7 +465,7 @@ function obterCoordenadaPosto(posto) {
 
   const baseCidades = obterBaseCidadesNormalizada();
   const cidade = baseCidades.find(c => 
-    normalizarTexto(c.nome) === munNorm && c.uf.toUpperCase() === ufNorm
+    normalizarTexto(c.nome) === munNorm && c.uf === ufNorm
   ) || baseCidades.find(c => normalizarTexto(c.nome) === munNorm);
 
   if (cidade) {
@@ -456,7 +475,7 @@ function obterCoordenadaPosto(posto) {
 }
 
 /**
- * Gera a tabela enxuta e deduplicada para caber em no máximo 2 páginas na impressão
+ * Tabela compacta e deduplicada para não ultrapassar 2 páginas de impressão
  */
 function gerarTabelaRoteiroImpressao(postos) {
   const container = document.getElementById('areaImpressaoRoteiro');
@@ -464,12 +483,11 @@ function gerarTabelaRoteiroImpressao(postos) {
   if (!container || !conteudo) return;
 
   if (postos.length === 0) {
-    conteudo.innerHTML = `<div class="p-3 text-muted small">Nenhum posto com histórico KMM localizado no corredor selecionado.</div>`;
+    conteudo.innerHTML = `<div class="p-3 text-muted small">Nenhum posto localizado no corredor logístico.</div>`;
     container.style.display = 'block';
     return;
   }
 
-  // Ordena por tipo (internos primeiro), depois menor desvio e menor preço
   const postosOrdenados = [...postos].sort((a, b) => {
     if (a.TIPO_OPERACAO === 'INTERNO' && b.TIPO_OPERACAO !== 'INTERNO') return -1;
     if (a.TIPO_OPERACAO !== 'INTERNO' && b.TIPO_OPERACAO === 'INTERNO') return 1;
@@ -477,7 +495,6 @@ function gerarTabelaRoteiroImpressao(postos) {
     return a.PRECO_BASE - b.PRECO_BASE;
   });
 
-  // Filtra apenas o corredor direto (até 200 km) e limita a uma lista executiva enxuta
   const postosPrioritarios = postosOrdenados.filter(p => p.distanciaKm <= 200).slice(0, 30);
 
   conteudo.innerHTML = `
@@ -519,11 +536,16 @@ function imprimirRoteiroViagem() {
 }
 
 /**
- * Inicializa o Mini Mapa do Brasil no Dashboard Cockpit
+ * Inicializa o Mini Mapa com GeoJSON servido por CDN estável (jsDelivr)
  */
 async function inicializarMiniMapaBrasil() {
   const container = document.getElementById('miniMapaBrasil');
-  if (!container || miniMapaBrasilInstancia) return;
+  if (!container) return;
+
+  if (miniMapaBrasilInstancia) {
+    miniMapaBrasilInstancia.invalidateSize();
+    return;
+  }
 
   miniMapaBrasilInstancia = L.map('miniMapaBrasil', {
     center: [-14.235, -51.925],
@@ -537,7 +559,8 @@ async function inicializarMiniMapaBrasil() {
   });
 
   try {
-    const resp = await fetch('https://raw.githubusercontent.com/codeforamerica/click_testing/master/geo/brazil-states.geojson');
+    // CDN rápida e com cabeçalhos de CORS 100% liberados
+    const resp = await fetch('https://cdn.jsdelivr.net/gh/codeforamerica/click_testing@master/geo/brazil-states.geojson');
     const geojsonData = await resp.json();
 
     geojsonBrasilCamada = L.geoJson(geojsonData, {
@@ -552,8 +575,11 @@ async function inicializarMiniMapaBrasil() {
     }).addTo(miniMapaBrasilInstancia);
 
     atualizarCoresMiniMapa();
+    setTimeout(() => {
+      miniMapaBrasilInstancia.invalidateSize();
+    }, 200);
   } catch(e) {
-    console.warn("Falha ao carregar GeoJSON dos estados:", e);
+    console.warn("Falha ao carregar malha GeoJSON do Brasil:", e);
   }
 }
 
@@ -569,7 +595,7 @@ function estiloPadraoEstado(feature) {
 
 function destacarEstadoHover(e) {
   const layer = e.target;
-  const uf = layer.feature.id || layer.feature.properties.sigla;
+  const uf = layer.feature.id || (layer.feature.properties ? layer.feature.properties.sigla : '');
   const lbl = document.getElementById('lblHoverEstado');
   if (lbl) lbl.innerText = `Estado: ${uf}`;
 
@@ -590,7 +616,7 @@ function resetarEstadoHover(e) {
 }
 
 function selecionarEstadoMapaClique(e) {
-  const uf = e.target.feature.id || e.target.feature.properties.sigla;
+  const uf = e.target.feature.id || (e.target.feature.properties ? e.target.feature.properties.sigla : '');
   const selectUf = document.getElementById('filtroUfSelect');
   if (selectUf) {
     selectUf.value = (selectUf.value === uf) ? "" : uf;
@@ -613,7 +639,7 @@ function atualizarCoresMiniMapa() {
   const maxVol = Math.max(...Object.values(volumesPorUf), 1);
 
   geojsonBrasilCamada.eachLayer(layer => {
-    const uf = layer.feature.id || layer.feature.properties.sigla;
+    const uf = layer.feature.id || (layer.feature.properties ? layer.feature.properties.sigla : '');
     const vol = volumesPorUf[uf] || 0;
 
     let cor = '#e2e8f0';
