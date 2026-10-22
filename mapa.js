@@ -503,6 +503,13 @@ function obterCoordenadasItem(itemEl) {
 }
 
 function calcularRotaLeaflet() {
+  // Remove contorno verde e tira o foco dos inputs de rota
+  document.querySelectorAll('.input-cidade-rota').forEach(el => {
+    el.classList.remove('foco-ativo');
+    el.blur();
+  });
+  campoFocoAtivo = null;
+
   if (!leafletMapInstance) return;
 
   const itens = document.querySelectorAll('#containerPontosRota .ponto-rota-item');
@@ -549,13 +556,33 @@ function plotarPostosComDuploRaio(routeCoords) {
   const registrosRef = (typeof baseRegistrosMensais !== 'undefined' && Array.isArray(baseRegistrosMensais)) ? baseRegistrosMensais : [];
   const listaCidadesRef = (typeof listaCidades !== 'undefined' && Array.isArray(listaCidades)) ? listaCidades : [];
 
-  const postos = [...new Set(registrosRef.map(d => ({
-    posto: d.POSTO,
-    municipio: (d.MUNICIPIO_POSTO || '').toUpperCase(),
-    uf: d.UF_POSTO,
-    preco: parseFloat(d.ULTIMO_PRECO_MES || 0),
-    tipo: d.TIPO_OPERACAO
-  })))];
+  // Agrupamento prévio para obter apenas o último preço mais recente por posto/município
+  const mapaPostosConsolidado = {};
+  registrosRef.forEach(d => {
+    const nome = (d.POSTO || '').trim();
+    const mun = (d.MUNICIPIO_POSTO || '').trim().toUpperCase();
+    const uf = (d.UF_POSTO || '').trim().toUpperCase();
+    const chave = `${nome}__${mun}__${uf}`;
+
+    const preco = parseFloat(d.ULTIMO_PRECO_MES || d.PRECO_MEDIO_MES || 0);
+    const dataReg = d.ULTIMA_DATA_MES || d.MES_ANO || "";
+
+    if (!mapaPostosConsolidado[chave]) {
+      mapaPostosConsolidado[chave] = {
+        posto: d.POSTO,
+        municipio: mun,
+        uf: uf,
+        preco: preco,
+        tipo: d.TIPO_OPERACAO,
+        data: dataReg
+      };
+    } else if (dataReg && dataReg > mapaPostosConsolidado[chave].data) {
+      mapaPostosConsolidado[chave].data = dataReg;
+      mapaPostosConsolidado[chave].preco = preco;
+    }
+  });
+
+  const postos = Object.values(mapaPostosConsolidado);
 
   const amostraRota = [];
   const passo = Math.max(1, Math.floor(routeCoords.length / 80));
@@ -578,7 +605,8 @@ function plotarPostosComDuploRaio(routeCoords) {
       if (menorDist <= 200) break;
     }
 
-    if (menorDist <= 600) {
+    // Raio expandido reduzido para 201 a 400 km
+    if (menorDist <= 400) {
       let corPin = "#94a3b8";
       let statusTexto = "Posto em Raio Expandido de Apoio";
 
